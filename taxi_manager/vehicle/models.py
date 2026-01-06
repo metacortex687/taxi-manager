@@ -18,11 +18,12 @@ class Vehicle(models.Model):
         ],
     )
     mileage = models.IntegerField(verbose_name="Пробег", help_text="Пробег (км)")
-    number = models.CharField(max_length=6, verbose_name="Госномер")
+    number = models.CharField(max_length=6, verbose_name="Госномер", unique=True)
     vin = models.CharField(
         max_length=17,
         verbose_name="VIN",
         validators=[MinLengthValidator(17)],
+        unique=True,
     )
 
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
