@@ -31,3 +31,5 @@ class Vehicle(models.Model):
 
     class Meta:
         verbose_name = 'Транспортное средство'
+        verbose_name_plural = 'Транспортные средства'
+
