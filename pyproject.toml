@@ -3,10 +3,10 @@ name = "taxi-manager"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "dj-database-url>=3.1.0",
-    "django>=5.2.9",
+    "django==6.0",
     "load-dotenv>=0.1.0",
     "psycopg2-binary>=2.9.11",
 ]
