@@ -12,4 +12,13 @@ class VehicleAdmin(admin.ModelAdmin):
         "price",
     )
 
+    fields = (
+        "number",
+        "vin",
+        "year_of_manufacture",
+        "mileage",
+        "price",
+    )
+
+
 admin.site.register(Vehicle, VehicleAdmin)
