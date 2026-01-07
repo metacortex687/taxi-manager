@@ -29,7 +29,53 @@ class Vehicle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
 
-    class Meta:
-        verbose_name = 'Транспортное средство'
-        verbose_name_plural = 'Транспортные средства'
+    model = models.ForeignKey("Model", on_delete=models.RESTRICT, verbose_name="Модель", null=True)
 
+    class Meta:
+        verbose_name = "Транспортное средство"
+        verbose_name_plural = "Транспортные средства"
+
+
+class Brand(models.Model):
+    name = models.CharField(max_length=25, verbose_name="Наименование")
+
+    def __str__(self):
+        return self.name
+
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True, editable=False)
+
+    class Meta:
+        verbose_name = "Брэнд"
+        verbose_name_plural = "Брэнды"
+
+
+class Model(models.Model):
+    brand = models.ForeignKey(Brand, on_delete=models.RESTRICT, verbose_name="Брэнд")
+    name = models.CharField(max_length=35, verbose_name="Наименование")
+
+    TYPES = [
+        ("PCR", "Легковой"),
+        ("BUS", "Автобус"),
+        ("LRR", "Грузовой"),
+    ]
+
+    type = models.CharField(max_length=3, choices=TYPES, verbose_name="Тип")
+
+    number_of_seats = models.IntegerField(verbose_name="Количество посадочных мест")
+    tank_capacity_l = models.IntegerField(
+        verbose_name="Объем бака", help_text="Объем бака (л)"
+    )
+    load_capacity_kg = models.IntegerField(
+        verbose_name="Грузоподъемность", help_text="Грузоподъемность (кг)"
+    )
+
+    def __str__(self):
+        return self.name
+
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True, editable=False)
+
+    class Meta:
+        verbose_name = "Модель"
+        verbose_name_plural = "Модели"
