@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Vehicle, Model, Brand
+from .models import Vehicle, Model
 
 
 class VehicleAdmin(admin.ModelAdmin):
@@ -27,7 +27,6 @@ class VehicleAdmin(admin.ModelAdmin):
 class ModelAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "brand",
         "name",
         "type",
         "number_of_seats",
@@ -36,11 +35,5 @@ class ModelAdmin(admin.ModelAdmin):
     )
 
 
-class BrandAdmin(admin.ModelAdmin):
-    list_display = ("id", "name")
-
-
 admin.site.register(Vehicle, VehicleAdmin)
-
 admin.site.register(Model, ModelAdmin)
-admin.site.register(Brand, BrandAdmin)

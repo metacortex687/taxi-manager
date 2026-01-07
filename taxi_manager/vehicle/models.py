@@ -36,22 +36,7 @@ class Vehicle(models.Model):
         verbose_name_plural = "Транспортные средства"
 
 
-class Brand(models.Model):
-    name = models.CharField(max_length=25, verbose_name="Наименование")
-
-    def __str__(self):
-        return self.name
-
-    created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    updated_at = models.DateTimeField(auto_now=True, editable=False)
-
-    class Meta:
-        verbose_name = "Брэнд"
-        verbose_name_plural = "Брэнды"
-
-
 class Model(models.Model):
-    brand = models.ForeignKey(Brand, on_delete=models.RESTRICT, verbose_name="Брэнд")
     name = models.CharField(max_length=35, verbose_name="Наименование")
 
     TYPES = [
