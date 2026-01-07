@@ -29,7 +29,7 @@ class Vehicle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
 
-    model = models.ForeignKey("Model", on_delete=models.RESTRICT, verbose_name="Модель", null=True)
+    model = models.ForeignKey("Model", on_delete=models.RESTRICT, verbose_name="Модель")
 
     class Meta:
         verbose_name = "Транспортное средство"
