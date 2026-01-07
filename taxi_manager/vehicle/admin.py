@@ -5,6 +5,7 @@ from .models import Vehicle
 
 class VehicleAdmin(admin.ModelAdmin):
     list_display = (
+        "id",
         "number",
         "vin",
         "year_of_manufacture",
