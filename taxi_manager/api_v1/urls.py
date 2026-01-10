@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import VehicleListAPIView
+from .views import VehicleListAPIView, ModelListAPIView, VehicleDetailAPIView, ModelDetailAPIView
 
 urlpatterns = [
     path('vehicles/', VehicleListAPIView.as_view()),
