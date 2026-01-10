@@ -10,6 +10,9 @@ class VehicleDetailAPIView(generics.RetrieveAPIView):
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer    
 
+class ModelListAPIView(generics.ListCreateAPIView):
+    queryset = Model.objects.all()
+    serializer_class = ModelSerializer
 
 class ModelDetailAPIView(generics.RetrieveAPIView):
     queryset = Model.objects.all()
