@@ -6,4 +6,7 @@ class VehicleListAPIView(generics.ListCreateAPIView):
     queryset = Vehicle.objects.prefetch_related("model").all()
     serializer_class = VehicleSerializer
 
+class VehicleDetailAPIView(generics.RetrieveAPIView):
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer    
 
