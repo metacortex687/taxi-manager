@@ -3,4 +3,5 @@ from .views import VehicleListAPIView
 
 urlpatterns = [
     path('vehicles/<int:pk>/', VehicleDetailAPIView.as_view()),
+    path('models/<int:pk>/', ModelDetailAPIView.as_view()),
 ]
