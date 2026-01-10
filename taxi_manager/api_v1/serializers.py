@@ -17,3 +17,10 @@ class VehicleSerializer(serializers.ModelSerializer):
         #depth = 1
         model = Vehicle
         fields = ("id", "model_id", "number", "vin", "year_of_manufacture", "mileage", "price", "created_at", "updated_at",  )
+
+
+class ModelSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = Model
+        fields = "__all__"
