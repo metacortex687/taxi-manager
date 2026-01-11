@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'taxi_manager.vehicle',
+    'taxi_manager.enterprise',
     'taxi_manager.api_v1',
 ]
 
