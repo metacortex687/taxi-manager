@@ -6,7 +6,7 @@ from django.core.validators import (
 )
 
 import datetime
-
+from ..enterprise.models import Enterprise
 
 class Vehicle(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
@@ -30,6 +30,8 @@ class Vehicle(models.Model):
     updated_at = models.DateTimeField(auto_now=True, editable=False)
 
     model = models.ForeignKey("Model", on_delete=models.RESTRICT, verbose_name="Модель")
+
+    enterprise = models.ForeignKey(Enterprise, on_delete=models.RESTRICT, null=True)
 
     class Meta:
         verbose_name = "Транспортное средство"
