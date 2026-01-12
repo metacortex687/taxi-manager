@@ -8,6 +8,7 @@ from django.core.validators import (
 import datetime
 from ..enterprise.models import Enterprise
 
+
 class Vehicle(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
     year_of_manufacture = models.IntegerField(
@@ -66,3 +67,23 @@ class Model(models.Model):
     class Meta:
         verbose_name = "Модель"
         verbose_name_plural = "Модели"
+
+
+class Driver(models.Model):
+    first_name = models.CharField(max_length=35, verbose_name="Имя")
+    last_name = models.CharField(max_length=35, verbose_name="Фвмилия")
+    TIN = models.CharField(max_length=12, verbose_name="ИНН", unique=True)
+
+    enterprise = models.ForeignKey(Enterprise, on_delete=models.RESTRICT)
+
+    vehicles = models.ManyToManyField(
+        Vehicle,
+        through="VehicleDriver",
+        through_fields=("driver", "vehicle"),
+        related_name="drivers",
+    )
+
+
+class VehicleDriver(models.Model):
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
