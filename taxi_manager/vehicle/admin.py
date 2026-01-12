@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Vehicle, Model
+from .models import Vehicle, Model, Driver, VehicleDriver
 
 
 class VehicleAdmin(admin.ModelAdmin):
@@ -37,3 +37,6 @@ class ModelAdmin(admin.ModelAdmin):
 
 admin.site.register(Vehicle, VehicleAdmin)
 admin.site.register(Model, ModelAdmin)
+
+admin.site.register(Driver)
+admin.site.register(VehicleDriver)
