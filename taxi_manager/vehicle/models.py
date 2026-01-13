@@ -7,6 +7,7 @@ from django.core.validators import (
 
 import datetime
 from ..enterprise.models import Enterprise
+from django.core.exceptions import ValidationError
 
 
 class Vehicle(models.Model):
@@ -106,5 +107,50 @@ class Driver(models.Model):
 
 
 class VehicleDriver(models.Model):
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    driver = models.ForeignKey(
+        Driver, on_delete=models.CASCADE, verbose_name="Водитель"
+    )
+    vehicle = models.ForeignKey(
+        Vehicle, on_delete=models.CASCADE, verbose_name="Машина"
+    )
+    active = models.BooleanField(default=False, verbose_name="Активен")
+
+    class Meta:
+        verbose_name = "Машина водителя"
+        verbose_name_plural = "Машины и водители"
+        unique_together = ("driver", "vehicle")
+
+    def clean(self):
+        if self.driver.enterprise != self.vehicle.enterprise:
+            raise ValidationError(
+                f"Не совпадают организации у транспортного средства {self.vehicle.number} ({self.vehicle.enterprise}) и у водителя {self.driver} ({self.driver.enterprise})"
+            )
+
+        if not self.active:
+            return
+
+        vehicle_drivers = VehicleDriver.objects.filter(
+            driver=self.driver, active=True
+        ).exclude(id=self.id)[:1]
+
+        if len(vehicle_drivers) > 0 and vehicle_drivers[0].vehicle != self.vehicle:
+            raise ValidationError(
+                {
+                    "active": ValidationError(
+                        f"У водителя уже установлено активным транспортное средство {vehicle_drivers[0].vehicle}"
+                    ),
+                }
+            )
+
+        vehicle_drivers = VehicleDriver.objects.filter(
+            vehicle=self.vehicle, active=True
+        ).exclude(id=self.id)[:1]
+
+        if len(vehicle_drivers) > 0 and vehicle_drivers[0].driver != self.driver:
+            raise ValidationError(
+                {
+                    "active": ValidationError(
+                        f"У транспортного средства уже установлен активным водитель {vehicle_drivers[0].driver}"
+                    ),
+                }
+            )
