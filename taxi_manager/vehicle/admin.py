@@ -34,6 +34,19 @@ class ModelAdmin(admin.ModelAdmin):
         "load_capacity_kg",
     )
 
+class VehicleDriverAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "driver",
+        "vehicle",
+        "active",
+    )
+
+    list_filter = (
+        "driver",
+        "vehicle",
+    )
+
 class DriverAdmin(admin.ModelAdmin):
     list_display = (
         "id",
@@ -47,4 +60,4 @@ admin.site.register(Vehicle, VehicleAdmin)
 admin.site.register(Model, ModelAdmin)
 
 admin.site.register(Driver, DriverAdmin)
-admin.site.register(VehicleDriver)
+admin.site.register(VehicleDriver, VehicleDriverAdmin)
