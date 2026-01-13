@@ -95,6 +95,16 @@ class Driver(models.Model):
         verbose_name = "Водитель"
         verbose_name_plural = "Водители"
 
+    def __str__(self):
+        # if self.enterprise.name > # проверю множественные запросы с помощью Django Debug Toolbar
+        res = f"{self.first_name} {self.last_name}"
+
+        if self.enterprise:
+            res += f" ({self.enterprise.name})"
+
+        return res
+
+
 class VehicleDriver(models.Model):
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
