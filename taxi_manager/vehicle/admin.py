@@ -34,9 +34,17 @@ class ModelAdmin(admin.ModelAdmin):
         "load_capacity_kg",
     )
 
+class DriverAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "first_name",
+        "last_name",
+        "TIN",
+        "enterprise",
+    )
 
 admin.site.register(Vehicle, VehicleAdmin)
 admin.site.register(Model, ModelAdmin)
 
-admin.site.register(Driver)
+admin.site.register(Driver, DriverAdmin)
 admin.site.register(VehicleDriver)
