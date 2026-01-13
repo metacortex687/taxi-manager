@@ -79,7 +79,7 @@ class Model(models.Model):
 
 class Driver(models.Model):
     first_name = models.CharField(max_length=35, verbose_name="Имя")
-    last_name = models.CharField(max_length=35, verbose_name="Фвмилия")
+    last_name = models.CharField(max_length=35, verbose_name="Фамилия")
     TIN = models.CharField(max_length=12, verbose_name="ИНН", unique=True)
 
     enterprise = models.ForeignKey(Enterprise, on_delete=models.RESTRICT)
