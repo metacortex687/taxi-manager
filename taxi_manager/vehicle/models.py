@@ -91,6 +91,9 @@ class Driver(models.Model):
         related_name="drivers",
     )
 
+    class Meta:
+        verbose_name = "Водитель"
+        verbose_name_plural = "Водители"
 
 class VehicleDriver(models.Model):
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
