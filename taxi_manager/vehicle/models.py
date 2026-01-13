@@ -38,6 +38,14 @@ class Vehicle(models.Model):
         verbose_name = "Транспортное средство"
         verbose_name_plural = "Транспортные средства"
 
+    def __str__(self):
+        res = f"{self.model.name} {self.number}"
+
+        if self.enterprise:
+            res += f" ({self.enterprise.name})"
+
+        return res
+
 
 class Model(models.Model):
     name = models.CharField(max_length=35, verbose_name="Наименование")
