@@ -27,14 +27,25 @@ class ModelSerializer(serializers.ModelSerializer):
     type_code = serializers.SerializerMethodField()
     # type_name = serializers.SerializerMethodField()
 
-    def get_type_code(self,obj):
+    def get_type_code(self, obj):
         return obj.type
-    
+
     # def get_type_name(self,obj):
     #     return obj.get_type_display()
-   
+
     class Meta:
         model = Model
+        fields = (
+            "id",
+            "name",
+            "type_code",
+            "number_of_seats",
+            "tank_capacity_l",
+            "load_capacity_kg",
+            "created_at",
+            "updated_at",
+        )
+
 
 class EnterpriseSerializer(serializers.ModelSerializer):
     class Meta:
