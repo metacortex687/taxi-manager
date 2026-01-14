@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from ..vehicle.models import Vehicle, Model
+from ..vehicle.models import Vehicle, Model, Driver
+from ..enterprise.models import Enterprise
 
 
 class VehicleSerializer(serializers.ModelSerializer):
@@ -34,4 +35,32 @@ class ModelSerializer(serializers.ModelSerializer):
    
     class Meta:
         model = Model
-        fields = ("id", "name", "type_code", "number_of_seats", "tank_capacity_l", "load_capacity_kg", "created_at", "updated_at", )
+
+class EnterpriseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enterprise
+
+        fields = ("id", "name", "city")
+
+
+class DriverSerializer(serializers.ModelSerializer):
+    enterprise_id = serializers.SerializerMethodField()
+
+    def get_enterprise_id(self, obj):
+        return obj.enterprise.id
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["vehicle_ids"] = representation.pop("vehicles")
+        return representation
+
+    class Meta:
+        model = Driver
+
+        fields = (
+            "id",
+            "first_name",
+            "last_name",
+            "enterprise_id",
+            "vehicles",
+        )
