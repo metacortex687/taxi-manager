@@ -25,6 +25,8 @@ class VehicleAdmin(admin.ModelAdmin):
         "enterprise",
     )
 
+    list_select_related = ["enterprise"]
+
 
 class ModelAdmin(admin.ModelAdmin):
     list_display = (
@@ -57,6 +59,9 @@ class DriverAdmin(admin.ModelAdmin):
         "TIN",
         "enterprise",
     )
+
+    list_select_related = ["enterprise"]
+
 
 admin.site.register(Vehicle, VehicleAdmin)
 admin.site.register(Model, ModelAdmin)
