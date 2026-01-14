@@ -7,3 +7,7 @@ class Enterprise(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.city})"
+    
+    class Meta:
+        verbose_name = "Предприятие"
+        verbose_name_plural = "Предприятия"
