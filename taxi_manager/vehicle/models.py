@@ -105,7 +105,6 @@ class Driver(models.Model):
         verbose_name_plural = "Водители"
 
     def __str__(self):
-        # if self.enterprise.name > # проверю множественные запросы с помощью Django Debug Toolbar
         res = f"{self.first_name} {self.last_name}"
 
         if self.enterprise:
