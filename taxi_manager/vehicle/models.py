@@ -161,7 +161,7 @@ class VehicleDriver(models.Model):
             raise ValidationError(
                 {
                     "active": ValidationError(
-                        f"У водителя уже установлено активным транспортное средство {vehicle_drivers[0].vehicle}"
+                        f'У водителя уже установлено активным транспортное средство "{vehicle_drivers[0].vehicle}"'
                     ),
                 }
             )
@@ -174,7 +174,7 @@ class VehicleDriver(models.Model):
             raise ValidationError(
                 {
                     "active": ValidationError(
-                        f"У транспортного средства уже установлен активным водитель {vehicle_drivers[0].driver}"
+                        f'У транспортного средства уже установлен активным водитель "{vehicle_drivers[0].driver}"'
                     ),
                 }
             )
