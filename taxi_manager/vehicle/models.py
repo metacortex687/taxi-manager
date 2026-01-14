@@ -49,6 +49,22 @@ class Vehicle(models.Model):
 
         return res
 
+    def clean(self):
+        super().clean()
+
+        driver = self.drivers.select_related("enterprise").exclude(enterprise=self.enterprise).first()
+
+        if not driver:
+            return
+
+        raise ValidationError(
+            {
+                "enterprise": ValidationError(
+                    f'У автомобиля есть водитель "{driver.name}" в организации "{driver.enterprise}"'
+                ),
+            }
+        )
+
 
 class Model(models.Model):
     name = models.CharField(max_length=35, verbose_name="Наименование")
