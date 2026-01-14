@@ -5,17 +5,17 @@ from ..enterprise.models import Enterprise
 
 class VehicleSerializer(serializers.ModelSerializer):
     model_id = serializers.SerializerMethodField()
-    enterprise_id = serializers.SerializerMethodField()
+    # enterprise_id = serializers.SerializerMethodField()
     # model_name = serializers.SerializerMethodField()
     # model = ModelSerializer()
 
     def get_model_id(self, obj):
         return obj.model.id
 
-    def get_enterprise_id(self, obj):
-        if not obj.enterprise:
-            return None
-        return obj.enterprise.id
+    # def get_enterprise_id(self, obj):
+    #     if not obj.enterprise:
+    #         return None
+    #     return obj.enterprise.id
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -33,7 +33,7 @@ class VehicleSerializer(serializers.ModelSerializer):
             "year_of_manufacture",
             "mileage",
             "price",
-            "enterprise_id",
+            # "enterprise_id",
             "drivers",
         )
 
@@ -63,22 +63,28 @@ class ModelSerializer(serializers.ModelSerializer):
 
 
 class EnterpriseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Enterprise
-
-        fields = ("id", "name", "city")
-
-
-class DriverSerializer(serializers.ModelSerializer):
-    enterprise_id = serializers.SerializerMethodField()
-
-    def get_enterprise_id(self, obj):
-        return obj.enterprise.id
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation["vehicle_ids"] = representation.pop("vehicles")
+        representation["driver_ids"] = representation.pop("drivers")
         return representation
+
+    class Meta:
+        model = Enterprise
+
+        fields = ("id", "name", "city", "vehicles", "drivers")
+
+
+class DriverSerializer(serializers.ModelSerializer):
+    # enterprise_id = serializers.SerializerMethodField()
+
+    # def get_enterprise_id(self, obj):
+    #     return obj.enterprise.id
+
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     representation["vehicle_ids"] = representation.pop("vehicles")
+    #     return representation
 
     class Meta:
         model = Driver
@@ -87,6 +93,6 @@ class DriverSerializer(serializers.ModelSerializer):
             "id",
             "first_name",
             "last_name",
-            "enterprise_id",
-            "vehicles",
+            # "enterprise_id",
+            # "vehicles",
         )

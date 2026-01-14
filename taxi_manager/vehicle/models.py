@@ -34,7 +34,10 @@ class Vehicle(models.Model):
     model = models.ForeignKey("Model", on_delete=models.RESTRICT, verbose_name="Модель")
 
     enterprise = models.ForeignKey(
-        Enterprise, on_delete=models.RESTRICT, verbose_name="Предприятие"
+        Enterprise,
+        on_delete=models.RESTRICT,
+        verbose_name="Предприятие",
+        related_name="vehicles",
     )
 
     class Meta:
@@ -52,7 +55,11 @@ class Vehicle(models.Model):
     def clean(self):
         super().clean()
 
-        driver = self.drivers.select_related("enterprise").exclude(enterprise=self.enterprise).first()
+        driver = (
+            self.drivers.select_related("enterprise")
+            .exclude(enterprise=self.enterprise)
+            .first()
+        )
 
         if not driver:
             return
@@ -102,7 +109,10 @@ class Driver(models.Model):
     TIN = models.CharField(max_length=12, verbose_name="ИНН", unique=True)
 
     enterprise = models.ForeignKey(
-        Enterprise, on_delete=models.RESTRICT, verbose_name="Предприятие"
+        Enterprise,
+        on_delete=models.RESTRICT,
+        verbose_name="Предприятие",
+        related_name="drivers",
     )
 
     vehicles = models.ManyToManyField(
@@ -114,7 +124,7 @@ class Driver(models.Model):
 
     @property
     def name(self):
-        return f"{self.first_name} {self.last_name}" 
+        return f"{self.first_name} {self.last_name}"
 
     class Meta:
         verbose_name = "Водитель"
@@ -131,7 +141,11 @@ class Driver(models.Model):
     def clean(self):
         super().clean()
 
-        vehicle = self.vehicles.select_related("enterprise").exclude(enterprise=self.enterprise).first()
+        vehicle = (
+            self.vehicles.select_related("enterprise")
+            .exclude(enterprise=self.enterprise)
+            .first()
+        )
 
         if not vehicle:
             return
