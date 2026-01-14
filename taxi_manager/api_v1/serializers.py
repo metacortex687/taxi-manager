@@ -9,18 +9,33 @@ class VehicleSerializer(serializers.ModelSerializer):
     # model_name = serializers.SerializerMethodField()
     # model = ModelSerializer()
 
-    def get_model_id(self,obj):
+    def get_model_id(self, obj):
         return obj.model.id
 
-    def get_enterprise_id(self,obj):
+    def get_enterprise_id(self, obj):
         if not obj.enterprise:
             return None
         return obj.enterprise.id
     
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["driver_ids"] = representation.pop("drivers")
+        return representation
+    
     class Meta:
-        #depth = 1
+        # depth = 1
         model = Vehicle
-        fields = ("id", "model_id", "number", "vin", "year_of_manufacture", "mileage", "price", "enterprise_id", "created_at", "updated_at",  )
+        fields = (
+            "id",
+            "model_id",
+            "number",
+            "vin",
+            "year_of_manufacture",
+            "mileage",
+            "price",
+            "enterprise_id",
+            "drivers",
+        )
 
 
 class ModelSerializer(serializers.ModelSerializer):
