@@ -129,9 +129,22 @@ class VehicleDriver(models.Model):
         unique_together = ("driver", "vehicle")
 
     def clean(self):
-        if self.driver.enterprise != self.vehicle.enterprise:
+        if self.driver.enterprise != self.enterprise:
             raise ValidationError(
-                f"Не совпадают организации у транспортного средства {self.vehicle.number} ({self.vehicle.enterprise}) и у водителя {self.driver} ({self.driver.enterprise})"
+                {
+                    "driver": ValidationError(
+                        f'У водителя организация "{self.driver.enterprise}" вместо "{self.enterprise}"'
+                    ),
+                }
+            )
+
+        if self.vehicle.enterprise != self.enterprise:
+            raise ValidationError(
+                {
+                    "vehicle": ValidationError(
+                        f'У транспортного средства организация "{self.vehicle.enterprise}" вместо "{self.enterprise}"'
+                    ),
+                }
             )
 
         if not self.active:
