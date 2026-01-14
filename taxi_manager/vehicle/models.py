@@ -128,6 +128,22 @@ class Driver(models.Model):
 
         return res
 
+    def clean(self):
+        super().clean()
+
+        vehicle = self.vehicles.select_related("enterprise").exclude(enterprise=self.enterprise).first()
+
+        if not vehicle:
+            return
+
+        raise ValidationError(
+            {
+                "enterprise": ValidationError(
+                    f'У водителя уже есть странспортное средство "{vehicle}" в организации "{vehicle.enterprise}"'
+                ),
+            }
+        )
+
 
 class VehicleDriver(models.Model):
     enterprise = models.ForeignKey(
