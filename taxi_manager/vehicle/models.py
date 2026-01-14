@@ -34,7 +34,7 @@ class Vehicle(models.Model):
     model = models.ForeignKey("Model", on_delete=models.RESTRICT, verbose_name="Модель")
 
     enterprise = models.ForeignKey(
-        Enterprise, on_delete=models.RESTRICT, null=True, verbose_name="Предприятие"
+        Enterprise, on_delete=models.RESTRICT, verbose_name="Предприятие"
     )
 
     class Meta:
