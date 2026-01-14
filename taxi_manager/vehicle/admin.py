@@ -40,7 +40,7 @@ class ModelAdmin(admin.ModelAdmin):
 
 
 class VehicleDriverAdmin(admin.ModelAdmin):
-    form = VehicleDriverForm
+
 
     list_display = (
         "id",
