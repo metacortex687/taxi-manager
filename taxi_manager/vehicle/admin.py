@@ -38,18 +38,24 @@ class ModelAdmin(admin.ModelAdmin):
         "load_capacity_kg",
     )
 
+
 class VehicleDriverAdmin(admin.ModelAdmin):
+    form = VehicleDriverForm
+
     list_display = (
         "id",
+        "enterprise",
         "driver",
         "vehicle",
         "active",
     )
 
     list_filter = (
+        "enterprise",
         "driver",
         "vehicle",
     )
+
 
 class DriverAdmin(admin.ModelAdmin):
     list_display = (
