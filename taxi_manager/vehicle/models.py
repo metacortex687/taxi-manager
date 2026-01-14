@@ -96,6 +96,10 @@ class Driver(models.Model):
         related_name="drivers",
     )
 
+    @property
+    def name(self):
+        return f"{self.first_name} {self.last_name}" 
+
     class Meta:
         verbose_name = "Водитель"
         verbose_name_plural = "Водители"
