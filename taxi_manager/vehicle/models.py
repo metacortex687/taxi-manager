@@ -33,7 +33,9 @@ class Vehicle(models.Model):
 
     model = models.ForeignKey("Model", on_delete=models.RESTRICT, verbose_name="Модель")
 
-    enterprise = models.ForeignKey(Enterprise, on_delete=models.RESTRICT, null=True)
+    enterprise = models.ForeignKey(
+        Enterprise, on_delete=models.RESTRICT, null=True, verbose_name="Предприятие"
+    )
 
     class Meta:
         verbose_name = "Транспортное средство"
@@ -83,7 +85,9 @@ class Driver(models.Model):
     last_name = models.CharField(max_length=35, verbose_name="Фамилия")
     TIN = models.CharField(max_length=12, verbose_name="ИНН", unique=True)
 
-    enterprise = models.ForeignKey(Enterprise, on_delete=models.RESTRICT)
+    enterprise = models.ForeignKey(
+        Enterprise, on_delete=models.RESTRICT, verbose_name="Предприятие"
+    )
 
     vehicles = models.ManyToManyField(
         Vehicle,
