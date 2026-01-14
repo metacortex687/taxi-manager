@@ -111,6 +111,10 @@ class Driver(models.Model):
 
 
 class VehicleDriver(models.Model):
+    enterprise = models.ForeignKey(
+        Enterprise, on_delete=models.CASCADE, verbose_name="Предприятие"
+    )
+
     driver = models.ForeignKey(
         Driver, on_delete=models.CASCADE, verbose_name="Водитель"
     )
