@@ -20,7 +20,7 @@ class VehicleListAPIView(generics.ListCreateAPIView):
 
         driver_id = self.kwargs.get("driver_id")
         if driver_id:
-            vehicles =  Driver.objects.get(id=driver_id).vehicles
+            vehicles = Driver.objects.get(id=driver_id).vehicles
 
         return vehicles.annotate(active_driver_id=Subquery(active_driver)).all()
 
@@ -29,9 +29,11 @@ class VehicleListAPIView(generics.ListCreateAPIView):
 
 class VehicleDetailAPIView(generics.RetrieveAPIView):
     def get_queryset(self):
-        active_driver = VehicleDriver.objects.filter(active=True, vehicle=OuterRef("pk")).values("driver")[:1]
+        active_driver = VehicleDriver.objects.filter(
+            active=True, vehicle=OuterRef("pk")
+        ).values("driver")[:1]
         return Vehicle.objects.annotate(active_driver_id=Subquery(active_driver)).all()
-    
+
     serializer_class = VehicleSerializer
 
 
