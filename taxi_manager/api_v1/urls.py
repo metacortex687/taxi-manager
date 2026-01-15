@@ -8,6 +8,7 @@ urlpatterns = [
     path('models/<int:pk>/', ModelDetailAPIView.as_view()),
     path('drivers/', DriverListAPIView.as_view()),
     path('enterprises/', EnterpriseListAPIView.as_view()),
+    path('drivers/<int:driver_id>/vehicles/', VehicleListAPIView.as_view()),
     path('drivers/<int:pk>/', DriverDetailAPIView.as_view()),
     path('enterprises/<int:pk>/', EnterpriseDetailAPIView.as_view()),
 ]
