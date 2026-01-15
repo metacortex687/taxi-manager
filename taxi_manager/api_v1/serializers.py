@@ -5,6 +5,7 @@ from ..enterprise.models import Enterprise
 
 class VehicleSerializer(serializers.ModelSerializer):
     model_id = serializers.SerializerMethodField()
+    active_driver_id = serializers.IntegerField()
     # enterprise_id = serializers.SerializerMethodField()
     # model_name = serializers.SerializerMethodField()
     # model = ModelSerializer()
@@ -35,6 +36,7 @@ class VehicleSerializer(serializers.ModelSerializer):
             "price",
             # "enterprise_id",
             "drivers",
+            "active_driver_id",
         )
 
 

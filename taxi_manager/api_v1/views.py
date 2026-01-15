@@ -1,5 +1,5 @@
 from rest_framework import generics
-from ..vehicle.models import Vehicle, Model, Driver
+from ..vehicle.models import Vehicle, Model, Driver, VehicleDriver
 from ..enterprise.models import Enterprise
 from .serializers import (
     VehicleSerializer,
@@ -7,15 +7,22 @@ from .serializers import (
     DriverSerializer,
     EnterpriseSerializer,
 )
+from django.db.models import OuterRef, Subquery, F
 
 
 class VehicleListAPIView(generics.ListCreateAPIView):
-    queryset = Vehicle.objects.prefetch_related("model").all()
+    def get_queryset(self):
+        active_driver = VehicleDriver.objects.filter(active=True, vehicle=OuterRef("pk")).values("driver")[:1]
+        return Vehicle.objects.annotate(active_driver_id=Subquery(active_driver)).all()
+
     serializer_class = VehicleSerializer
 
 
 class VehicleDetailAPIView(generics.RetrieveAPIView):
-    queryset = Vehicle.objects.all()
+    def get_queryset(self):
+        active_driver = VehicleDriver.objects.filter(active=True, vehicle=OuterRef("pk")).values("driver")[:1]
+        return Vehicle.objects.annotate(active_driver_id=Subquery(active_driver)).all()
+    
     serializer_class = VehicleSerializer
 
 
