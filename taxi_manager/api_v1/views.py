@@ -10,7 +10,7 @@ from .serializers import (
 
 
 class VehicleListAPIView(generics.ListCreateAPIView):
-    queryset = Vehicle.objects.prefetch_related("model", "enterprise").all()
+    queryset = Vehicle.objects.prefetch_related("model").all()
     serializer_class = VehicleSerializer
 
 
@@ -40,7 +40,7 @@ class EnterpriseDetailAPIView(generics.RetrieveAPIView):
 
 
 class DriverListAPIView(generics.ListCreateAPIView):
-    queryset = Driver.objects.prefetch_related("enterprise").all()
+    queryset = Driver.objects.all()
     serializer_class = DriverSerializer
 
 
