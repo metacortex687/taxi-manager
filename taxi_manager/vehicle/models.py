@@ -40,6 +40,13 @@ class Vehicle(models.Model):
         related_name="vehicles",
     )
 
+    drivers = models.ManyToManyField(
+        "Driver",
+        through="VehicleDriver",
+        through_fields=("vehicle", "driver"),
+        related_name="vehicles",
+    )
+
     class Meta:
         verbose_name = "Транспортное средство"
         verbose_name_plural = "Транспортные средства"
@@ -115,12 +122,12 @@ class Driver(models.Model):
         related_name="drivers",
     )
 
-    vehicles = models.ManyToManyField(
-        Vehicle,
-        through="VehicleDriver",
-        through_fields=("driver", "vehicle"),
-        related_name="drivers",
-    )
+    # vehicles = models.ManyToManyField(
+    #     Vehicle,
+    #     through="VehicleDriver",
+    #     through_fields=("driver", "vehicle"),
+    #     related_name="drivers",
+    # )
 
     @property
     def name(self):
