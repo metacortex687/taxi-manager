@@ -17,12 +17,16 @@ class VehicleSerializer(serializers.ModelSerializer):
     #     if not obj.enterprise:
     #         return None
     #     return obj.enterprise.id
-    
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation["driver_ids"] = representation.pop("drivers")
+
+        # if not representation["active_driver_id"]:
+        #     representation["active_driver_id"] = -1
+
         return representation
-    
+
     class Meta:
         # depth = 1
         model = Vehicle
