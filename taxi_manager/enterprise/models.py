@@ -1,5 +1,4 @@
 from django.db import models
-from .query_sets import EnterpriseQuerySet
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -9,8 +8,6 @@ class Enterprise(models.Model):
     name = models.CharField(max_length=35, verbose_name="Наименование", unique=True)
     city = models.CharField(max_length=25, verbose_name="Город")
 
-    objects = EnterpriseQuerySet.as_manager()
-    
     manager_users = models.ManyToManyField(
         User,
         through="Manager",

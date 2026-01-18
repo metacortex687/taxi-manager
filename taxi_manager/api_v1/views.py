@@ -52,8 +52,11 @@ class EnterpriseListAPIView(generics.ListAPIView):
     serializer_class = EnterpriseSerializer
 
     def get_queryset(self):
-        queryset = Enterprise.objects.all()
-        return queryset.permited(self.request.user)
+        user = self.request.user
+        if user.is_superuser:
+            return Enterprise.objects.all()
+
+        return user.managed_enterprises.all()
 
 
 class EnterpriseDetailAPIView(generics.RetrieveAPIView):
