@@ -14,6 +14,10 @@ from django.core.exceptions import PermissionDenied
 
 class VehicleListAPIView(generics.ListCreateAPIView):
     def get_queryset(self):
+        user = self.request.user
+        if user.is_anonymous:
+            raise PermissionDenied("Авторизуйтесь")
+        
         active_driver = VehicleDriver.objects.filter(
             active=True, vehicle=OuterRef("pk")
         ).values("driver")[:1]
@@ -23,6 +27,10 @@ class VehicleListAPIView(generics.ListCreateAPIView):
         driver_id = self.kwargs.get("driver_id")
         if driver_id:
             vehicles = Driver.objects.get(id=driver_id).vehicles
+
+        if not user.is_superuser:
+            enterprise_ids = user.managed_enterprises.values("id")
+            vehicles = vehicles.filter(enterprise__in = enterprise_ids)
 
         return vehicles.annotate(active_driver_id=Subquery(active_driver)).all()
 
