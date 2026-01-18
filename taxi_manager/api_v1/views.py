@@ -47,9 +47,13 @@ class ModelDetailAPIView(generics.RetrieveAPIView):
     serializer_class = ModelSerializer
 
 
-class EnterpriseListAPIView(generics.ListCreateAPIView):
-    queryset = Enterprise.objects.all()
+class EnterpriseListAPIView(generics.ListAPIView):
+
     serializer_class = EnterpriseSerializer
+
+    def get_queryset(self):
+        queryset = Enterprise.objects.all()
+        return queryset.permited(self.request.user)
 
 
 class EnterpriseDetailAPIView(generics.RetrieveAPIView):
