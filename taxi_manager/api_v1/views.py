@@ -8,6 +8,8 @@ from .serializers import (
     EnterpriseSerializer,
 )
 from django.db.models import OuterRef, Subquery, F
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import PermissionDenied
 
 
 class VehicleListAPIView(generics.ListCreateAPIView):
@@ -62,6 +64,25 @@ class EnterpriseListAPIView(generics.ListAPIView):
 class EnterpriseDetailAPIView(generics.RetrieveAPIView):
     queryset = Enterprise.objects.all()
     serializer_class = EnterpriseSerializer
+
+    def get_object(self):
+        pk = self.kwargs["pk"]
+        user = self.request.user
+
+        obj = get_object_or_404(Enterprise, pk=pk)
+
+        if user.is_superuser:
+            return obj
+
+        try:
+            perm_obj = user.managed_enterprises.get(pk=pk)
+        except Enterprise.DoesNotExist:
+            raise PermissionDenied(
+                f'У вас нет прав менеджера на "{obj.name}"(id={obj.id})'
+            )
+
+        if perm_obj:
+            return perm_obj
 
 
 class DriverListAPIView(generics.ListCreateAPIView):
