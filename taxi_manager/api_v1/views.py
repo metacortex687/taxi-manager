@@ -133,5 +133,29 @@ class DriverListAPIView(generics.ListAPIView):
 
 
 class DriverDetailAPIView(generics.RetrieveAPIView):
-    queryset = Driver.objects.all()
     serializer_class = DriverSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_anonymous:
+            raise PermissionDenied("Авторизуйтесь")
+
+        drivers = Driver.objects
+        if not user.is_superuser:
+            enterprise_ids = user.managed_enterprises.values("id")
+            drivers = drivers.filter(enterprise__in=enterprise_ids)
+
+        return drivers
+
+    def get_object(self):
+        pk = self.kwargs["pk"]
+
+        get_object_or_404(Driver, pk=pk)
+
+        try:
+            perm_obj = self.get_queryset().get(pk=pk)
+        except Driver.DoesNotExist:
+            raise PermissionDenied("Этот водитель не в вашей организации")
+
+        return perm_obj
