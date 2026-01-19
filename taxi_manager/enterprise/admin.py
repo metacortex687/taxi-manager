@@ -13,6 +13,7 @@ class ManagerAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "enterprise",
+        "enterprise__id",
         "user",
     )
 
