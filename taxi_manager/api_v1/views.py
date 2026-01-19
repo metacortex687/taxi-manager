@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import PermissionDenied
 
 
-class VehicleListAPIView(generics.ListCreateAPIView):
+class VehicleListAPIView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.is_anonymous:
@@ -47,7 +47,7 @@ class VehicleDetailAPIView(generics.RetrieveAPIView):
     serializer_class = VehicleSerializer
 
 
-class ModelListAPIView(generics.ListCreateAPIView):
+class ModelListAPIView(generics.ListAPIView):
     queryset = Model.objects.all()
     serializer_class = ModelSerializer
 
@@ -58,7 +58,6 @@ class ModelDetailAPIView(generics.RetrieveAPIView):
 
 
 class EnterpriseListAPIView(generics.ListAPIView):
-
     serializer_class = EnterpriseSerializer
 
     def get_queryset(self):
@@ -93,7 +92,7 @@ class EnterpriseDetailAPIView(generics.RetrieveAPIView):
             return perm_obj
 
 
-class DriverListAPIView(generics.ListCreateAPIView):
+class DriverListAPIView(generics.ListAPIView):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
 
