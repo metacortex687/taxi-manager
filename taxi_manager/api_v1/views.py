@@ -17,7 +17,7 @@ class VehicleListAPIView(generics.ListAPIView):
         user = self.request.user
         if user.is_anonymous:
             raise PermissionDenied("Авторизуйтесь")
-        
+
         active_driver = VehicleDriver.objects.filter(
             active=True, vehicle=OuterRef("pk")
         ).values("driver")[:1]
@@ -30,7 +30,7 @@ class VehicleListAPIView(generics.ListAPIView):
 
         if not user.is_superuser:
             enterprise_ids = user.managed_enterprises.values("id")
-            vehicles = vehicles.filter(enterprise__in = enterprise_ids)
+            vehicles = vehicles.filter(enterprise__in=enterprise_ids)
 
         return vehicles.annotate(active_driver_id=Subquery(active_driver)).all()
 
