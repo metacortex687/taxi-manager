@@ -11,4 +11,5 @@ urlpatterns = [
     path('drivers/<int:driver_id>/vehicles/', VehicleListAPIView.as_view()),
     path('drivers/<int:pk>/', DriverDetailAPIView.as_view()),
     path('enterprises/<int:pk>/', EnterpriseDetailAPIView.as_view()),
+    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]
