@@ -116,8 +116,20 @@ class EnterpriseDetailAPIView(generics.RetrieveAPIView):
 
 
 class DriverListAPIView(generics.ListAPIView):
-    queryset = Driver.objects.all()
     serializer_class = DriverSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_anonymous:
+            raise PermissionDenied("Авторизуйтесь")
+
+        drivers = Driver.objects
+
+        if not user.is_superuser:
+            enterprise_ids = user.managed_enterprises.values("id")
+            drivers = drivers.filter(enterprise__in=enterprise_ids)
+
+        return drivers.all()
 
 
 class DriverDetailAPIView(generics.RetrieveAPIView):
