@@ -23,5 +23,5 @@ urlpatterns = [
     path("drivers/<int:pk>/", DriverDetailAPIView.as_view()),
     path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
     path("logout/", SessionLogoutView.as_view()),
-    path("", include("rest_framework.urls", namespace="rest_framework")),
+    path("auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]
