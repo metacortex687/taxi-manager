@@ -147,7 +147,10 @@ class Driver(models.Model):
 
     def clean(self):
         super().clean()
-
+        
+        if not self.id:
+            return
+        
         vehicle = (
             self.vehicles.select_related("enterprise")
             .exclude(enterprise=self.enterprise)
