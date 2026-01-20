@@ -11,6 +11,10 @@ from django.db.models import OuterRef, Subquery, F
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import PermissionDenied
 
+from django.contrib.auth import logout
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 
 class VehicleListAPIView(generics.ListAPIView):
     def get_queryset(self):
@@ -159,3 +163,9 @@ class DriverDetailAPIView(generics.RetrieveAPIView):
             raise PermissionDenied("Этот водитель не в вашей организации")
 
         return perm_obj
+
+
+class SessionLogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({"message": "Successfully logged out"}, status=200)
