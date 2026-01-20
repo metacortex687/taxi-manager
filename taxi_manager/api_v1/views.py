@@ -112,7 +112,7 @@ class EnterpriseDetailAPIView(generics.RetrieveAPIView):
             perm_obj = user.managed_enterprises.get(pk=pk)
         except Enterprise.DoesNotExist:
             raise PermissionDenied(
-                f'У вас нет прав менеджера на "{obj.name}"(id={obj.id})'
+                f'У вас нет прав менеджера в "{obj.name}"(id={obj.id})'
             )
 
         if perm_obj:
