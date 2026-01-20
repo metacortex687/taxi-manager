@@ -6,6 +6,7 @@ from .serializers import (
     ModelSerializer,
     DriverSerializer,
     EnterpriseSerializer,
+    UserSerializer,
 )
 from django.db.models import OuterRef, Subquery, F
 from django.shortcuts import get_object_or_404
@@ -14,6 +15,10 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth import logout
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class VehicleListAPIView(generics.ListAPIView):
@@ -169,3 +174,11 @@ class SessionLogoutView(APIView):
     def post(self, request):
         logout(request)
         return Response({"message": "Successfully logged out"}, status=200)
+
+
+class UserDetailAPIView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user

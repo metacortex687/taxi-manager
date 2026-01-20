@@ -8,7 +8,8 @@ from .views import (
     DriverDetailAPIView,
     EnterpriseDetailAPIView,
     EnterpriseListAPIView,
-    SessionLogoutView
+    SessionLogoutView,
+    UserDetailAPIView,
 )
 
 
@@ -24,4 +25,5 @@ urlpatterns = [
     path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
     path("logout/", SessionLogoutView.as_view()),
     path("auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path("auth/user/", UserDetailAPIView.as_view()),
 ]
