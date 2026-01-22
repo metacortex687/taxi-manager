@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'taxi_manager.vehicle',
     'taxi_manager.enterprise',
     'taxi_manager.api_v1',
+    'taxi_manager.simply_site',
 ]
 
 MIDDLEWARE = [
