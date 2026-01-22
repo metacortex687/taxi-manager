@@ -2,9 +2,6 @@ from rest_framework import serializers
 from ..vehicle.models import Vehicle, Model, Driver
 from ..enterprise.models import Enterprise
 
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
 
 class VehicleSerializer(serializers.ModelSerializer):
     model_id = serializers.SerializerMethodField()
@@ -105,9 +102,3 @@ class DriverSerializer(serializers.ModelSerializer):
             # "enterprise_id",
             # "vehicles",
         )
-
-class UserSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        exclude = ("password",)

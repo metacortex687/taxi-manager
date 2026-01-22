@@ -174,11 +174,3 @@ class SessionLogoutView(APIView):
     def post(self, request):
         logout(request)
         return Response({"message": "Successfully logged out"}, status=200)
-
-
-class UserDetailAPIView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-    def get_object(self):
-        return self.request.user
