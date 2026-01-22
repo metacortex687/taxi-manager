@@ -9,7 +9,6 @@ from .views import (
     EnterpriseDetailAPIView,
     EnterpriseListAPIView,
     SessionLogoutView,
-    UserDetailAPIView,
 )
 
 
@@ -24,7 +23,5 @@ urlpatterns = [
     path("drivers/<int:pk>/", DriverDetailAPIView.as_view()),
     path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
     path("logout/", SessionLogoutView.as_view()),
-    # path("auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("auth/", include('dj_rest_auth.urls')),
-    # path("auth/user/", UserDetailAPIView.as_view()),
 ]

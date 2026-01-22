@@ -6,7 +6,6 @@ from .serializers import (
     ModelSerializer,
     DriverSerializer,
     EnterpriseSerializer,
-    UserSerializer,
 )
 from django.db.models import OuterRef, Subquery, F
 from django.shortcuts import get_object_or_404
