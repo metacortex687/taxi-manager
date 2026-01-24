@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from .views import (
     VehicleListAPIView,
     ModelListAPIView,
@@ -22,6 +22,8 @@ urlpatterns = [
     path("drivers/<int:driver_id>/vehicles/", VehicleListAPIView.as_view()),
     path("drivers/<int:pk>/", DriverDetailAPIView.as_view()),
     path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
-    path("logout/", SessionLogoutView.as_view()),
-    path("auth/", include('dj_rest_auth.urls')),
+    # path("logout/", SessionLogoutView.as_view()),
+    path(r"auth/", include('djoser.urls')),
+    re_path(r'^auth/', include('djoser.urls.authtoken')),
+    # path("auth/", include('dj_rest_auth.urls')),
 ]
