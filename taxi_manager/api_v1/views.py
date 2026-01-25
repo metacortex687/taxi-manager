@@ -71,6 +71,16 @@ class VehicleViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Вы можете добавлять авто только по своему предприятию")
 
         return super().perform_create(serializer)
+
+    def update(self, request, *args, **kwargs):
+        user = self.request.user
+        if user.is_anonymous:
+            raise PermissionDenied("Авторизуйтесь")
+        
+        if not user.is_superuser and not user.managed_enterprises.filter(id = self.request.data['enterprise']).exists():
+            raise PermissionDenied("Вы можете устанавливать только свое предприятие")
+
+        return super().partial_update(request, *args, **kwargs)
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method in SAFE_METHODS:
             return VehicleReadSerializer
