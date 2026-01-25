@@ -3,7 +3,7 @@ from ..vehicle.models import Vehicle, Model, Driver
 from ..enterprise.models import Enterprise
 
 
-class VehicleSerializer(serializers.ModelSerializer):
+class VehicleReadSerializer(serializers.ModelSerializer):
     model_id = serializers.SerializerMethodField()
     active_driver_id = serializers.IntegerField()
     # enterprise_id = serializers.SerializerMethodField()
@@ -41,6 +41,20 @@ class VehicleSerializer(serializers.ModelSerializer):
             # "enterprise_id",
             "drivers",
             "active_driver_id",
+        )
+
+class VehicleWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vehicle
+        fields = (
+            "id",
+            "model",
+            "number",
+            "vin",
+            "year_of_manufacture",
+            "mileage",
+            "price",
+            "enterprise",
         )
 
 

@@ -1,8 +1,9 @@
-from rest_framework import generics
+from rest_framework import generics, viewsets
 from ..vehicle.models import Vehicle, Model, Driver, VehicleDriver
 from ..enterprise.models import Enterprise
 from .serializers import (
-    VehicleSerializer,
+    VehicleReadSerializer,
+    VehicleWriteSerializer,
     ModelSerializer,
     DriverSerializer,
     EnterpriseSerializer,
@@ -16,11 +17,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django.contrib.auth import get_user_model
+from rest_framework.decorators import action
+from rest_framework.permissions import SAFE_METHODS
 
 User = get_user_model()
 
 
-class VehicleListAPIView(generics.ListAPIView):
+class VehicleViewSet(viewsets.ModelViewSet):
+    serializer_class = VehicleReadSerializer
+    queryset = Vehicle.objects.all()
+
     def get_queryset(self):
         user = self.request.user
         if user.is_anonymous:
@@ -42,29 +48,6 @@ class VehicleListAPIView(generics.ListAPIView):
 
         return vehicles.annotate(active_driver_id=Subquery(active_driver)).all()
 
-    serializer_class = VehicleSerializer
-
-
-class VehicleDetailAPIView(generics.RetrieveAPIView):
-    serializer_class = VehicleSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-
-        if user.is_anonymous:
-            raise PermissionDenied("Авторизуйтесь")
-
-        active_driver = VehicleDriver.objects.filter(
-            active=True, vehicle=OuterRef("pk")
-        ).values("driver")[:1]
-
-        vehicles = Vehicle.objects
-        if not user.is_superuser:
-            enterprise_ids = user.managed_enterprises.values("id")
-            vehicles = vehicles.filter(enterprise__in=enterprise_ids)
-
-        return vehicles.annotate(active_driver_id=Subquery(active_driver)).all()
-
     def get_object(self):
         pk = self.kwargs["pk"]
 
@@ -76,6 +59,16 @@ class VehicleDetailAPIView(generics.RetrieveAPIView):
             raise PermissionDenied("У вас нет прав менеджера на это авто")
 
         return perm_obj
+    
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method in SAFE_METHODS:
+            return VehicleReadSerializer
+        return  VehicleWriteSerializer
+
+    # @action(detail=False, methods=["GET"], url_path="TEST", url_name="TTTTEST")
+    # def vehicles_of_driver(self, request):
+    #     print("vehicles_of_driver(self, request):")
+
 
 
 class ModelListAPIView(generics.ListAPIView):
