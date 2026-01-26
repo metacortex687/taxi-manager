@@ -27,7 +27,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
     serializer_class = VehicleReadSerializer
     queryset = Vehicle.objects.all()
 
-    http_method_names = ["get", "put", "post", "patch", "delete"]
+    http_method_names = ["get", "put", "post", "delete"]
 
     def get_queryset(self):
         user = self.request.user
