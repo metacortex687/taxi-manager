@@ -47,6 +47,16 @@ class VehicleAPITest(TestCase):
             price=125000,
         )
 
+        self.vehicle3 = Vehicle.objects.create(
+            model=self.model1,
+            number="num3",
+            vin="Z234741AA12323456",
+            year_of_manufacture=2025,
+            mileage=100,
+            enterprise=self.enterprise3,
+            price=125000,
+        )
+
         self.viewset_get_list = VehicleViewSet.as_view({"get": "list"})
         self.viewset_post_create = VehicleViewSet.as_view({"post": "create"})
         self.viewset_put_update = VehicleViewSet.as_view({"put": "update"})
