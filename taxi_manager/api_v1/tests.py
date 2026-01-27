@@ -333,20 +333,20 @@ class VehicleAPITest(TestCase):
         self.assertEqual(responce.status_code, 403)
 
 
-    # def test_superuser_cannot_delete_vehicle_return_403(self):
+    def test_superuser_cannot_delete_vehicle_return_403(self):
 
-    #     pk = self.vehicle3.pk
-    #     self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
+        pk = self.vehicle3.pk
+        self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
-    #     factory = APIRequestFactory()
-    #     request = factory.delete(
-    #         f"/api/v1/vehicles/{self.vehicle3.pk}/",
-    #          format="json",
-    #     )
+        factory = APIRequestFactory()
+        request = factory.delete(
+            f"/api/v1/vehicles/{self.vehicle3.pk}/",
+             format="json",
+        )
 
-    #     force_authenticate(request, user=self.superuser)
-    #     responce = self.viewset_delete_destroy(request, pk=self.vehicle3.pk)
+        force_authenticate(request, user=self.superuser)
+        responce = self.viewset_delete_destroy(request, pk=self.vehicle3.pk)
 
-    #     self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
-    #     self.assertEqual(responce.status_code, 403)
+        self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
+        self.assertEqual(responce.status_code, 403)
 

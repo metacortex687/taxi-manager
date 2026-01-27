@@ -44,9 +44,9 @@ class VehicleViewSet(viewsets.ModelViewSet):
         if driver_id:
             vehicles = Driver.objects.get(id=driver_id).vehicles
 
-        if not user.is_superuser:
-            enterprise_ids = user.managed_enterprises.values("id")
-            vehicles = vehicles.filter(enterprise__in=enterprise_ids)
+
+        enterprise_ids = user.managed_enterprises.values("id")
+        vehicles = vehicles.filter(enterprise__in=enterprise_ids)
 
         return vehicles.annotate(active_driver_id=Subquery(active_driver)).all()
 
