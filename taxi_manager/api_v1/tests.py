@@ -201,3 +201,25 @@ class VehicleAPITest(TestCase):
         self.vehicle1.refresh_from_db()
         self.assertEqual(self.vehicle1.price, 50000000)
         self.assertEqual(self.vehicle1.enterprise, self.enterprise2)
+
+    def test_manager_can_update_vehicle_for_managed_enterprise_to_unmanged_return_403(self):
+
+        factory = APIRequestFactory()
+        request = factory.put(
+            f"/api/v1/vehicles/{self.vehicle1.pk}/",
+            {
+                "model": self.model1.pk,
+                "number": "test1",
+                "vin": "Z948741AACR123456",
+                "year_of_manufacture": 2025,
+                "mileage": 100,
+                "enterprise": self.enterprise3.pk,
+                "price": 50000000,
+            },
+            format="json",
+        )
+
+        force_authenticate(request, user=self.manager1)
+        responce = self.viewset_put_update(request, pk=self.vehicle1.pk)
+
+        self.assertEqual(responce.status_code, 403)
