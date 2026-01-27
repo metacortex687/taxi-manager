@@ -61,6 +61,8 @@ class VehicleAPITest(TestCase):
         self.viewset_post_create = VehicleViewSet.as_view({"post": "create"})
         self.viewset_put_update = VehicleViewSet.as_view({"put": "update"})
         self.viewset_delete_destroy = VehicleViewSet.as_view({"delete": "destroy"})
+        self.viewset_get_retrieve = VehicleViewSet.as_view({"get": "retrieve"})
+        
 
     def test_anonymous_cannot_list_return_403(self):
         factory = APIRequestFactory()
@@ -349,4 +351,19 @@ class VehicleAPITest(TestCase):
 
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
         self.assertEqual(responce.status_code, 403)
+
+
+    def test_manager_can_retrieve_vehicle_for_managed_enterprise_return_200(self):
+
+        factory = APIRequestFactory()
+        request = factory.get(
+            f"/api/v1/vehicles/{self.vehicle1.pk}/",
+             format="json",
+        )
+
+        force_authenticate(request, user=self.manager1)
+        responce = self.viewset_get_retrieve(request, pk=self.vehicle1.pk)
+
+        self.assertEqual(responce.status_code, 200)
+        
 
