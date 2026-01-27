@@ -114,3 +114,36 @@ class VehicleAPITest(TestCase):
 
         self.assertEqual(responce.status_code, 403)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
+
+    def test_anonymous_cannot_create_vehicle_return_403(self):
+        self.assertFalse(Vehicle.objects.filter(number="test1").exists())
+
+        factory = APIRequestFactory()
+        request = factory.post(
+            "/api/v1/vehicles/",
+            {
+                "model": self.model1.pk,
+                "number": "test1",
+                "vin": "Z948741AACR123456",
+                "year_of_manufacture": 2025,
+                "mileage": 100,
+                "enterprise": self.enterprise3.pk,
+                "price": 1250000,
+            },
+            format="json",
+        )
+
+        responce = self.viewset_post_create(request)
+
+        self.assertEqual(responce.status_code, 403)
+        self.assertFalse(Vehicle.objects.filter(number="test1").exists())
+
+    # def test_not_manager_cannot_list_return_403(self):
+    #     factory = APIRequestFactory()
+    #     request = factory.get("/api/v1/vehicles/")
+
+    #     force_authenticate(request, user=self.user)
+    #     responce = self.viewset_get_list(request)
+
+    #     self.assertTrue(self.superuser.is_superuser)
+    #     self.assertEqual(responce.status_code, 403)
