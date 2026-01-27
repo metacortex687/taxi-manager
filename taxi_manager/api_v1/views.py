@@ -89,7 +89,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
         ):
             raise PermissionDenied("Вы можете устанавливать только свое предприятие")
 
-        return super().partial_update(request, *args, **kwargs)
+        return super().update(request, *args, **kwargs)
 
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method in SAFE_METHODS:
