@@ -394,3 +394,16 @@ class VehicleAPITest(TestCase):
 
         self.assertEqual(responce.status_code, 403)
 
+
+    def test_superuser_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_403(self):
+
+        factory = APIRequestFactory()
+        request = factory.get(
+            f"/api/v1/vehicles/{self.vehicle1.pk}/",
+             format="json",
+        )
+
+        force_authenticate(request, user=self.superuser)
+        responce = self.viewset_get_retrieve(request, pk=self.vehicle1.pk)
+
+        self.assertEqual(responce.status_code, 403)
