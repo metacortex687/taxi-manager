@@ -224,7 +224,7 @@ class VehicleAPITest(TestCase):
 
         self.assertEqual(responce.status_code, 403)
 
-    def test_anonymous_can_update_vehicle_for_managed_enterprise_to_unmanged_return_403(self):
+    def test_anonymous_cannot_update_vehicle_for_managed_enterprise_to_unmanged_return_403(self):
 
         factory = APIRequestFactory()
         request = factory.put(
