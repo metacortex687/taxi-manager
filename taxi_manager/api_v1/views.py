@@ -67,12 +67,9 @@ class VehicleViewSet(viewsets.ModelViewSet):
         if user.is_anonymous:
             raise PermissionDenied("Авторизуйтесь")
 
-        if (
-            not user.is_superuser
-            and not user.managed_enterprises.filter(
-                id=self.request.data["enterprise"]
-            ).exists()
-        ):
+        if not user.managed_enterprises.filter(
+            id=self.request.data["enterprise"]
+        ).exists():
             raise PermissionDenied(
                 "Вы можете добавлять авто только по своему предприятию"
             )
@@ -103,11 +100,14 @@ class VehicleViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_anonymous:
             raise PermissionDenied("Авторизуйтесь")
-        
+
         if not user.managed_enterprises.exists():
-            raise PermissionDenied("Список авто могут просматривать только авторизованные пользователи")
+            raise PermissionDenied(
+                "Список авто могут просматривать только авторизованные пользователи"
+            )
 
         return super().list(request, *args, **kwargs)
+
     # @action(detail=False, methods=["GET"], url_path="TEST", url_name="TTTTEST")
     # def vehicles_of_driver(self, request):
     #     print("vehicles_of_driver(self, request):")
