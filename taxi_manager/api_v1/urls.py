@@ -13,7 +13,6 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r"vehicles", VehicleViewSet)
-print(router.urls)
 
 urlpatterns = [
     path("", include(router.urls)),
