@@ -297,3 +297,20 @@ class VehicleAPITest(TestCase):
         self.assertEqual(responce.status_code, 204)
         
 
+
+    def test_manager_cannot_delete_vehicle_for_unmanaged_enterprise_return_403(self):
+
+        pk = self.vehicle3.pk
+        self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
+
+        factory = APIRequestFactory()
+        request = factory.delete(
+            f"/api/v1/vehicles/{self.vehicle3.pk}/",
+             format="json",
+        )
+
+        force_authenticate(request, user=self.manager1)
+        responce = self.viewset_delete_destroy(request, pk=self.vehicle3.pk)
+
+        self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
+        self.assertEqual(responce.status_code, 403)
