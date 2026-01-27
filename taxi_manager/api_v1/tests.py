@@ -9,6 +9,8 @@ from ..vehicle.models import Model, Vehicle
 class VehicleAPITest(TestCase):
     def setUp(self):
         self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city")
+        self.enterprise2 = Enterprise.objects.create(name="enterprise2", city="city")
+        self.enterprise3 = Enterprise.objects.create(name="enterprise3", city="city")
 
         self.user = get_user_model().objects.create_user(
             username="user", email="test@mail.com", password="secret"
@@ -25,6 +27,7 @@ class VehicleAPITest(TestCase):
             username="manager1", email="manager1@mail.com", password="secret"
         )
         self.manager1.managed_enterprises.add(self.enterprise1)
+        self.manager1.managed_enterprises.add(self.enterprise2)
 
         self.model1 = Model.objects.create(
             name="model1",
@@ -65,8 +68,7 @@ class VehicleAPITest(TestCase):
         self.assertEqual(responce.status_code, 200)
 
     def test_manager_can_create_vehicle_for_managed_enterprise_return_201(self):
-
-        self.assertFalse(Vehicle.objects.filter(number = "test1").exists())
+        self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
         factory = APIRequestFactory()
         request = factory.post(
@@ -78,7 +80,7 @@ class VehicleAPITest(TestCase):
                 "year_of_manufacture": 2025,
                 "mileage": 100,
                 "enterprise": self.enterprise1.pk,
-                "price": 1250000
+                "price": 1250000,
             },
             format="json",
         )
@@ -87,5 +89,28 @@ class VehicleAPITest(TestCase):
         responce = self.viewset_post_create(request)
 
         self.assertEqual(responce.status_code, 201)
-        self.assertTrue(Vehicle.objects.filter(number = "test1").exists())
+        self.assertTrue(Vehicle.objects.filter(number="test1").exists())
 
+    def test_manager_cannot_create_vehicle_for_not_managed_enterprise_return_403(self):
+        self.assertFalse(Vehicle.objects.filter(number="test1").exists())
+
+        factory = APIRequestFactory()
+        request = factory.post(
+            "/api/v1/vehicles/",
+            {
+                "model": self.model1.pk,
+                "number": "test1",
+                "vin": "Z948741AACR123456",
+                "year_of_manufacture": 2025,
+                "mileage": 100,
+                "enterprise": self.enterprise3.pk,
+                "price": 1250000,
+            },
+            format="json",
+        )
+
+        force_authenticate(request, user=self.manager1)
+        responce = self.viewset_post_create(request)
+
+        self.assertEqual(responce.status_code, 403)
+        self.assertFalse(Vehicle.objects.filter(number="test1").exists())
