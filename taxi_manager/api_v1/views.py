@@ -81,12 +81,9 @@ class VehicleViewSet(viewsets.ModelViewSet):
         if user.is_anonymous:
             raise PermissionDenied("Авторизуйтесь")
 
-        if (
-            not user.is_superuser
-            and not user.managed_enterprises.filter(
-                id=self.request.data["enterprise"]
-            ).exists()
-        ):
+        if not user.managed_enterprises.filter(
+            id=self.request.data["enterprise"]
+        ).exists():
             raise PermissionDenied("Вы можете устанавливать только свое предприятие")
 
         return super().update(request, *args, **kwargs)
