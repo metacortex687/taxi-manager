@@ -99,6 +99,15 @@ class VehicleViewSet(viewsets.ModelViewSet):
             return VehicleReadSerializer
         return VehicleWriteSerializer
 
+    def list(self, request, *args, **kwargs):
+        user = self.request.user
+        if user.is_anonymous:
+            raise PermissionDenied("Авторизуйтесь")
+        
+        if not user.managed_enterprises.exists():
+            raise PermissionDenied("Список авто могут просматривать только авторизованные пользователи")
+
+        return super().list(request, *args, **kwargs)
     # @action(detail=False, methods=["GET"], url_path="TEST", url_name="TTTTEST")
     # def vehicles_of_driver(self, request):
     #     print("vehicles_of_driver(self, request):")
