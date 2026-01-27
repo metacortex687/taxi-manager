@@ -62,7 +62,6 @@ class VehicleAPITest(TestCase):
         self.viewset_put_update = VehicleViewSet.as_view({"put": "update"})
         self.viewset_delete_destroy = VehicleViewSet.as_view({"delete": "destroy"})
         self.viewset_get_retrieve = VehicleViewSet.as_view({"get": "retrieve"})
-        
 
     def test_anonymous_cannot_list_return_403(self):
         factory = APIRequestFactory()
@@ -215,8 +214,9 @@ class VehicleAPITest(TestCase):
         self.assertEqual(self.vehicle1.price, 50000000)
         self.assertEqual(self.vehicle1.enterprise, self.enterprise2)
 
-    def test_manager_can_update_vehicle_for_managed_enterprise_to_unmanged_return_403(self):
-
+    def test_manager_can_update_vehicle_for_managed_enterprise_to_unmanged_return_403(
+        self,
+    ):
         factory = APIRequestFactory()
         request = factory.put(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
@@ -237,8 +237,9 @@ class VehicleAPITest(TestCase):
 
         self.assertEqual(responce.status_code, 403)
 
-    def test_anonymous_cannot_update_vehicle_for_managed_enterprise_to_unmanged_return_403(self):
-
+    def test_anonymous_cannot_update_vehicle_for_managed_enterprise_to_unmanged_return_403(
+        self,
+    ):
         factory = APIRequestFactory()
         request = factory.put(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
@@ -258,8 +259,9 @@ class VehicleAPITest(TestCase):
 
         self.assertEqual(responce.status_code, 403)
 
-    def test_superuser_cannot_update_vehicle_for_managed_enterprise_to_unmanged_return_403(self):
-
+    def test_superuser_cannot_update_vehicle_for_managed_enterprise_to_unmanged_return_403(
+        self,
+    ):
         factory = APIRequestFactory()
         request = factory.put(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
@@ -280,16 +282,14 @@ class VehicleAPITest(TestCase):
 
         self.assertEqual(responce.status_code, 403)
 
-
     def test_manager_can_delete_vehicle_for_managed_enterprise_return_200(self):
-
         pk = self.vehicle1.pk
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
         factory = APIRequestFactory()
         request = factory.delete(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
-             format="json",
+            format="json",
         )
 
         force_authenticate(request, user=self.manager1)
@@ -297,18 +297,15 @@ class VehicleAPITest(TestCase):
 
         self.assertFalse(Vehicle.objects.filter(pk=pk).exists())
         self.assertEqual(responce.status_code, 204)
-        
-
 
     def test_manager_cannot_delete_vehicle_for_unmanaged_enterprise_return_403(self):
-
         pk = self.vehicle3.pk
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
         factory = APIRequestFactory()
         request = factory.delete(
             f"/api/v1/vehicles/{self.vehicle3.pk}/",
-             format="json",
+            format="json",
         )
 
         force_authenticate(request, user=self.manager1)
@@ -317,16 +314,14 @@ class VehicleAPITest(TestCase):
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
         self.assertEqual(responce.status_code, 403)
 
-
     def test_anonymous_cannot_delete_vehicle_return_403(self):
-
         pk = self.vehicle3.pk
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
         factory = APIRequestFactory()
         request = factory.delete(
             f"/api/v1/vehicles/{self.vehicle3.pk}/",
-             format="json",
+            format="json",
         )
 
         responce = self.viewset_delete_destroy(request, pk=self.vehicle3.pk)
@@ -334,16 +329,14 @@ class VehicleAPITest(TestCase):
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
         self.assertEqual(responce.status_code, 403)
 
-
     def test_superuser_cannot_delete_vehicle_return_403(self):
-
         pk = self.vehicle3.pk
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
         factory = APIRequestFactory()
         request = factory.delete(
             f"/api/v1/vehicles/{self.vehicle3.pk}/",
-             format="json",
+            format="json",
         )
 
         force_authenticate(request, user=self.superuser)
@@ -352,28 +345,23 @@ class VehicleAPITest(TestCase):
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
         self.assertEqual(responce.status_code, 403)
 
-
     def test_manager_can_retrieve_vehicle_for_managed_enterprise_return_200(self):
-
         factory = APIRequestFactory()
         request = factory.get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
-             format="json",
+            format="json",
         )
 
         force_authenticate(request, user=self.manager1)
         responce = self.viewset_get_retrieve(request, pk=self.vehicle1.pk)
 
         self.assertEqual(responce.status_code, 200)
-        
-
 
     def test_manager_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_403(self):
-
         factory = APIRequestFactory()
         request = factory.get(
             f"/api/v1/vehicles/{self.vehicle3.pk}/",
-             format="json",
+            format="json",
         )
 
         force_authenticate(request, user=self.manager1)
@@ -381,26 +369,26 @@ class VehicleAPITest(TestCase):
 
         self.assertEqual(responce.status_code, 403)
 
-
-    def test_anonymous_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_403(self):
-
+    def test_anonymous_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_403(
+        self,
+    ):
         factory = APIRequestFactory()
         request = factory.get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
-             format="json",
+            format="json",
         )
 
         responce = self.viewset_get_retrieve(request, pk=self.vehicle1.pk)
 
         self.assertEqual(responce.status_code, 403)
 
-
-    def test_superuser_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_403(self):
-
+    def test_superuser_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_403(
+        self,
+    ):
         factory = APIRequestFactory()
         request = factory.get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
-             format="json",
+            format="json",
         )
 
         force_authenticate(request, user=self.superuser)
