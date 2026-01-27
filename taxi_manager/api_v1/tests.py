@@ -173,7 +173,7 @@ class VehicleAPITest(TestCase):
         self.assertEqual(responce.status_code, 403)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
-    def test_manager_can_update_vehicle_for_managed_enterprise_return_201(self):
+    def test_manager_can_update_vehicle_for_managed_enterprise_return_200(self):
         self.vehicle1.refresh_from_db()
         self.assertNotEqual(self.vehicle1.price, 50000000)
         self.assertNotEqual(self.vehicle1.enterprise, self.enterprise3)
