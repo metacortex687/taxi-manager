@@ -416,4 +416,8 @@ class TokenAPITest(TestCase):
         self.assertEqual(response.data["username"],"manager1")
 
 
+    def test_token_login_failure_return_400(self):
+        response = self.client.post("/api/v1/auth/token/login/", {"username": "manager1", "password": "wrong"} ) 
+
+        self.assertEqual(response.status_code, 400)
 
