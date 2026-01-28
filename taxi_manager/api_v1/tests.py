@@ -63,13 +63,13 @@ class VehicleAPITest(TestCase):
         self.viewset_delete_destroy = VehicleViewSet.as_view({"delete": "destroy"})
         self.viewset_get_retrieve = VehicleViewSet.as_view({"get": "retrieve"})
 
-    def test_anonymous_cannot_list_return_403(self):
+    def test_anonymous_cannot_list_return_401(self):
         factory = APIRequestFactory()
         request = factory.get("/api/v1/vehicles/")
 
         responce = self.viewset_get_list(request)
 
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(responce.status_code, 401)
 
     def test_not_manager_cannot_list_return_403(self):
         factory = APIRequestFactory()
@@ -138,7 +138,7 @@ class VehicleAPITest(TestCase):
         self.assertEqual(responce.status_code, 403)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
-    def test_anonymous_cannot_create_vehicle_return_403(self):
+    def test_anonymous_cannot_create_vehicle_return_401(self):
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
         factory = APIRequestFactory()
@@ -158,7 +158,7 @@ class VehicleAPITest(TestCase):
 
         responce = self.viewset_post_create(request)
 
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(responce.status_code, 401)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
     def test_superuser_cannot_create_vehicle_return_403(self):
@@ -237,7 +237,7 @@ class VehicleAPITest(TestCase):
 
         self.assertEqual(responce.status_code, 403)
 
-    def test_anonymous_cannot_update_vehicle_for_managed_enterprise_to_unmanged_return_403(
+    def test_anonymous_cannot_update_vehicle_for_managed_enterprise_to_unmanged_return_401(
         self,
     ):
         factory = APIRequestFactory()
@@ -257,7 +257,8 @@ class VehicleAPITest(TestCase):
 
         responce = self.viewset_put_update(request, pk=self.vehicle1.pk)
 
-        self.assertEqual(responce.status_code, 403)
+
+        self.assertEqual(responce.status_code, 401)
 
     def test_superuser_cannot_update_vehicle_for_managed_enterprise_to_unmanged_return_403(
         self,
@@ -314,7 +315,7 @@ class VehicleAPITest(TestCase):
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
         self.assertEqual(responce.status_code, 403)
 
-    def test_anonymous_cannot_delete_vehicle_return_403(self):
+    def test_anonymous_cannot_delete_vehicle_return_401(self):
         pk = self.vehicle3.pk
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
@@ -327,7 +328,7 @@ class VehicleAPITest(TestCase):
         responce = self.viewset_delete_destroy(request, pk=self.vehicle3.pk)
 
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(responce.status_code, 401)
 
     def test_superuser_cannot_delete_vehicle_return_403(self):
         pk = self.vehicle3.pk
@@ -369,7 +370,7 @@ class VehicleAPITest(TestCase):
 
         self.assertEqual(responce.status_code, 403)
 
-    def test_anonymous_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_403(
+    def test_anonymous_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_401(
         self,
     ):
         factory = APIRequestFactory()
@@ -380,7 +381,7 @@ class VehicleAPITest(TestCase):
 
         responce = self.viewset_get_retrieve(request, pk=self.vehicle1.pk)
 
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(responce.status_code, 401)
 
     def test_superuser_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_403(
         self,
