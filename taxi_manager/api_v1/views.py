@@ -10,7 +10,7 @@ from .serializers import (
 )
 from django.db.models import OuterRef, Subquery, F
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import PermissionDenied
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
 from django.contrib.auth import logout
 from rest_framework.response import Response
@@ -32,7 +32,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_anonymous:
-            raise PermissionDenied("Авторизуйтесь")
+            raise NotAuthenticated("Авторизуйтесь")
 
         active_driver = VehicleDriver.objects.filter(
             active=True, vehicle=OuterRef("pk")
@@ -65,7 +65,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         if user.is_anonymous:
-            raise PermissionDenied("Авторизуйтесь")
+            raise NotAuthenticated ("Авторизуйтесь", code='111')
 
         if not user.managed_enterprises.filter(
             id=self.request.data["enterprise"]
@@ -79,7 +79,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         user = self.request.user
         if user.is_anonymous:
-            raise PermissionDenied("Авторизуйтесь")
+            raise NotAuthenticated("Авторизуйтесь")
 
         if not user.managed_enterprises.filter(
             id=self.request.data["enterprise"]
@@ -96,7 +96,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         user = self.request.user
         if user.is_anonymous:
-            raise PermissionDenied("Авторизуйтесь")
+            raise NotAuthenticated("Авторизуйтесь")
 
         if not user.managed_enterprises.exists():
             raise PermissionDenied(
@@ -205,3 +205,4 @@ class SessionLogoutView(APIView):
     def post(self, request):
         logout(request)
         return Response({"message": "Successfully logged out"}, status=200)
+
