@@ -396,3 +396,24 @@ class VehicleAPITest(TestCase):
         responce = self.viewset_get_retrieve(request, pk=self.vehicle1.pk)
 
         self.assertEqual(responce.status_code, 403)
+
+
+class TokenAPITest(TestCase):
+    def setUp(self):
+        self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city")
+        self.manager1 = get_user_model().objects.create_user(
+            username="manager1", email="manager1@mail.com", password="secret"
+        )
+
+    def test_token_login_success_return_200(self):
+        response = self.client.post("/api/v1/auth/token/login/", {"username": "manager1", "password": "secret"} ) 
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data['auth_token'])
+
+        response = self.client.get("/api/v1/auth/users/me/", headers={"Authorization": f"Token {response.data['auth_token']}"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["username"],"manager1")
+
+
+
