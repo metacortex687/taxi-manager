@@ -522,3 +522,10 @@ class EnterpriseAPITest(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
+    def test_user_cannot_retriev_enterprise_with_invalid_token_return_401(self):
+        response = self.client.get(
+            f"/api/v1/enterprises/{self.enterprise3.pk}/",
+            headers={"Authorization": "Token invalid_token"},
+        )
+
+        self.assertEqual(response.status_code, 401)
