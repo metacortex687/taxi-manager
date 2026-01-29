@@ -508,3 +508,11 @@ class EnterpriseAPITest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["name"], "enterprise1")
+
+    def test_manager_cannot_retriev_unmanaged_enterprise_with_token_return_403(self):
+        response = self.client.get(
+            f"/api/v1/enterprises/{self.enterprise3.pk}/",
+            headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
+        )
+
+        self.assertEqual(response.status_code, 403)
