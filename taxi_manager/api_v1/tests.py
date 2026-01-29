@@ -404,9 +404,25 @@ class TokenAPITest(TestCase):
         self.manager1 = get_user_model().objects.create_user(
             username="manager1", email="manager1@mail.com", password="secret"
         )
+        self.manager1.managed_enterprises.add(self.enterprise1)
 
     def test_token_login_success_return_200(self):
-        response = self.client.post("/api/v1/auth/token/login/", {"username": "manager1", "password": "secret"} ) 
+        """
+        Пользователь может авторизоваться, поулчить токен, и с использованием этого токена получить например информацию о своей учетной записи.
+        """
+        response = self.client.post(
+            "/api/v1/auth/token/login/", {"username": "manager1", "password": "secret"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["auth_token"])
+
+        response = self.client.get(
+            "/api/v1/auth/users/me/",
+            headers={"Authorization": f"Token {response.data['auth_token']}"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["username"], "manager1")
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data['auth_token'])
