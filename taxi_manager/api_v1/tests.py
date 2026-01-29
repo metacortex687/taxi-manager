@@ -424,16 +424,50 @@ class TokenAPITest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["username"], "manager1")
 
+    def test_token_login_failure_return_401(self):
+        """
+        В случае если пользователь вводит неправильные учетные данные, то он не может получить токен
+        """
+        response = self.client.post(
+            "/api/v1/auth/token/login/", {"username": "manager1", "password": "wrong"}
+        )
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_manager_can_access_vehile_list_with_token_return_200(self):
+        """
+        Менеджер получив токен, может получить доступ до списка машин.
+        """
+        response = self.client.post(
+            "/api/v1/auth/token/login/", {"username": "manager1", "password": "secret"}
+        )
+
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.data['auth_token'])
+        self.assertTrue(response.data["auth_token"])
 
-        response = self.client.get("/api/v1/auth/users/me/", headers={"Authorization": f"Token {response.data['auth_token']}"})
+        response = self.client.get(
+            "/api/v1/vehicles/",
+            headers={"Authorization": f"Token {response.data['auth_token']}"},
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["username"],"manager1")
 
+    def test_cannot_access_vehile_list_with_invalid_token_return_401(self):
+        """
+        С неправильным токеном, нельзя получить доступ до списка машин. Код возврата 401.
+        """
 
-    def test_token_login_failure_return_400(self):
-        response = self.client.post("/api/v1/auth/token/login/", {"username": "manager1", "password": "wrong"} ) 
+        response = self.client.get(
+            "/api/v1/vehicles/", headers={"Authorization": "Token invalid_token"}
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_cannot_access_vehile_list_without_token_return_401(self):
+        """
+        Без токена, нельзя получить доступ до списка машин. Код возврата 401.
+        """
+
+        response = self.client.get("/api/v1/vehicles/")
+        self.assertEqual(response.status_code, 401)
 
         self.assertEqual(response.status_code, 400)
 
