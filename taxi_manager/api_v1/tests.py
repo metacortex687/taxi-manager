@@ -469,5 +469,42 @@ class TokenAPITest(TestCase):
         response = self.client.get("/api/v1/vehicles/")
         self.assertEqual(response.status_code, 401)
 
-        self.assertEqual(response.status_code, 400)
 
+class EnterpriseAPITest(TestCase):
+    def setUp(self):
+        self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city")
+        self.enterprise2 = Enterprise.objects.create(name="enterprise2", city="city")
+        self.enterprise3 = Enterprise.objects.create(name="enterprise3", city="city")
+
+        self.manager1 = get_user_model().objects.create_user(
+            username="manager1", email="manager1@mail.com", password="secret"
+        )
+        self.manager2 = get_user_model().objects.create_user(
+            username="manager2", email="manager1@mail.com", password="secret"
+        )
+
+        self.manager1.managed_enterprises.add(self.enterprise1)
+        self.manager1.managed_enterprises.add(self.enterprise2)
+
+        self.manager2.managed_enterprises.add(self.enterprise2)
+        self.manager2.managed_enterprises.add(self.enterprise3)
+
+        # self.viewset_get_retrieve = EnterpriseDetailAPIView.as_view()
+
+    def get_token(self, user):
+        response = self.client.post(
+            "/api/v1/auth/token/login/", {"username": "manager1", "password": "secret"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["auth_token"])
+        return response.data["auth_token"]
+
+    def test_manager_can_retriev_managed_enterprise_with_token_return_200(self):
+        response = self.client.get(
+            f"/api/v1/enterprises/{self.enterprise1.pk}/",
+            headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["name"], "enterprise1")
