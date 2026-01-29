@@ -20,6 +20,11 @@ def custom_exception_handler(exc, context):
     if isinstance(exc, exceptions.NotAuthenticated): #Исправление проблемы то что исключение NotAuthenticated возвращало 403, а не 401.
         exc = exceptions.NotAuthenticated(*(exc.args))
 
+    if isinstance(
+        exc, exceptions.AuthenticationFailed
+    ):  # Код возврата когда пользователь не смог аутентифицироваться из-за неверного токена, должен быть 401 а не 403
+        exc = exceptions.AuthenticationFailed(*(exc.args))
+
     if isinstance(exc, exceptions.ValidationError) and is_invalid_credentials(
         exc.detail
     ): # Код возврата когда ошибки учетных данных при получении токена, должен быть 401 а не 403
