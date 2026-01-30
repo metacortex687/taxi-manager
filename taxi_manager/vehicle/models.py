@@ -7,8 +7,7 @@ from django.core.validators import (
 
 import datetime
 from ..enterprise.models import Enterprise
-from django.core.exceptions import ValidationError
-
+from .validators import vin_validator
 
 class Vehicle(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
@@ -24,7 +23,7 @@ class Vehicle(models.Model):
     vin = models.CharField(
         max_length=17,
         verbose_name="VIN",
-        validators=[MinLengthValidator(17)],
+        validators=[MinLengthValidator(17),vin_validator],
         unique=True,
     )
 
