@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.validators import (
-    MinLengthValidator,
     MaxValueValidator,
     MinValueValidator,
 )
@@ -23,7 +22,7 @@ class Vehicle(models.Model):
     vin = models.CharField(
         max_length=17,
         verbose_name="VIN",
-        validators=[MinLengthValidator(17),vin_validator],
+        validators=[vin_validator],
         unique=True,
     )
 
