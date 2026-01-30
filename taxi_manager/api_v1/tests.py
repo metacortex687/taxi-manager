@@ -452,6 +452,34 @@ class VehicleAPITest(TestCase):
         self.assertEqual(responce.status_code, 400)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
+    def test_cannot_create_vehicle_with_invalid_chars_vin_return_400(self):
+        """
+        VIN номер может содержать только символы "0 1 2 3 4 5 6 7 8 9 A B C D E F G H J K L M N P R S T U V W X Y Z"
+        символы I, O, Q запрещены
+        """
+
+        self.assertFalse(Vehicle.objects.filter(number="test1").exists())
+
+        factory = APIRequestFactory()
+        request = factory.post(
+            "/api/v1/vehicles/",
+            {
+                "model": self.model1.pk,
+                "number": "test1",
+                "vin": "IOQ8741AACR123456",
+                "year_of_manufacture": 2025,
+                "mileage": 100,
+                "enterprise": self.enterprise1.pk,
+                "price": 1250000,
+            },
+            format="json",
+        )
+
+        force_authenticate(request, user=self.manager1)
+        responce = self.viewset_post_create(request)
+
+        self.assertEqual(responce.status_code, 400)
+        self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
 class TokenAPITest(TestCase):
     def setUp(self):
