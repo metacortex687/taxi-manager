@@ -397,6 +397,34 @@ class VehicleAPITest(TestCase):
 
         self.assertEqual(responce.status_code, 403)
 
+    def test_cannot_create_vehicle_with_short_vin_return_400(self):
+        '''
+        VIN номер в записи об авто не может быть меньше 14 символов
+        '''
+
+        self.assertFalse(Vehicle.objects.filter(number="test1").exists())
+
+        factory = APIRequestFactory()
+        request = factory.post(
+            "/api/v1/vehicles/",
+            {
+                "model": self.model1.pk,
+                "number": "test1",
+                "vin": "Z948741AACR12345",
+                "year_of_manufacture": 2025,
+                "mileage": 100,
+                "enterprise": self.enterprise1.pk,
+                "price": 1250000,
+            },
+            format="json",
+        )
+
+        force_authenticate(request, user=self.manager1)
+        responce = self.viewset_post_create(request)
+
+        self.assertEqual(responce.status_code, 400)
+        self.assertFalse(Vehicle.objects.filter(number="test1").exists())
+
 
 class TokenAPITest(TestCase):
     def setUp(self):
