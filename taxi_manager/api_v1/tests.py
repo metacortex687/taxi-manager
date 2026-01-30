@@ -257,7 +257,6 @@ class VehicleAPITest(TestCase):
 
         responce = self.viewset_put_update(request, pk=self.vehicle1.pk)
 
-
         self.assertEqual(responce.status_code, 401)
 
     def test_superuser_cannot_update_vehicle_for_managed_enterprise_to_unmanged_return_403(
@@ -398,9 +397,9 @@ class VehicleAPITest(TestCase):
         self.assertEqual(responce.status_code, 403)
 
     def test_cannot_create_vehicle_with_short_vin_return_400(self):
-        '''
+        """
         VIN номер в записи об авто не может быть меньше 14 символов
-        '''
+        """
 
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
