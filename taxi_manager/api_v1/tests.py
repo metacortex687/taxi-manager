@@ -398,7 +398,7 @@ class VehicleAPITest(TestCase):
 
     def test_cannot_create_vehicle_with_short_vin_return_400(self):
         """
-        VIN номер в записи об авто не может быть меньше 14 символов
+        VIN номер в записи об авто не может быть меньше 17 символов
         """
 
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
@@ -426,7 +426,7 @@ class VehicleAPITest(TestCase):
 
     def test_cannot_create_vehicle_with_long_vin_return_400(self):
         """
-        VIN номер в записи об авто не может быть длиннее 14 символов
+        VIN номер в записи об авто не может быть длиннее 17 символов
         """
 
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
