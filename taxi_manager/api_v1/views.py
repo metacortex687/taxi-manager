@@ -19,6 +19,8 @@ from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
+from django.db.models.deletion import RestrictedError
+from .exceptions import DeletionConflict
 
 User = get_user_model()
 
@@ -104,6 +106,14 @@ class VehicleViewSet(viewsets.ModelViewSet):
             )
 
         return super().list(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except RestrictedError as e:
+            raise DeletionConflict(str(e))
+
+
 
     # @action(detail=False, methods=["GET"], url_path="TEST", url_name="TTTTEST")
     # def vehicles_of_driver(self, request):
