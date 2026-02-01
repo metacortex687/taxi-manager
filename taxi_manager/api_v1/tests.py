@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate
 from ..api_v1.views import VehicleViewSet
 from ..enterprise.models import Enterprise
-from ..vehicle.models import Model, Vehicle
+from ..vehicle.models import Model, Vehicle, Driver
 
 
 class VehicleAPITest(TestCase):
@@ -62,6 +62,15 @@ class VehicleAPITest(TestCase):
         self.viewset_put_update = VehicleViewSet.as_view({"put": "update"})
         self.viewset_delete_destroy = VehicleViewSet.as_view({"delete": "destroy"})
         self.viewset_get_retrieve = VehicleViewSet.as_view({"get": "retrieve"})
+
+    def get_token(self, user):
+        response = self.client.post(
+            "/api/v1/auth/token/login/", {"username": "manager1", "password": "secret"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["auth_token"])
+        return response.data["auth_token"]
 
     def test_anonymous_cannot_list_return_401(self):
         factory = APIRequestFactory()
@@ -297,6 +306,32 @@ class VehicleAPITest(TestCase):
 
         self.assertFalse(Vehicle.objects.filter(pk=pk).exists())
         self.assertEqual(responce.status_code, 204)
+
+    def test_manager_cannot_delete_vehicle_with_driver_return_409(self):
+        pk = self.vehicle1.pk
+        self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
+
+        driver = Driver.objects.create(first_name="first_name_driver1", last_name="last_name_driver1", TIN="12345", enterprise = self.enterprise1)
+        self.vehicle1.drivers.add(driver, through_defaults={"enterprise":self.enterprise1})
+
+        response = self.client.delete(
+            f"/api/v1/vehicles/{pk}/",
+            headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
+        )
+
+        self.assertEqual(response.status_code, 409)  
+        self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
+
+        #Если убрать ссылку то удалит
+        # self.vehicle1.drivers.remove(driver)
+        # response = self.client.delete(
+        #     f"/api/v1/vehicles/{pk}/",
+        #     headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
+        # )
+        # self.assertEqual(response.status_code, 409)  
+        # self.assertFalse(Vehicle.objects.filter(pk=pk).exists())
+
+             
 
     def test_manager_cannot_delete_vehicle_for_unmanaged_enterprise_return_403(self):
         pk = self.vehicle3.pk
