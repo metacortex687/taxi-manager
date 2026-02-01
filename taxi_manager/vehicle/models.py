@@ -170,14 +170,14 @@ class Driver(models.Model):
 
 class VehicleDriver(models.Model):
     enterprise = models.ForeignKey(
-        Enterprise, on_delete=models.CASCADE, verbose_name="Предприятие", related_name="vehicle_driver_pairs"
+        Enterprise, on_delete=models.RESTRICT, verbose_name="Предприятие", related_name="vehicle_driver_pairs"
     )
 
     driver = models.ForeignKey(
-        Driver, on_delete=models.CASCADE, verbose_name="Водитель"
+        Driver, on_delete=models.RESTRICT, verbose_name="Водитель"
     )
     vehicle = models.ForeignKey(
-        Vehicle, on_delete=models.CASCADE, verbose_name="Машина"
+        Vehicle, on_delete=models.RESTRICT, verbose_name="Машина"
     )
     active = models.BooleanField(default=False, verbose_name="Активен")
 
