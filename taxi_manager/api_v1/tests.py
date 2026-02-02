@@ -587,6 +587,14 @@ class TokenAPITest(TestCase):
         response = self.client.get("/api/v1/vehicles/")
         self.assertEqual(response.status_code, 401)
 
+    def test_get_unknown_endpoint_return_404(self):
+        """
+        Без токена, попытка доступа до несуществующего ресурса.
+        """
+
+        response = self.client.get("/api/v1/unknown_endpoint/")
+        self.assertEqual(response.status_code, 404)        
+
 
 class EnterpriseAPITest(TestCase):
     def setUp(self):
