@@ -7,6 +7,7 @@ User = get_user_model()
 class Enterprise(models.Model):
     name = models.CharField(max_length=35, verbose_name="Наименование", unique=True)
     city = models.CharField(max_length=25, verbose_name="Город")
+    eyar_of_foundation = models.DateField(verbose_name="год основания", null=True)
 
     manager_users = models.ManyToManyField(
         User,
