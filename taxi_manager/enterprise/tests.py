@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.core.management import call_command
 from .models import Enterprise
-from taxi_manager.vehicle.models import Driver, Model, Vehicle
+from taxi_manager.vehicle.models import Driver, Model, Vehicle, VehicleDriver
 from django.core.management.base import CommandError
 
 
@@ -81,3 +81,11 @@ class CommandGenerateDataTest(TestCase):
         call_command("generate_data", enterprise=name_enterprise, driver=1, vehicle=15)
 
         self.assertEqual(Vehicle.objects.count(), 15)
+
+    def test_generate_links_of_vehicles_and_drivers(self):
+        name_enterprise = ["test_name1", "test_name2", "test_name3"]
+        call_command("generate_data", enterprise=name_enterprise, driver=15, vehicle=51, seed=24) 
+
+        self.assertTrue(VehicleDriver.objects.exists())
+        self.assertEqual(VehicleDriver.objects.count(), 111) #Для seed=24 и многих других совпадает
+
