@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.core.management import call_command
 from .models import Enterprise
-from taxi_manager.vehicle.models import Driver, Model
+from taxi_manager.vehicle.models import Driver, Model, Vehicle
 from django.core.management.base import CommandError
 
 
@@ -60,13 +60,24 @@ class CommandGenerateDataTest(TestCase):
 
         self.assertEqual(Model.objects.count(), 5)
 
-        
-    # def test_generate_enterprises(self):
-    #     name_enterprise = ["test_name1", "test_name2"]
+    def test_raises_when_vehicle_option_missing(self):
+        with self.assertRaises(CommandError):
+            call_command("generate_data", enterprise=["ent1", "ent2"], driver=5)
 
-    #     self.assertFalse(Enterprise.objects.filter(name=name_enterprise).exists())
+    def test_generate_one_vehicle(self):
+        name_enterprise = "test_name"
 
-    #     call_command("generate_data", enterprise = name_enterprise, driver = 5)
+        self.assertFalse(Vehicle.objects.exists())
 
-    #     self.assertTrue(Enterprise.objects.filter(name=name_enterprise[0]).exists())
-    #     self.assertTrue(Enterprise.objects.filter(name=name_enterprise[1]).exists())
+        call_command("generate_data", enterprise=name_enterprise, driver=1, vehicle=1)
+
+        self.assertEqual(Vehicle.objects.count(), 1)
+
+    def test_generate_15_vehicle(self):
+        name_enterprise = "test_name"
+
+        self.assertFalse(Vehicle.objects.exists())
+
+        call_command("generate_data", enterprise=name_enterprise, driver=1, vehicle=15)
+
+        self.assertEqual(Vehicle.objects.count(), 15)
