@@ -29,7 +29,8 @@ class Command(BaseCommand):
 
         enterprises = []
         for name in enterprise_name_list:
-            enterprises.append(Enterprise.objects.create(name = name, city = "City"))
+            enterprise = Enterprise.objects.create(name = name, city = "City")
+            enterprises.append(enterprise)
 
         fake = Faker(["en_US","ru_RU"])
         Faker.seed(0)
