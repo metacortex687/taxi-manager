@@ -6,7 +6,7 @@ class Command(BaseCommand):
     help = "Добавление в базу сгенерированных данных"
 
     def add_arguments(self, parser):
-        parser.add_argument("-enterprise", nargs="+", type=str, help="Перечислите имена создаваемых предприятий")
+        parser.add_argument("-e", "--enterprise", nargs="+", type=str, help="Перечислите имена создаваемых предприятий")
 
 
     def handle(self, *args, **options):        
