@@ -9,7 +9,10 @@ class Command(BaseCommand):
         parser.add_argument("-e", "--enterprise", nargs="+", type=str, help="Перечислите имена создаваемых предприятий")
 
 
-    def handle(self, *args, **options):        
+    def handle(self, *args, **options):   
+
+        if not options["enterprise"]:
+            raise CommandError("Параметр -e или --enterprise со списком создаваемых организаций обязателен.")      
 
         if type(options["enterprise"]) is str:
             enterprise_name_list = [options["enterprise"]]        
@@ -19,4 +22,6 @@ class Command(BaseCommand):
 
         for name in enterprise_name_list:
             Enterprise.objects.create(name = name, city = "City")
+
+        
 

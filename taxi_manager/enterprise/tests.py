@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.core.management import call_command
 from .models import Enterprise
+from django.core.management.base import CommandError
+
 
 class CommandGenerateDataTest(TestCase):
     def test_generate_one_enterprise(self):
@@ -22,3 +24,8 @@ class CommandGenerateDataTest(TestCase):
 
         self.assertTrue(Enterprise.objects.filter(name=name_enterprise[0]).exists())
         self.assertTrue(Enterprise.objects.filter(name=name_enterprise[1]).exists())
+
+    def test_raises_when_enterprise_option_missing(self):
+        with self.assertRaises(CommandError):
+            call_command("generate_data")
+
