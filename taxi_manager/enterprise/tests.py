@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.core.management import call_command
 from .models import Enterprise
-from taxi_manager.vehicle.models import Driver
+from taxi_manager.vehicle.models import Driver, Model
 from django.core.management.base import CommandError
 
 
@@ -54,6 +54,16 @@ class CommandGenerateDataTest(TestCase):
 
         self.assertEqual(Driver.objects.count(), 7)
 
+    def test_generate_5_model(self):
+        name_enterprise = "test_name"
+
+        self.assertFalse(Model.objects.exists())
+
+        call_command("generate_data", enterprise = name_enterprise, driver = 7)
+
+        self.assertEqual(Model.objects.count(), 5)
+
+        
     # def test_generate_enterprises(self):
     #     name_enterprise = ["test_name1", "test_name2"]
 

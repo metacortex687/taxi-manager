@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 
 from ...models import Enterprise
-from taxi_manager.vehicle.models import Driver
+from taxi_manager.vehicle.models import Driver, Model
 
 from faker import Faker
 
@@ -39,6 +39,15 @@ class Command(BaseCommand):
             name = fake.unique.name().split(' ')
             Driver.objects.create(first_name = name[0] , last_name = name[1], enterprise = enterprises[i % len(enterprises)], TIN = fake.bothify(text="############"))
         
+
+        models = []
+        models.append(Model.objects.create(name = "Нива внедорожник", type = "PCR", number_of_seats = 5, tank_capacity_l = 42, load_capacity_kg = 400))
+        models.append(Model.objects.create(name = "Камаз", type = "LRR", number_of_seats = 2, tank_capacity_l = 500, load_capacity_kg = 5700))
+        models.append(Model.objects.create(name = "Икарус", type = "BUS", number_of_seats = 34, tank_capacity_l = 250, load_capacity_kg = 5000))
+        models.append(Model.objects.create(name = "BMW", type = "PCR", number_of_seats = 5, tank_capacity_l = 40, load_capacity_kg = 420))
+        models.append(Model.objects.create(name = "Ford", type = "PCR", number_of_seats = 5, tank_capacity_l = 45, load_capacity_kg = 400))
+
+
         # drivers = []
         # for i in range(options["driver"]):
         #     driver = Driver.objects.create()
