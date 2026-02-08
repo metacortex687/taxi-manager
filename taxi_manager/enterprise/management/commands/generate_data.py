@@ -137,12 +137,13 @@ class Command(BaseCommand):
                     continue
 
                 count_assigned_drivers = min(len(_drivers), random.randint(1, 5))
+                end_idx_driver = min(len(_drivers)-1,start_idx_driver+count_assigned_drivers)
                 vehicle.drivers.add(
-                    *_drivers[start_idx_driver:count_assigned_drivers],
+                    *_drivers[start_idx_driver:(end_idx_driver+1)],
                     through_defaults={"enterprise": enterprise},
                 )
 
-                for driver in _drivers[start_idx_driver:count_assigned_drivers]:
+                for driver in _drivers[start_idx_driver:(end_idx_driver+1)]:
                     pairs.append((vehicle, driver))
 
                 start_idx_driver += count_assigned_drivers
