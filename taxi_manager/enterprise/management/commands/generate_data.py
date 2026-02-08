@@ -6,6 +6,7 @@ from taxi_manager.vehicle.models import Driver, Model, Vehicle, VehicleDriver
 from faker import Faker
 import random
 from django.db.models import Subquery, Q
+from django.db import transaction
 
 
 class Command(BaseCommand):
@@ -37,6 +38,7 @@ class Command(BaseCommand):
             help="Параметр инициализации генератора псевдослучайных чисел",
         )
 
+    @transaction.atomic
     def handle(self, *args, **options):
         self._check_options(options)
 
