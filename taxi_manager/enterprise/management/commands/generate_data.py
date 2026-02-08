@@ -131,18 +131,22 @@ class Command(BaseCommand):
 
         pairs = []
         for enterprise, (_vehicles, _drivers) in grouped_by_enterprise_data.items():
+            start_idx_driver = 0
             for vehicle in _vehicles:
                 if len(_drivers) == 0:
                     continue
 
                 count_assigned_drivers = min(len(_drivers), random.randint(1, 5))
                 vehicle.drivers.add(
-                    *_drivers[0:count_assigned_drivers],
+                    *_drivers[start_idx_driver:count_assigned_drivers],
                     through_defaults={"enterprise": enterprise},
                 )
 
-                for driver in _drivers[0:count_assigned_drivers]:
+                for driver in _drivers[start_idx_driver:count_assigned_drivers]:
                     pairs.append((vehicle, driver))
+
+                start_idx_driver += count_assigned_drivers
+                start_idx_driver %= len(_drivers)
 
         self.stdout.write(f"Прекреплено водителей и машин {len(pairs)}")
 
