@@ -87,5 +87,4 @@ class CommandGenerateDataTest(TestCase):
         call_command("generate_data", enterprise=name_enterprise, driver=15, vehicle=51, seed=24) 
 
         self.assertTrue(VehicleDriver.objects.exists())
-        self.assertEqual(VehicleDriver.objects.count(), 111) #Для seed=24 и многих других совпадает
-
+        self.assertEqual(VehicleDriver.objects.count(), 138) #Для seed=24 138 оно должно быть большим

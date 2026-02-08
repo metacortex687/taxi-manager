@@ -42,9 +42,8 @@ class Command(BaseCommand):
         Faker.seed(0)
         random.seed(0)
         if options["seed"]:
-            Faker.seed(0)
-            random.seed(0)           
-
+            Faker.seed(options["seed"])
+            random.seed(options["seed"])
 
         drivers = []
         for i in range(options["driver"]):
