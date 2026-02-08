@@ -94,7 +94,7 @@ class CommandGenerateDataTest(TestCase):
         name_enterprise = ["test_name1"]
         call_command("generate_data", enterprise=name_enterprise, driver=150, vehicle=51, seed=24) 
 
-        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 5)  #5 а не 6 так как каждый четвертый автомобиль без водителей
+        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 6)  #6 а не 5 так как уменьшил вероятность авто без машин и водителей без авто
 
     def test_generate_set_active_links_of_vehicles_and_drivers_when_one_enterprise_and_more_vehicles_then_driver(self):
         name_enterprise = ["test_name1"]
