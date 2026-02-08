@@ -112,8 +112,8 @@ class Command(BaseCommand):
             _vehicles, _drivers = grouped_by_enterprise_data[vehicle.enterprise]
 
             if (
-                random.randint(0, 3) != 0
-            ):  # Каждое четвертое транспортное средство будет без прикрепленных водителей
+                random.randint(0, 10) != 0
+            ):  # Каждое 10-е транспортное средство будет без прикрепленных водителей
                 _vehicles.append(vehicle)
 
             grouped_by_enterprise_data[vehicle.enterprise] = _vehicles, _drivers
@@ -124,7 +124,7 @@ class Command(BaseCommand):
 
             _vehicles, _drivers = grouped_by_enterprise_data[vehicle.enterprise]
 
-            if random.randint(0, 3) != 0:  # Каждый четвертый водитель без автомобилей
+            if random.randint(0, 10) != 0:  # Каждый 10-й водитель без автомобилей
                 _drivers.append(driver)
 
             grouped_by_enterprise_data[vehicle.enterprise] = _vehicles, _drivers
