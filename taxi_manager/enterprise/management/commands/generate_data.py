@@ -101,6 +101,8 @@ class Command(BaseCommand):
 
         VehicleDriver.objects.filter(q).update(active=True)
 
+        self.stdout.write(f"Назначено активных транспортных средств {len(active_pairs)}")
+
     def _generate_vehicle_driver_pairs(self, drivers, vehicles):
         grouped_by_enterprise_data = dict()
 
@@ -141,6 +143,9 @@ class Command(BaseCommand):
 
                 for driver in _drivers[0:count_assigned_drivers]:
                     pairs.append((vehicle, driver))
+
+        self.stdout.write(f"Прекреплено водителей и машин {len(pairs)}")
+
         return pairs
 
     def _generate_vehicles(self, options, enterprises, fake, models):
@@ -156,6 +161,9 @@ class Command(BaseCommand):
                 enterprise=enterprises[0],
             )
             vehicles.append(vehicle)
+
+        self.stdout.write(f"Закуплено {len(vehicles)} транспортных средств")
+
         return vehicles
 
     def _generate_models(self):
@@ -206,6 +214,8 @@ class Command(BaseCommand):
             )
         )
 
+        self.stdout.write(f"Описано {len(models)} моделей")
+
         return models
 
     def _generate_drivers(self, options, enterprises, fake):
@@ -219,6 +229,9 @@ class Command(BaseCommand):
                 TIN=fake.bothify(text="############"),
             )
             drivers.append(driver)
+
+        self.stdout.write(f"Нанято на работу {len(drivers)} водтелей")
+
         return drivers
 
     def _genegate_enterprises(self, enterprise_name_list):
@@ -226,6 +239,9 @@ class Command(BaseCommand):
         for name in enterprise_name_list:
             enterprise = Enterprise.objects.create(name=name, city="City")
             enterprises.append(enterprise)
+
+        self.stdout.write(f"Создано {len(enterprises)} предприятий")
+
         return enterprises
 
     def _check_options(self, options):
