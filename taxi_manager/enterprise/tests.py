@@ -88,3 +88,18 @@ class CommandGenerateDataTest(TestCase):
 
         self.assertTrue(VehicleDriver.objects.exists())
         self.assertEqual(VehicleDriver.objects.count(), 138) #Для seed=24 138 оно должно быть большим
+
+
+    def test_generate_set_active_links_of_vehicles_and_drivers_when_one_enterprise_and_fewer_vehicles_then_driver(self):
+        name_enterprise = ["test_name1"]
+        call_command("generate_data", enterprise=name_enterprise, driver=150, vehicle=51, seed=24) 
+
+        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 5)  #5 а не 6 так как каждый четвертый автомобиль без водителей
+
+    def test_generate_set_active_links_of_vehicles_and_drivers_when_one_enterprise_and_more_vehicles_then_driver(self):
+        name_enterprise = ["test_name1"]
+        call_command("generate_data", enterprise=name_enterprise, driver=3, vehicle=51, seed=24) 
+
+        self.assertEqual(Vehicle.objects.count(), 51) 
+        self.assertEqual(Driver.objects.count(), 3) 
+        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 2) #2 а не 3 так как каждый четвертый водитель без автомобиля

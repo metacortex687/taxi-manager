@@ -1,10 +1,12 @@
 from django.core.management.base import BaseCommand, CommandError
 
 from ...models import Enterprise
-from taxi_manager.vehicle.models import Driver, Model, Vehicle
+from taxi_manager.vehicle.models import Driver, Model, Vehicle, VehicleDriver
 
 from faker import Faker
 import random
+from django.db.models import Subquery, Q
+
 
 class Command(BaseCommand):
     help = "Добавление в базу сгенерированных данных"
@@ -168,48 +170,53 @@ class Command(BaseCommand):
 
             grouped_by_enterprise_data[vehicle.enterprise] = _vehicles, _drivers
 
-
-
+        pairs = []
         for enterprise, (_vehicles, _drivers) in grouped_by_enterprise_data.items():
+
             for vehicle in _vehicles:
                 if len(_drivers) == 0:
                     continue
 
-                count_assigned_drivers = min(len(_drivers), random.randint(1,5))
-                vehicle.drivers.add(*_drivers[0:count_assigned_drivers], through_defaults={"enterprise":enterprise})
+                count_assigned_drivers = min(len(_drivers), random.randint(1, 5))
+                vehicle.drivers.add(
+                    *_drivers[0:count_assigned_drivers],
+                    through_defaults={"enterprise": enterprise},
+                )
 
-        
-
-        
-
-
-
-
-
-
-          
-
-
-        
+                for driver in _drivers[0:count_assigned_drivers]:
+                    pairs.append((vehicle, driver))    
 
 
 
+        random.shuffle(pairs)
 
-                
+        active_pairs = []
+        need_active_vehicle = 1 + len(vehicles) // 10
+        set_active_vehicle = set()
+        set_active_driver = set()
+
+        for vehicle, driver in pairs:
+            if need_active_vehicle == 0:
+                break
+
+            if vehicle in set_active_vehicle:
+                continue
+            if driver in set_active_driver:
+                continue
+
+            active_pairs.append((vehicle, driver))
+
+            set_active_vehicle.add(vehicle)
+            set_active_driver.add(driver)
+
+            need_active_vehicle -= 1
+
+        q = Q()
+        for vehicle, driver in active_pairs:
+            q |= Q(vehicle = vehicle, driver = driver)
+
+        VehicleDriver.objects.filter(q).update(active = True)
 
 
 
-
-
-
-
-        # drivers = []
-        # for i in range(options["driver"]):
-        #     driver = Driver.objects.create()
-
-
-
-        
-
-        
 
