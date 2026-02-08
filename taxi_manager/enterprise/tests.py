@@ -87,7 +87,7 @@ class CommandGenerateDataTest(TestCase):
         call_command("generate_data", enterprise=name_enterprise, driver=15, vehicle=51, seed=24) 
 
         self.assertTrue(VehicleDriver.objects.exists())
-        self.assertEqual(VehicleDriver.objects.count(), 138) #Для seed=24 138 оно должно быть большим
+        self.assertEqual(VehicleDriver.objects.count(), 171) #Для seed=24 171 оно должно быть большим
 
 
     def test_generate_set_active_links_of_vehicles_and_drivers_when_one_enterprise_and_fewer_vehicles_then_driver(self):
@@ -102,4 +102,5 @@ class CommandGenerateDataTest(TestCase):
 
         self.assertEqual(Vehicle.objects.count(), 51) 
         self.assertEqual(Driver.objects.count(), 3) 
-        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 2) #2 а не 3 так как каждый четвертый водитель без автомобиля
+        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 3) #3 а не 2 так как уменьшил вероятность авто без машин и водителей без авто
+
