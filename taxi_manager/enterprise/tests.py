@@ -104,3 +104,14 @@ class CommandGenerateDataTest(TestCase):
         self.assertEqual(Driver.objects.count(), 3) 
         self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 3) #3 а не 2 так как уменьшил вероятность авто без машин и водителей без авто
 
+    
+    def test_generate_more_data(self):
+        name_enterprise = ["test_name1"]
+        call_command("generate_data", enterprise=name_enterprise, driver=100, vehicle=1000, seed=15) 
+
+        self.assertEqual(Vehicle.objects.count(), 1000) 
+        self.assertEqual(Driver.objects.count(), 100) 
+        self.assertEqual(VehicleDriver.objects.count(), 3600) #Числа случайные для seed=15, важен прорядок чисел
+        self.assertEqual(VehicleDriver.objects.values("driver").distinct().count(), 91) #Числа случайные для seed=15, важен прорядок чисел
+        self.assertEqual(VehicleDriver.objects.values("vehicle").distinct().count(), 907) #Числа случайные для seed=15, важен прорядок чисел
+        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 91) #Числа случайные для seed=15, важен прорядок чисел
