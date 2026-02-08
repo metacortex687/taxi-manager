@@ -127,7 +127,7 @@ class Command(BaseCommand):
             if random.randint(0, 10) != 0:  # Каждый 10-й водитель без автомобилей
                 _drivers.append(driver)
 
-            grouped_by_enterprise_data[vehicle.enterprise] = _vehicles, _drivers
+            grouped_by_enterprise_data[driver.enterprise] = _vehicles, _drivers
 
         pairs = []
         for enterprise, (_vehicles, _drivers) in grouped_by_enterprise_data.items():
