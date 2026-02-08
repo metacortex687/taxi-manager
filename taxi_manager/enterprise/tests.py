@@ -115,3 +115,9 @@ class CommandGenerateDataTest(TestCase):
         self.assertEqual(VehicleDriver.objects.values("driver").distinct().count(), 91) #Числа случайные для seed=15, важен прорядок чисел
         self.assertEqual(VehicleDriver.objects.values("vehicle").distinct().count(), 907) #Числа случайные для seed=15, важен прорядок чисел
         self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 91) #Числа случайные для seed=15, важен прорядок чисел
+
+    def test_generate_links_vehicle_driver_for_all_enterprises(self):
+        name_enterprise = ["test_name1","test_name2","test_name3","test_name4","test_name5"]
+        call_command("generate_data", enterprise=name_enterprise, driver=100, vehicle=1000, seed=15) 
+
+        self.assertEqual(VehicleDriver.objects.values("enterprise").distinct().count(), len(name_enterprise))
