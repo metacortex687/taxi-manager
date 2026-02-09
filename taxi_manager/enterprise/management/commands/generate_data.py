@@ -162,8 +162,8 @@ class Command(BaseCommand):
                 mileage=random.randint(1, 300000),
                 number=fake.bothify(text="?###??"),
                 vin=fake.vin(),
-                model=models[0],
-                enterprise=enterprises[0],
+                model=models[i%len(models)],
+                enterprise=enterprises[i%len(enterprises)],
             )
             vehicles.append(vehicle)
 
