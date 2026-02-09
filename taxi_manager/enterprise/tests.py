@@ -121,3 +121,5 @@ class CommandGenerateDataTest(TestCase):
         call_command("generate_data", enterprise=name_enterprise, driver=100, vehicle=1000, seed=15) 
 
         self.assertEqual(VehicleDriver.objects.values("enterprise").distinct().count(), len(name_enterprise))
+        self.assertEqual(Driver.objects.values("enterprise").distinct().count(), len(name_enterprise))
+        self.assertEqual(Vehicle.objects.values("enterprise").distinct().count(), len(name_enterprise))
