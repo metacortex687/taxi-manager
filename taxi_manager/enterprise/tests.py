@@ -3,6 +3,7 @@ from django.core.management import call_command
 from .models import Enterprise
 from taxi_manager.vehicle.models import Driver, Model, Vehicle, VehicleDriver
 from django.core.management.base import CommandError
+from django.db.models import F, Q
 
 
 class CommandGenerateDataTest(TestCase):
@@ -123,3 +124,13 @@ class CommandGenerateDataTest(TestCase):
         self.assertEqual(VehicleDriver.objects.values("enterprise").distinct().count(), len(name_enterprise))
         self.assertEqual(Driver.objects.values("enterprise").distinct().count(), len(name_enterprise))
         self.assertEqual(Vehicle.objects.values("enterprise").distinct().count(), len(name_enterprise))
+
+    def test_generate_vehicle_driver_links_match_driver_enterprise(self):
+        name_enterprise = ["test_name1","test_name2","test_name3","test_name4","test_name5"]
+        call_command("generate_data", enterprise=name_enterprise, driver=20, vehicle=20, seed=15) 
+        
+        print(VehicleDriver.objects.filter(~Q(enterprise = F("driver__enterprise"))).values("id","enterprise", "driver__enterprise")[:5])
+
+        self.assertFalse(VehicleDriver.objects.filter(~Q(enterprise = F("driver__enterprise"))).exists())
+
+
