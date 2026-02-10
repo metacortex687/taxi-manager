@@ -130,9 +130,7 @@ class CommandGenerateDataTest(TestCase):
 
         name_enterprise = ["test_name1","test_name2","test_name3","test_name4","test_name5"]
         call_command("generate_data", enterprise=name_enterprise, driver=20, vehicle=20, seed=15) 
-        
-        print(VehicleDriver.objects.filter(~Q(enterprise = F("driver__enterprise"))).values("id","enterprise", "driver__enterprise")[:5])
-
+  
         self.assertEqual(Driver.objects.count(), 20)
         self.assertEqual(VehicleDriver.objects.filter(~Q(enterprise = F("driver__enterprise"))).count(), 0)
         self.assertFalse(VehicleDriver.objects.filter(~Q(enterprise = F("driver__enterprise"))).exists())
