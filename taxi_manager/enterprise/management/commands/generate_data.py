@@ -122,7 +122,7 @@ class Command(BaseCommand):
             if driver.enterprise not in grouped_by_enterprise_data:
                 grouped_by_enterprise_data[driver.enterprise] = [], []
 
-            _vehicles, _drivers = grouped_by_enterprise_data[vehicle.enterprise]
+            _vehicles, _drivers = grouped_by_enterprise_data[driver.enterprise]
 
             if random.randint(0, 10) != 0:  # Каждый 10-й водитель без автомобилей
                 _drivers.append(driver)
