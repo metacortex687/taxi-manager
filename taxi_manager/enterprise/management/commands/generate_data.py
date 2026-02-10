@@ -48,8 +48,6 @@ class Command(BaseCommand):
         if type(options["enterprise"]) is list:
             enterprise_name_list = options["enterprise"]
 
-        enterprises = self._genegate_enterprises(enterprise_name_list)
-
         fake = Faker(["en_US", "ru_RU"])
         Faker.seed(0)
         random.seed(0)
@@ -57,22 +55,30 @@ class Command(BaseCommand):
             Faker.seed(options["seed"])
             random.seed(options["seed"])
 
-        drivers = self._generate_drivers(options, enterprises, fake)
-
         models = self._generate_models()
 
-        vehicles = self._generate_vehicles(options, enterprises, fake, models)
+        for enterprise_name in enterprise_name_list:
+            self._generate_data_for_enterprise(enterprise_name = enterprise_name, count_vehicles = options["vehicle"], count_drivers =  options["driver"], fake=fake, models = models)    
+   
+        
+
+    def _generate_data_for_enterprise(self, enterprise_name:str, count_drivers, count_vehicles, fake: Faker, models):
+        enterprise = Enterprise.objects.create(name=enterprise_name, city="City")
+        self.stdout.write(f"Создано предприятие {len(enterprise_name)} предприятий")
+        drivers = self._generate_drivers(count_drivers, enterprise, fake)
+        vehicles = self._generate_vehicles(count_vehicles, enterprise, fake, models)
 
         random.shuffle(vehicles)
         random.shuffle(drivers)
 
-        pairs = self._generate_vehicle_driver_pairs(drivers, vehicles)
+        pairs = self._generate_vehicle_driver_pairs(drivers, vehicles, enterprise)
 
         random.shuffle(pairs)
 
         need_active_vehicle = 1 + len(vehicles) // 10
 
         self._set_active_pairs(pairs, need_active_vehicle)
+
 
     def _set_active_pairs(self, pairs, need_active_vehicle):
         active_pairs = []
@@ -103,61 +109,37 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Назначено активных транспортных средств {len(active_pairs)}")
 
-    def _generate_vehicle_driver_pairs(self, drivers, vehicles):
-        grouped_by_enterprise_data = dict()
-
-        for vehicle in vehicles:
-            if vehicle.enterprise not in grouped_by_enterprise_data:
-                grouped_by_enterprise_data[vehicle.enterprise] = [], []
-            _vehicles, _drivers = grouped_by_enterprise_data[vehicle.enterprise]
-
-            if (
-                random.randint(0, 10) != 0
-            ):  # Каждое 10-е транспортное средство будет без прикрепленных водителей
-                _vehicles.append(vehicle)
-
-            grouped_by_enterprise_data[vehicle.enterprise] = _vehicles, _drivers
-
-        for driver in drivers:
-            if driver.enterprise not in grouped_by_enterprise_data:
-                grouped_by_enterprise_data[driver.enterprise] = [], []
-
-            _vehicles, _drivers = grouped_by_enterprise_data[driver.enterprise]
-
-            if random.randint(0, 10) != 0:  # Каждый 10-й водитель без автомобилей
-                _drivers.append(driver)
-
-            grouped_by_enterprise_data[driver.enterprise] = _vehicles, _drivers
+    def _generate_vehicle_driver_pairs(self, drivers, vehicles, enterprise):
 
         pairs = []
-        for enterprise, (_vehicles, _drivers) in grouped_by_enterprise_data.items():
-            start_idx_driver = 0
-            for vehicle in _vehicles:
-                if len(_drivers) == 0:
-                    continue
 
-                count_assigned_drivers = min(len(_drivers), random.randint(1, 5))
-                end_idx_driver = min(len(_drivers)-1,start_idx_driver+count_assigned_drivers)
-                vehicle.drivers.add(
-                    *_drivers[start_idx_driver:(end_idx_driver+1)],
-                    through_defaults={"enterprise": enterprise},
-                )
+        start_idx_driver = 0
+        for vehicle in vehicles:
+            if len(drivers) == 0:
+                continue
 
-                for driver in _drivers[start_idx_driver:(end_idx_driver+1)]:
-                    pairs.append((vehicle, driver))
-                    assert vehicle.enterprise == enterprise
-                    assert driver.enterprise == enterprise
+            count_assigned_drivers = min(len(drivers), random.randint(1, 5))
+            end_idx_driver = min(len(drivers)-1,start_idx_driver+count_assigned_drivers)
+            vehicle.drivers.add(
+                *drivers[start_idx_driver:(end_idx_driver+1)],
+                through_defaults={"enterprise": enterprise},
+            )
 
-                start_idx_driver += count_assigned_drivers
-                start_idx_driver %= len(_drivers)
+            for driver in drivers[start_idx_driver:(end_idx_driver+1)]:
+                pairs.append((vehicle, driver))
+                assert vehicle.enterprise == enterprise
+                assert driver.enterprise == enterprise
+
+            start_idx_driver += count_assigned_drivers
+            start_idx_driver %= len(drivers)
 
         self.stdout.write(f"Прекреплено водителей и машин {len(pairs)}")
 
         return pairs
 
-    def _generate_vehicles(self, options, enterprises, fake, models):
+    def _generate_vehicles(self, count_vehicles, enterprise, fake, models):
         vehicles = []
-        for i in range(options["vehicle"]):
+        for i in range(count_vehicles):
             vehicle = Vehicle.objects.create(
                 price=random.randint(500, 6000000),
                 year_of_manufacture=random.randint(1980, 2026),
@@ -165,7 +147,7 @@ class Command(BaseCommand):
                 number=fake.bothify(text="?###??"),
                 vin=fake.vin(),
                 model=models[i%len(models)],
-                enterprise=enterprises[i%len(enterprises)],
+                enterprise=enterprise,
             )
             vehicles.append(vehicle)
 
@@ -225,14 +207,14 @@ class Command(BaseCommand):
 
         return models
 
-    def _generate_drivers(self, options, enterprises, fake):
+    def _generate_drivers(self, count_drivers, enterprise, fake):
         drivers = []
-        for i in range(options["driver"]):
+        for i in range(count_drivers):
             name = fake.unique.name().split(" ")
             driver = Driver.objects.create(
                 first_name=name[0],
                 last_name=name[1],
-                enterprise=enterprises[i % len(enterprises)],
+                enterprise=enterprise,
                 TIN=fake.bothify(text="############"),
             )
             drivers.append(driver)
@@ -241,15 +223,7 @@ class Command(BaseCommand):
 
         return drivers
 
-    def _genegate_enterprises(self, enterprise_name_list):
-        enterprises = []
-        for name in enterprise_name_list:
-            enterprise = Enterprise.objects.create(name=name, city="City")
-            enterprises.append(enterprise)
 
-        self.stdout.write(f"Создано {len(enterprises)} предприятий")
-
-        return enterprises
 
     def _check_options(self, options):
         if not options["enterprise"]:

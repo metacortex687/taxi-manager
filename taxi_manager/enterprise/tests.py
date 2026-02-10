@@ -88,7 +88,7 @@ class CommandGenerateDataTest(TestCase):
         call_command("generate_data", enterprise=name_enterprise, driver=15, vehicle=51, seed=24) 
 
         self.assertTrue(VehicleDriver.objects.exists())
-        self.assertEqual(VehicleDriver.objects.count(), 171) #Для seed=24 171 оно должно быть большим
+        self.assertEqual(VehicleDriver.objects.count(), 529) #Для seed=24 529 оно должно быть большим
 
 
     def test_generate_set_active_links_of_vehicles_and_drivers_when_one_enterprise_and_fewer_vehicles_then_driver(self):
@@ -112,10 +112,10 @@ class CommandGenerateDataTest(TestCase):
 
         self.assertEqual(Vehicle.objects.count(), 1000) 
         self.assertEqual(Driver.objects.count(), 100) 
-        self.assertEqual(VehicleDriver.objects.count(), 3600) #Числа случайные для seed=15, важен прорядок чисел
-        self.assertEqual(VehicleDriver.objects.values("driver").distinct().count(), 91) #Числа случайные для seed=15, важен прорядок чисел
-        self.assertEqual(VehicleDriver.objects.values("vehicle").distinct().count(), 907) #Числа случайные для seed=15, важен прорядок чисел
-        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 91) #Числа случайные для seed=15, важен прорядок чисел
+        self.assertEqual(VehicleDriver.objects.count(), 3927) #Числа случайные для seed=15, важен прорядок чисел
+        self.assertEqual(VehicleDriver.objects.values("driver").distinct().count(), 100) #Числа случайные для seed=15, важен прорядок чисел
+        self.assertEqual(VehicleDriver.objects.values("vehicle").distinct().count(), 1000) #Числа случайные для seed=15, важен прорядок чисел
+        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 100) #Числа случайные для seed=15, важен прорядок чисел
 
     def test_generate_links_vehicle_driver_for_all_enterprises(self):
         name_enterprise = ["test_name1","test_name2","test_name3","test_name4","test_name5"]
@@ -131,7 +131,7 @@ class CommandGenerateDataTest(TestCase):
         name_enterprise = ["test_name1","test_name2","test_name3","test_name4","test_name5"]
         call_command("generate_data", enterprise=name_enterprise, driver=20, vehicle=20, seed=15) 
   
-        self.assertEqual(Driver.objects.count(), 20)
+        self.assertEqual(Driver.objects.count(), 20*5)
         self.assertEqual(VehicleDriver.objects.filter(~Q(enterprise = F("driver__enterprise"))).count(), 0)
         self.assertFalse(VehicleDriver.objects.filter(~Q(enterprise = F("driver__enterprise"))).exists())
 
@@ -144,4 +144,16 @@ class CommandGenerateDataTest(TestCase):
         self.assertEqual(VehicleDriver.objects.filter(~Q(enterprise = F("vehicle__enterprise"))).count(), 0)
         self.assertFalse(VehicleDriver.objects.filter(~Q(enterprise = F("vehicle__enterprise"))).exists())
 
+    def test_generate_for_multiply_many_enterprise_check_count_vehicle(self):
+        name_enterprise = ["test_name1", "test_name2", "test_name3"] 
+        call_command("generate_data", enterprise=name_enterprise, driver=3, vehicle=51, seed=24) 
+
+        self.assertEqual(Vehicle.objects.count(), 51*len(name_enterprise)) 
+        
+        
+    def test_generate_for_multiply_enterprise_check_count_driver(self):
+        name_enterprise = ["test_name1", "test_name2", "test_name3"] 
+        call_command("generate_data", enterprise=name_enterprise, driver=3, vehicle=51, seed=24)
+ 
+        self.assertEqual(Driver.objects.count(), 3*len(name_enterprise))   
 
