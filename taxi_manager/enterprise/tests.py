@@ -137,4 +137,13 @@ class CommandGenerateDataTest(TestCase):
         self.assertEqual(VehicleDriver.objects.filter(~Q(enterprise = F("driver__enterprise"))).count(), 0)
         self.assertFalse(VehicleDriver.objects.filter(~Q(enterprise = F("driver__enterprise"))).exists())
 
+    def test_generate_vehicle_driver_links_match_vehicle_enterprise(self):
+        self.assertEqual(VehicleDriver.objects.count(), 0)
+
+        name_enterprise = ["test_name1","test_name2","test_name3","test_name4","test_name5"]
+        call_command("generate_data", enterprise=name_enterprise, driver=20, vehicle=20, seed=15) 
+  
+        self.assertEqual(VehicleDriver.objects.filter(~Q(enterprise = F("vehicle__enterprise"))).count(), 0)
+        self.assertFalse(VehicleDriver.objects.filter(~Q(enterprise = F("vehicle__enterprise"))).exists())
+
 
