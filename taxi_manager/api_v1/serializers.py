@@ -83,16 +83,16 @@ class ModelSerializer(serializers.ModelSerializer):
 
 
 class EnterpriseSerializer(serializers.ModelSerializer):
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation["vehicle_ids"] = representation.pop("vehicles")
-        representation["driver_ids"] = representation.pop("drivers")
-        return representation
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     representation["vehicle_ids"] = representation.pop("vehicles")
+    #     representation["driver_ids"] = representation.pop("drivers")
+    #     return representation
 
     class Meta:
         model = Enterprise
 
-        fields = ("id", "name", "city", "vehicles", "drivers")
+        fields = ("id", "name", "city",)
 
 
 class DriverSerializer(serializers.ModelSerializer):
