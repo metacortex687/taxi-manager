@@ -145,6 +145,8 @@ class Command(BaseCommand):
 
                 for driver in _drivers[start_idx_driver:(end_idx_driver+1)]:
                     pairs.append((vehicle, driver))
+                    assert vehicle.enterprise == enterprise
+                    assert driver.enterprise == enterprise
 
                 start_idx_driver += count_assigned_drivers
                 start_idx_driver %= len(_drivers)
