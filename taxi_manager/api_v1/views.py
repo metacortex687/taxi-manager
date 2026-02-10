@@ -46,6 +46,10 @@ class VehicleViewSet(viewsets.ModelViewSet):
         if driver_id:
             vehicles = Driver.objects.get(id=driver_id).vehicles
 
+        enterprise_id = self.kwargs.get("enterprise_id")
+        if enterprise_id:
+            vehicles = vehicles.filter(enterprise=enterprise_id)
+
 
         enterprise_ids = user.managed_enterprises.values("id")
         vehicles = vehicles.filter(enterprise__in=enterprise_ids)

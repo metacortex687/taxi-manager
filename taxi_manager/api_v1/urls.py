@@ -24,7 +24,9 @@ urlpatterns = [
     path("enterprises/", EnterpriseListAPIView.as_view()),
     
     path("drivers/<int:pk>/", DriverDetailAPIView.as_view()),
+    path("enterprises/<int:enterprise_id>/vehicles/", VehicleViewSet.as_view({"get":"list"})),
     path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
+    
     # path("logout/", SessionLogoutView.as_view()),
     path(r"auth/", include("djoser.urls")),
     re_path(r"^auth/", include("djoser.urls.authtoken")),
