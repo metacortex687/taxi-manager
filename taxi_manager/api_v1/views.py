@@ -183,6 +183,10 @@ class DriverListAPIView(generics.ListAPIView):
             enterprise_ids = user.managed_enterprises.values("id")
             drivers = drivers.filter(enterprise__in=enterprise_ids)
 
+        enterprise_id = self.kwargs.get("enterprise_id")
+        if enterprise_id:
+            drivers = drivers.filter(enterprise=enterprise_id)
+
         return drivers.all()
 
 

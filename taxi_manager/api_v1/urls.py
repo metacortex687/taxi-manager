@@ -25,6 +25,7 @@ urlpatterns = [
     
     path("drivers/<int:pk>/", DriverDetailAPIView.as_view()),
     path("enterprises/<int:enterprise_id>/vehicles/", VehicleViewSet.as_view({"get":"list"})),
+    path("enterprises/<int:enterprise_id>/drivers/", DriverListAPIView.as_view()),
     path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
     
     # path("logout/", SessionLogoutView.as_view()),
