@@ -6,6 +6,7 @@ from ..enterprise.models import Enterprise
 class VehicleReadSerializer(serializers.ModelSerializer):
     model_id = serializers.SerializerMethodField()
     active_driver_id = serializers.IntegerField()
+    color = serializers.CharField()
     # enterprise_id = serializers.SerializerMethodField()
     # model_name = serializers.SerializerMethodField()
     # model = ModelSerializer()
@@ -33,6 +34,7 @@ class VehicleReadSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "model_id",
+            "color",
             "number",
             "vin",
             "year_of_manufacture",

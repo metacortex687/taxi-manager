@@ -54,7 +54,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
         enterprise_ids = user.managed_enterprises.values("id")
         vehicles = vehicles.filter(enterprise__in=enterprise_ids)
 
-        return vehicles.annotate(active_driver_id=Subquery(active_driver)).all()
+        return vehicles.annotate(active_driver_id=Subquery(active_driver), color = F("model__color")).all()
 
     def get_object(self):
         pk = self.kwargs["pk"]
