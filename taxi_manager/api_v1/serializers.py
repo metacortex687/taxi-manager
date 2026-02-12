@@ -81,6 +81,7 @@ class ModelSerializer(serializers.ModelSerializer):
             "load_capacity_kg",
             "created_at",
             "updated_at",
+            "color",
         )
 
 
