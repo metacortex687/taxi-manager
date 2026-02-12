@@ -32,6 +32,7 @@ class ModelAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
+        "color",
         "type",
         "number_of_seats",
         "tank_capacity_l",
