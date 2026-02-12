@@ -98,7 +98,7 @@ class Model(models.Model):
         verbose_name="Грузоподъемность", help_text="Грузоподъемность (кг)"
     )
 
-    color = models.CharField(max_length = 30, default=True, blank=True)
+    color = models.CharField(max_length = 30, default="", blank=True)
 
     def __str__(self):
         return self.name
