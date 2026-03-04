@@ -75,13 +75,14 @@ class ModelSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "color",
             "type_code",
             "number_of_seats",
             "tank_capacity_l",
             "load_capacity_kg",
             "created_at",
             "updated_at",
-            "color",
+            
         )
 
 
