@@ -1,4 +1,4 @@
-from rest_framework import generics, viewsets
+from rest_framework import generics, viewsets, filters
 from ..vehicle.models import Vehicle, Model, Driver, VehicleDriver
 from ..enterprise.models import Enterprise
 from .serializers import (
@@ -28,6 +28,7 @@ User = get_user_model()
 class VehicleViewSet(viewsets.ModelViewSet):
     serializer_class = VehicleReadSerializer
     queryset = Vehicle.objects.all()
+    #filter_backends = [filters.OrderingFilter]
 
     http_method_names = ["get", "put", "post", "delete"]
 
