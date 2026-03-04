@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'rest_framework.authtoken',
+    'django_bootstrap5',
     # 'dj_rest_auth',
     'taxi_manager.vehicle',
     'taxi_manager.enterprise',
