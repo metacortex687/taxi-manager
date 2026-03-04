@@ -9,4 +9,21 @@
 </ul>
 {% endblock content %}
 
+{% block script %}
+<script>
+    window.onload = () =>
+    {
+        const tokenAuth = localStorage.getItem("tokenAuth")
+        if (tokenAuth === null) {
+            const curent_href = window.location.href;
+            window.location = `${window.location.origin}/login/?next=${curent_href}`
+        };
+        
+    }
+    
+</script>    
+{% endblock script %}
+
+
+
 
