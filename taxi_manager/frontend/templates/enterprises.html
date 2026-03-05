@@ -3,7 +3,7 @@
 {% block title %}Предприятия менеджера{% endblock title %}
 
 {% block content %}
-<ul>
+<ul name="list_enterprises">
     <li>Предприятие 1</li>
     <li>Предприятие 2</li>
 </ul>
@@ -18,6 +18,8 @@
             const curent_href = window.location.href;
             window.location = `${window.location.origin}/login/?next=${curent_href}`
         };
+
+        console.log(tokenAuth)
         
     }
     
@@ -25,5 +27,10 @@
 {% endblock script %}
 
 
+{% block style %}
+<style>
+    
+</style>
+{% endblock style %}
 
 
