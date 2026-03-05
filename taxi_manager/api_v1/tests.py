@@ -311,27 +311,32 @@ class VehicleAPITest(TestCase):
         pk = self.vehicle1.pk
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
-        driver = Driver.objects.create(first_name="first_name_driver1", last_name="last_name_driver1", TIN="12345", enterprise = self.enterprise1)
-        self.vehicle1.drivers.add(driver, through_defaults={"enterprise":self.enterprise1})
+        driver = Driver.objects.create(
+            first_name="first_name_driver1",
+            last_name="last_name_driver1",
+            TIN="12345",
+            enterprise=self.enterprise1,
+        )
+        self.vehicle1.drivers.add(
+            driver, through_defaults={"enterprise": self.enterprise1}
+        )
 
         response = self.client.delete(
             f"/api/v1/vehicles/{pk}/",
             headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
         )
 
-        self.assertEqual(response.status_code, 409)  
+        self.assertEqual(response.status_code, 409)
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
-        #Если убрать ссылку то удалит
+        # Если убрать ссылку то удалит
         # self.vehicle1.drivers.remove(driver)
         # response = self.client.delete(
         #     f"/api/v1/vehicles/{pk}/",
         #     headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
         # )
-        # self.assertEqual(response.status_code, 409)  
+        # self.assertEqual(response.status_code, 409)
         # self.assertFalse(Vehicle.objects.filter(pk=pk).exists())
-
-             
 
     def test_manager_cannot_delete_vehicle_for_unmanaged_enterprise_return_403(self):
         pk = self.vehicle3.pk
@@ -516,6 +521,7 @@ class VehicleAPITest(TestCase):
         self.assertEqual(responce.status_code, 400)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
+
 class TokenAPITest(TestCase):
     def setUp(self):
         self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city")
@@ -593,7 +599,7 @@ class TokenAPITest(TestCase):
         """
 
         response = self.client.get("/api/v1/unknown_endpoint/")
-        self.assertEqual(response.status_code, 404)        
+        self.assertEqual(response.status_code, 404)
 
 
 class EnterpriseAPITest(TestCase):
