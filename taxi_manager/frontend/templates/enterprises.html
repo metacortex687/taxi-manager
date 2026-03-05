@@ -3,7 +3,12 @@
 {% block title %}Предприятия менеджера{% endblock title %}
 
 {% block content %}
-<ul name="list_enterprises">
+<form id="logoutForm">
+    <label>Пользователь:</label>
+    <label id="usernameLabel">Не авторизован</label>
+
+    <button type="submit" >Выйти</button>    
+</form>
     <li>Предприятие 1</li>
     <li>Предприятие 2</li>
 </ul>
@@ -19,9 +24,12 @@
             window.location = `${window.location.origin}/login/?next=${curent_href}`
         };
 
-        console.log(tokenAuth)
-        
-    }
+    logoutForm.onsubmit = (e) =>
+    {
+        e.preventDefault()
+        localStorage.removeItem("tokenAuth")
+        location.reload()
+    }  
     
 </script>    
 {% endblock script %}
