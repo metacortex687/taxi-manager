@@ -12,8 +12,6 @@
 
 <h5>Предприятия:</h5>
 <ul id="listEnterprises">
-    <li>Предприятие 1</li>
-    <li>Предприятие 2</li>
 </ul>
 
 {% endblock content %}
@@ -33,7 +31,9 @@
         const data = await response.json()
 
         listEnterprises.innerHTML = ""
-        data.results.forEach((item) => listEnterprises.innerHTML += `\n<li>${item.name}</li>`)
+        for (let enterprise of data.results) {
+            listEnterprises.innerHTML += `\n<li>${enterprise.name}</li>`
+        }
 
     }
 
@@ -45,8 +45,6 @@
         const response = await fetch("/api/v1/auth/users/me/", {
             method: "GET",
             headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }})
-
-        console.log(response.status)
 
         const data = await response.json()
 
