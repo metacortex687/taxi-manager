@@ -140,8 +140,9 @@ class EnterpriseListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_superuser:
-            return Enterprise.objects.all()
+
+        if user.is_anonymous:
+            raise NotAuthenticated("Авторизуйтесь")
 
         return user.managed_enterprises.all()
 
