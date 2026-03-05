@@ -649,6 +649,15 @@ class EnterpriseAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
 
+    def test_manager_list_enterprises_returns_only_managed(self):
+        response = self.client.get(
+            "/api/v1/enterprises/",
+            headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual({1, 2}, {result["id"] for result in response.data["results"]})
+
     def test_user_cannot_retriev_enterprise_without_token_return_401(self):
         response = self.client.get(f"/api/v1/enterprises/{self.enterprise3.pk}/")
 
