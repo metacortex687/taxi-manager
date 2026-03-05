@@ -9,20 +9,66 @@
 
     <button type="submit" >Выйти</button>    
 </form>
+
+<h5>Предприятия:</h5>
+<ul id="listEnterprises">
     <li>Предприятие 1</li>
     <li>Предприятие 2</li>
 </ul>
+
 {% endblock content %}
 
 {% block script %}
 <script>
-    window.onload = () =>
+    const loadEnterprises = async () => {
+        const tokenAuth = localStorage.getItem("tokenAuthREST")
+        const listEnterprises = document.getElementById("listEnterprises")
+        
+
+        const response = await fetch("/api/v1/enterprises/", {
+            method: "GET",
+            headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }})
+
+        console.log(response.status)
+
+        const data = await response.json()
+
+        listEnterprises.innerHTML = ""
+        data.results.forEach((item) => listEnterprises.innerHTML += `\n<li>${item.name}</li>`)
+
+    }
+
+    const loadUserInfo = async () => {
+        const tokenAuth = localStorage.getItem("tokenAuthREST")
+        const listEnterprises = document.getElementById("listEnterprises")
+        const usernameLabel = document.getElementById("usernameLabel")
+
+        const response = await fetch("/api/v1/auth/users/me/", {
+            method: "GET",
+            headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }})
+
+        console.log(response.status)
+
+        const data = await response.json()
+
+        usernameLabel.innerText = data.username
+
+    }
+
+    window.onload = async () =>
     {
-        const tokenAuth = localStorage.getItem("tokenAuth")
+        const tokenAuth = localStorage.getItem("tokenAuthREST")
         if (tokenAuth === null) {
             const curent_href = window.location.href;
             window.location = `${window.location.origin}/login/?next=${curent_href}`
         };
+
+
+        await loadUserInfo()
+
+        
+        await loadEnterprises()
+    }
 
     logoutForm.onsubmit = (e) =>
     {
