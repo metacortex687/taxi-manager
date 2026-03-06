@@ -5,7 +5,7 @@
 {% block content %}
 
 <form class="d-flex justify-content-center" id="authForm">
-    <div class="form-check mb-3">
+    <div class="auth-box mb-3">
         <h1 class="text-center">Авторизуйтесь</h1>
         <div class="mb-3">
             <label for="inputUser" class="form-label">Пользователь:</label>
@@ -65,14 +65,18 @@
 
     const initPage = async () => {
 
-    } 
-
-
-
-    
-
+    }
 
 </script>
-
 {% endblock script %} 
+
+
+{% block style %}
+<style>
+    .auth-box {
+        width: 420px;
+    }
+</style>
+{% endblock style %}
+
 
