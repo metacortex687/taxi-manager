@@ -3,12 +3,6 @@
 {% block title %}Предприятия менеджера{% endblock title %}
 
 {% block content %}
-<form id="logoutForm">
-    <label>Пользователь:</label>
-    <label id="usernameLabel">Не авторизован</label>
-
-    <button type="submit" >Выйти</button>    
-</form>
 
 <h5>Предприятия:</h5>
 <ul id="listEnterprises">
@@ -34,46 +28,13 @@
         for (let enterprise of data.results) {
             listEnterprises.innerHTML += `\n<li>${enterprise.name}</li>`
         }
-
     }
 
-    const loadUserInfo = async () => {
-        const tokenAuth = localStorage.getItem("tokenAuth")
-        const listEnterprises = document.getElementById("listEnterprises")
-        const usernameLabel = document.getElementById("usernameLabel")
 
-        const response = await fetch("/api/v1/auth/users/me/", {
-            method: "GET",
-            headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }})
+    const initPage = async () => {
+        loadEnterprises();
+    } 
 
-        const data = await response.json()
-
-        usernameLabel.innerText = data.username
-
-    }
-
-    window.onload = async () =>
-    {
-        const tokenAuth = localStorage.getItem("tokenAuth")
-        if (tokenAuth === null) {
-            const curent_href = window.location.href;
-            window.location = `${window.location.origin}/login/?next=${curent_href}`
-        };
-
-
-        await loadUserInfo()
-
-        
-        await loadEnterprises()
-    }
-
-    logoutForm.onsubmit = (e) =>
-    {
-        e.preventDefault()
-        localStorage.removeItem("tokenAuth")
-        location.reload()
-    }  
-    
 </script>    
 {% endblock script %}
 
