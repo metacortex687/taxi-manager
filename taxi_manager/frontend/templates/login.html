@@ -49,13 +49,8 @@
             allertMessage.innerHTML = data.non_field_errors[0] 
             allertMessage.classList.remove("d-none")
             return
-        }   
-        if (!allertMessage.classList.contains("d-none"))  {
-            allertMessage.classList.add("d-none")
-        }      
-        
-
-        
+        }  
+       
 
         localStorage.setItem("tokenAuth", data.auth_token)        
 
@@ -80,3 +75,5 @@
 {% endblock style %}
 
 
+{% block navbar_content %}
+{% endblock navbar_content %}
