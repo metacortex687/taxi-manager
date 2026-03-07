@@ -24,7 +24,7 @@
 
 
         const data = await response.json()
-        listEnterprises.innerHTML = data.results.map(enterprise => `<li>${enterprise.name}</li>`).join("\n")
+        listEnterprises.innerHTML = data.results.map(enterprise => `<li>${enterprise.name} <a href="${enterprise.id}/vehicles/">Авто<a></li>`).join("\n")
 
     }
 
