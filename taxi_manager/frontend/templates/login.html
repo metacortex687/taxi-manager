@@ -44,7 +44,7 @@
 
         const data = await response.json()
 
-        if (response.status === 401) {
+        if (response.status !== 200) {
             allertMessage.innerHTML = ""
             allertMessage.innerHTML = data.non_field_errors[0] 
             allertMessage.classList.remove("d-none")
