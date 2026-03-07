@@ -15,11 +15,12 @@
     const loadEnterprises = async () => {
         const tokenAuth = localStorage.getItem("tokenAuth")
         const listEnterprises = document.getElementById("listEnterprises")
-        
+
 
         const response = await fetch("/api/v1/enterprises/", {
             method: "GET",
-            headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }})
+            headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }
+        })
 
 
         const data = await response.json()
@@ -30,12 +31,7 @@
 
     const initPage = async () => {
         loadEnterprises();
-    } 
+    }
 
-</script>    
+</script>
 {% endblock script %}
-
-
-
-
-
