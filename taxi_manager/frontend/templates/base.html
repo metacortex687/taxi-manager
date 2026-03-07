@@ -16,7 +16,8 @@
 
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light ms-3">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light ms-3" id="navbar">
+        
         <ul class="navbar-nav ms-auto">
             {% block navbar_content %}
             <li class="nav-item">
@@ -71,4 +72,11 @@
     </script>
 </body>
 </html>
+
+<style>
+    #navbar {
+        min-height: 44px;
+    }
+    
+</style>
 
