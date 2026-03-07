@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Авто по предприятию {{enterprise.name}}{% endblock title %}
+
+{% block content %}
+
+<h5>Автомобили по предприятию {{enterprise.name}}</h5>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col"> </th>
+            <th scope="col"> </th>
+            <th scope="col"> </th>
+        </tr>        
+    </thead>
+    <tbody>
+        <tr>
+            <td scope="row">Авто 1</th>
+            <td><a href="#">Удалить<a></td>
+            <td><a href="#">Редактировать<a></td>
+        </tr>
+        <tr>
+            <td scope="row">Автомбиль второй</th>
+            <td><a href="#">Удалить<a></td>
+            <td><a href="#">Редактировать<a></td>
+        </tr>
+    </tbody>
+
+</table>
+
+
+{% endblock content %}
+
+{% block script %}
+<script>
+    const loadVehicles = async () => {
+        // const tokenAuth = localStorage.getItem("tokenAuth")
+        // const listEnterprises = document.getElementById("listEnterprises")
+
+
+        // const response = await fetch("/api/v1/enterprises/", {
+        //     method: "GET",
+        //     headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }
+        // })
+
+
+        // const data = await response.json()
+        // listEnterprises.innerHTML = data.results.map(enterprise => `<li>${enterprise.name} <a href="${enterprise.id}/vehicles/">Авто<a></li>`).join("\n")
+
+    }
+
+
+    const initPage = async () => {
+        loadVehicles();
+    }
+
+</script>
+{% endblock script %}
+
+{{enterprise}}
