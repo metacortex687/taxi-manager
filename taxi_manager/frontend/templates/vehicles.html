@@ -32,7 +32,7 @@
 
 {% block script %}
 <script>
-    const fillTable = async (data) => {
+    const renderTable = async (data) => {
         const elemTable = document.getElementById("tvehicles")
         const elemHead = elemTable.querySelector("thead")
         const elemBody = elemTable.querySelector("tbody")
@@ -76,9 +76,7 @@
 
 
         const data = await response.json()
-        await fillTable(data.results)
-        
-        // listEnterprises.innerHTML = data.results.map(enterprise => `<li>${enterprise.name} <a href="${enterprise.id}/vehicles/">Авто<a></li>`).join("\n")
+        await renderTable(data.results)
 
     }
 
