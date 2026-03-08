@@ -5,58 +5,79 @@
 {% block content %}
 
 <h5>Автомобили по предприятию {{enterprise.name}}</h5>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th scope="col"> </th>
-            <th scope="col"> </th>
-            <th scope="col"> </th>
-        </tr>        
+
+
+<table class="table table-striped" id="tvehicles">
+    <thead> 
     </thead>
-    <tbody>
-        <tr>
-            <td scope="row">Авто 1</th>
-            <td><a href="#">Удалить<a></td>
-            <td><a href="#">Редактировать<a></td>
-        </tr>
-        <tr>
-            <td scope="row">Автомбиль второй</th>
-            <td><a href="#">Удалить<a></td>
-            <td><a href="#">Редактировать<a></td>
-        </tr>
+    <tbody id="tbodyVehicles">
     </tbody>
-
-    <nav aria-label="Page navigation example">
-        <ul class="pagination">
-            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-            <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item active"><a class="page-link" href="#">3</a></li>
-            <li class="page-item disabled"><span class="page-link">…</span></li>           
-            <li class="page-item"><a class="page-link" >3</a></li>
-            <li class="page-item"><a class="page-link" href="#">Next</a></li>
-        </ul>
-    </nav>
-
 </table>
+</div>
 
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+        <li class="page-item"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item active"><a class="page-link" href="#">3</a></li>
+        <li class="page-item disabled"><span class="page-link">…</span></li>           
+        <li class="page-item"><a class="page-link" >3</a></li>
+        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+    </ul>
+</nav>
 
+<div id="pageData" data-enterprise-pk="{{enterprise.pk}}"></div>
 {% endblock content %}
 
 {% block script %}
 <script>
+    const fillTable = async (data) => {
+        const elemTable = document.getElementById("tvehicles")
+        const elemHead = elemTable.querySelector("thead")
+        const elemBody = elemTable.querySelector("tbody")
+
+        elemHead.innerHTML = `
+        <tr>
+            <th scope="col">Брэнд</th>
+            <th scope="col">Год</th>
+            <th scope="col">Цвет</th>
+            <th scope="col">Цена</th>
+            <th scope="col">Номер</th>
+            <th scope="col">VIN</th>
+            <th scope="col"></th>
+        </tr>
+        `
+
+        elemBody.innerHTML = data.map(record => `
+        <tr>
+            <td>${record.model__name}</td>
+            <td>${record.year_of_manufacture}</td>
+            <td>${record.color}</td>
+            <td>${record.price}</td>
+            <td>${record.number}</td>
+            <td>${record.vin}</td>
+            <td></td>
+        </tr> 
+        `).join("")
+    }
+
+
     const loadVehicles = async () => {
-        // const tokenAuth = localStorage.getItem("tokenAuth")
-        // const listEnterprises = document.getElementById("listEnterprises")
+        const tokenAuth = localStorage.getItem("tokenAuth")
+        const elemTbodyVehicles = document.getElementById("tbodyVehicles")
+        const pkEnterprise = document.getElementById("pageData").dataset.enterprisePk
+
+        console.log(pkEnterprise)
+        const response = await fetch(`/api/v1/enterprises/${pkEnterprise}/vehicles/`, {
+            method: "GET",
+            headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }
+        })
 
 
-        // const response = await fetch("/api/v1/enterprises/", {
-        //     method: "GET",
-        //     headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }
-        // })
-
-
-        // const data = await response.json()
+        const data = await response.json()
+        await fillTable(data.results)
+        
         // listEnterprises.innerHTML = data.results.map(enterprise => `<li>${enterprise.name} <a href="${enterprise.id}/vehicles/">Авто<a></li>`).join("\n")
 
     }
