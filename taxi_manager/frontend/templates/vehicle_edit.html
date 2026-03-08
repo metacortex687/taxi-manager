@@ -28,6 +28,16 @@
     // authForm.onsubmit = async (event) => {
     // };
 
+    const renderInputField = (id,value,label) => {
+        return `
+            <div class="mb-3">
+                <label for="${id}" class="form-label">${label}</label>
+                <input type="text" class="form-control" id="${id}" value="${value}">
+            </div> 
+        `
+    }
+
+
     const renderForm = async () => {
         const form_fields = document.getElementById("form_fields")
         const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
@@ -49,6 +59,15 @@
                 </select>
             </div>
         `
+
+        form_fields.innerHTML += renderInputField("inputNumber",form_data.number,"Номер")
+        form_fields.innerHTML += renderInputField("inputMileage",form_data.mileage,"Пробег (км):")
+        form_fields.innerHTML += renderInputField("inputPrice",form_data.price,"Цена (руб):")
+        form_fields.innerHTML += renderInputField("inputVin",form_data.vin,"VIN:")
+        form_fields.innerHTML += renderInputField("inputYear",form_data.year_of_manufacture,"Год выпуска:")
+
+        console.log(form_data)
+    
         
     }
 
