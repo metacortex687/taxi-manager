@@ -7,6 +7,7 @@ class VehicleReadSerializer(serializers.ModelSerializer):
     model_id = serializers.SerializerMethodField()
     active_driver_id = serializers.IntegerField()
     color = serializers.CharField()
+    model__name = serializers.CharField(source="model.name")
     # enterprise_id = serializers.SerializerMethodField()
     # model_name = serializers.SerializerMethodField()
     # model = ModelSerializer()
@@ -43,6 +44,7 @@ class VehicleReadSerializer(serializers.ModelSerializer):
             # "enterprise_id",
             "drivers",
             "active_driver_id",
+            "model__name",
         )
 
 class VehicleWriteSerializer(serializers.ModelSerializer):
