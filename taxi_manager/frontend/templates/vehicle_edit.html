@@ -37,6 +37,21 @@
         `
     }
 
+    const renderSelectBrandField = (form_data, brands_data) => {
+        options = brands_data.map(brand => `
+            <option value="${brand.id}" ${brand.id === form_data.model_id ? "selected" : ""}>${brand.name} (${brand.color})</option>
+        `).join("")
+
+        return `
+            <div class="mb-3">
+                <label for="inputUser" class="form-label">Бренд:</label>
+                <select class="form-select" id="inputBrand">
+                    <option value="" disabled>Выберите бренд</option>
+                    ${options}
+                </select>
+            </div>
+        `
+    }
 
     const renderForm = async () => {
         const form_fields = document.getElementById("form_fields")
@@ -46,19 +61,7 @@
         form_data = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`)
         brands_data = (await fetch_data(`/api/v1/models/`)).results
 
-        options = brands_data.map(brand => `
-            <option value="${brand.id}" ${brand.id === form_data.model_id ? "selected" : ""}>${brand.name} (${brand.color})</option>
-        `).join("")
-
-        form_fields.innerHTML += `
-            <div class="mb-3">
-                <label for="inputUser" class="form-label">Бренд:</label>
-                <select class="form-select" id="inputBrand">
-                    <option value="" disabled>Выберите бренд</option>
-                    ${options}
-                </select>
-            </div>
-        `
+        form_fields.innerHTML += renderSelectBrandField(form_data,brands_data)
 
         form_fields.innerHTML += renderInputField("inputNumber",form_data.number,"Номер")
         form_fields.innerHTML += renderInputField("inputMileage",form_data.mileage,"Пробег (км):")
@@ -66,8 +69,7 @@
         form_fields.innerHTML += renderInputField("inputVin",form_data.vin,"VIN:")
         form_fields.innerHTML += renderInputField("inputYear",form_data.year_of_manufacture,"Год выпуска:")
 
-        console.log(form_data)
-    
+        console.log(form_data)    
         
     }
 
