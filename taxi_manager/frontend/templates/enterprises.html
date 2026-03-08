@@ -17,7 +17,7 @@
         
         const listEnterprises = document.getElementById("listEnterprises")
 
-        data = fetch_data("/api/v1/enterprises/")
+        data = await fetch_data("/api/v1/enterprises/")
 
         listEnterprises.innerHTML = data.results.map(enterprise => `<li>${enterprise.name} <a href="${enterprise.id}/vehicles/">Авто<a></li>`).join("\n")
 
