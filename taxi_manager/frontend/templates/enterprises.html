@@ -12,18 +12,13 @@
 
 {% block script %}
 <script>
+
     const loadEnterprises = async () => {
-        const tokenAuth = localStorage.getItem("tokenAuth")
+        
         const listEnterprises = document.getElementById("listEnterprises")
 
+        data = fetch_data("/api/v1/enterprises/")
 
-        const response = await fetch("/api/v1/enterprises/", {
-            method: "GET",
-            headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }
-        })
-
-
-        const data = await response.json()
         listEnterprises.innerHTML = data.results.map(enterprise => `<li>${enterprise.name} <a href="${enterprise.id}/vehicles/">Авто<a></li>`).join("\n")
 
     }

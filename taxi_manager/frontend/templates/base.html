@@ -32,7 +32,20 @@
     </nav>
     <div class="px-3">
         {% block content %}{% endblock content %} 
-    </div>    
+    </div>   
+    <script>
+        const fetch_data = async (url) => {
+            const tokenAuth = localStorage.getItem("tokenAuth")
+
+            const response = await fetch(url, {
+                method: "GET",
+                headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }
+            })
+            
+            const data = await response.json()
+            return data
+        } 
+    </script> 
     {% block script %}{% endblock script %} 
     <script>
         const loadUserInfo = async () => {
