@@ -30,7 +30,9 @@
             {% endblock navbar_content %} 
         <ul>        
     </nav>
-    {% block content %}{% endblock content %} 
+    <div class="px-3">
+        {% block content %}{% endblock content %} 
+    </div>    
     {% block script %}{% endblock script %} 
     <script>
         const loadUserInfo = async () => {
