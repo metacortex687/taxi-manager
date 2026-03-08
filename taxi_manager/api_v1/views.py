@@ -55,6 +55,8 @@ class VehicleViewSet(viewsets.ModelViewSet):
         enterprise_ids = user.managed_enterprises.values("id")
         vehicles = vehicles.filter(enterprise__in=enterprise_ids)
 
+        vehicles = vehicles.prefetch_related("model")
+
         return vehicles.annotate(active_driver_id=Subquery(active_driver), color = F("model__color")).all()
 
     def get_object(self):
