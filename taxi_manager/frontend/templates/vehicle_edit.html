@@ -1,2 +1,71 @@
-Редактировать авто.
+{% extends "base.html" %}
+
+{% block title %}Редактирование авто{% endblock title %}
+
+{% block content %}
+
+<form class="d-flex justify-content-center">
+    <div class="auth-box mb-3">
+        <h1 class="text-center">Автомобиль:</h1>
+        <div id="form_fields">
+        </div>
+        <div class="d-flex justify-content-end gap-1" >
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <button type="submit" class="btn btn-danger">Удалить</button>
+        </div>
+    </div>
+</form>
+
+<div id="pageData" data-pk-vehicle="{{vehicle.pk}}"></div>
+
+{% endblock content %}
+
+
+{% block script %}
+<script>
+    const authForm = document.getElementById("authForm")
+
+    // authForm.onsubmit = async (event) => {
+    // };
+
+    const renderForm = async () => {
+        const form_fields = document.getElementById("form_fields")
+        const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
+
+
+        form_data = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`)
+        brands_data = (await fetch_data(`/api/v1/models/`)).results
+
+        options = brands_data.map(brand => `
+            <option value="${brand.id}" ${brand.id === form_data.model_id ? "selected" : ""}>${brand.name} (${brand.color})</option>
+        `).join("")
+
+        form_fields.innerHTML += `
+            <div class="mb-3">
+                <label for="inputUser" class="form-label">Бренд:</label>
+                <select class="form-select" id="inputBrand">
+                    <option value="" disabled>Выберите бренд</option>
+                    ${options}
+                </select>
+            </div>
+        `
+        
+    }
+
+    const initPage = async () => {
+        renderForm()
+
+    }
+
+</script>
+{% endblock script %} 
+
+
+{% block style %}
+<style>
+    .auth-box {
+        width: 420px;
+    }
+</style>
+{% endblock style %}
 
