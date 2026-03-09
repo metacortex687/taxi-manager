@@ -8,21 +8,23 @@ class VehicleReadSerializer(serializers.ModelSerializer):
     active_driver_id = serializers.IntegerField()
     color = serializers.CharField()
     model__name = serializers.CharField(source="model.name")
-    # enterprise_id = serializers.SerializerMethodField()
+    enterprise_id = serializers.SerializerMethodField()
     # model_name = serializers.SerializerMethodField()
     # model = ModelSerializer()
 
     def get_model_id(self, obj):
         return obj.model.id
 
-    # def get_enterprise_id(self, obj):
-    #     if not obj.enterprise:
-    #         return None
-    #     return obj.enterprise.id
+    def get_enterprise_id(self, obj):
+        if not obj.enterprise:
+            return None
+        return obj.enterprise.id
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation["driver_ids"] = representation.pop("drivers")
+
+        # representation["enterprise_id"] = representation.pop("enterprise")
 
         # if not representation["active_driver_id"]:
         #     representation["active_driver_id"] = -1
@@ -45,6 +47,7 @@ class VehicleReadSerializer(serializers.ModelSerializer):
             "drivers",
             "active_driver_id",
             "model__name",
+            "enterprise_id",
         )
 
 class VehicleWriteSerializer(serializers.ModelSerializer):
