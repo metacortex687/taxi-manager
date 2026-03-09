@@ -9,7 +9,7 @@
         <h1 class="text-center">Автомобиль:</h1>
         <div id="form_fields">
         </div>
-        <div class="d-flex justify-content-end gap-1" >
+        <div class="d-flex justify-content-end gap-1">
             <button type="submit" class="btn btn-primary">Сохранить</button>
             <button type="submit" class="btn btn-danger">Удалить</button>
         </div>
@@ -28,7 +28,7 @@
     // authForm.onsubmit = async (event) => {
     // };
 
-    const renderInputField = (id,value,label) => {
+    const renderInputField = (id, value, label) => {
         return `
             <div class="mb-3">
                 <label for="${id}" class="form-label">${label}</label>
@@ -37,9 +37,9 @@
         `
     }
 
-    const renderSelectedField = (id,form_data, selected_data,label,isSelect,representation,placeholder) => {
+    const renderSelectedField = (id, form_data, selected_data, label, isSelect, representation, placeholder) => {
         options = brands_data.map(selected_record => `
-            <option value="${selected_record.id}" ${isSelect(form_data,selected_record) ? "selected" : ""}>${representation(selected_record)}</option>
+            <option value="${selected_record.id}" ${isSelect(form_data, selected_record) ? "selected" : ""}>${representation(selected_record)}</option>
         `).join("")
 
         return `
@@ -62,17 +62,19 @@
         brands_data = (await fetch_data(`/api/v1/models/`)).results
 
 
-        form_fields.innerHTML += renderSelectedField("inputBrand",form_data,brands_data,"Бренд:",(form_data,selected_record)=>form_data.brand_id===selected_record.id, (selected_record) => `${selected_record.name} (${selected_record.color})`, "Выберите бренд")
+        form_fields.innerHTML += renderSelectedField("inputBrand", form_data, brands_data, "Бренд:",
+            (form_data, selected_record) => form_data.brand_id === selected_record.id,
+            (selected_record) => `${selected_record.name} (${selected_record.color})`, "Выберите бренд")
 
 
-        form_fields.innerHTML += renderInputField("inputNumber",form_data.number,"Номер")
-        form_fields.innerHTML += renderInputField("inputMileage",form_data.mileage,"Пробег (км):")
-        form_fields.innerHTML += renderInputField("inputPrice",form_data.price,"Цена (руб):")
-        form_fields.innerHTML += renderInputField("inputVin",form_data.vin,"VIN:")
-        form_fields.innerHTML += renderInputField("inputYear",form_data.year_of_manufacture,"Год выпуска:")
+        form_fields.innerHTML += renderInputField("inputNumber", form_data.number, "Номер")
+        form_fields.innerHTML += renderInputField("inputMileage", form_data.mileage, "Пробег (км):")
+        form_fields.innerHTML += renderInputField("inputPrice", form_data.price, "Цена (руб):")
+        form_fields.innerHTML += renderInputField("inputVin", form_data.vin, "VIN:")
+        form_fields.innerHTML += renderInputField("inputYear", form_data.year_of_manufacture, "Год выпуска:")
 
-        console.log(form_data)    
-        
+        console.log(form_data)
+
     }
 
     const initPage = async () => {
@@ -81,7 +83,7 @@
     }
 
 </script>
-{% endblock script %} 
+{% endblock script %}
 
 
 {% block style %}
@@ -91,4 +93,3 @@
     }
 </style>
 {% endblock style %}
-
