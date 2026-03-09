@@ -10,8 +10,8 @@
         <div id="form_fields">
         </div>
         <div class="d-flex justify-content-end gap-1">
-            <button type="submit" class="btn btn-primary">Сохранить</button>
-            <button type="submit" class="btn btn-danger">Удалить</button>
+            <button type="button" class="btn btn-primary" data-action="save">Сохранить</button>
+            <button type="button" class="btn btn-danger" data-action="delete">Удалить</button>
         </div>
     </div>
 </form>
@@ -109,11 +109,35 @@
 
     }
 
+    const deleteEntity = async () => {
+        const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
+        const result = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`,method="DELETE")
+        console.log(result)
+
+
+    }
+
+
     document.addEventListener("click", (event) => {
-        if(event.target.classList.contains("js-btn-remove-item")){
-            const item = event.target.closest(".js-removed-item");
+        const target = event.target
+        if(target.classList.contains("js-btn-remove-item")){
+            const item = target.closest(".js-removed-item");
             item.remove()
+            return
         }
+
+        if(!target.hasAttribute("data-action")){
+            return
+        }
+
+        const action = target.dataset.action
+
+        if(action==="delete") {
+            deleteEntity()            
+            return
+        }
+
+
     })
 
 </script>
