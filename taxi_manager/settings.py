@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'djoser',
     'rest_framework.authtoken',
     'django_bootstrap5',
+    'django_filters',
     # 'dj_rest_auth',
     'taxi_manager.vehicle',
     'taxi_manager.enterprise',
@@ -160,5 +161,5 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 100,
-    'DEFAULT_FILTER_BACKENDS': ['rest_framework.filters.OrderingFilter'],
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend','rest_framework.filters.OrderingFilter'],
 }
