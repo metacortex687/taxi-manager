@@ -38,7 +38,7 @@
     }
 
     const renderSelectedField = (id, form_data, selected_data, label, isSelect, representation, placeholder) => {
-        options = brands_data.map(selected_record => `
+        options = selected_data.map(selected_record => `
             <option value="${selected_record.id}" ${isSelect(form_data, selected_record) ? "selected" : ""}>${representation(selected_record)}</option>
         `).join("")
 
@@ -60,20 +60,21 @@
 
         form_data = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`)
         brands_data = (await fetch_data(`/api/v1/models/`)).results
+        enterprises_data = (await fetch_data(`/api/v1/enterprises/`)).results 
 
+        form_fields.innerHTML += renderSelectedField("inputEnterprise", form_data, enterprises_data, "Предприятие:",
+            (form_data, selected_record) => form_data.enterprise_id === selected_record.id,
+            (selected_record) => `${selected_record.name} (${selected_record.city})`, "Выберите предприятие")
 
         form_fields.innerHTML += renderSelectedField("inputBrand", form_data, brands_data, "Бренд:",
             (form_data, selected_record) => form_data.brand_id === selected_record.id,
             (selected_record) => `${selected_record.name} (${selected_record.color})`, "Выберите бренд")
-
 
         form_fields.innerHTML += renderInputField("inputNumber", form_data.number, "Номер")
         form_fields.innerHTML += renderInputField("inputMileage", form_data.mileage, "Пробег (км):")
         form_fields.innerHTML += renderInputField("inputPrice", form_data.price, "Цена (руб):")
         form_fields.innerHTML += renderInputField("inputVin", form_data.vin, "VIN:")
         form_fields.innerHTML += renderInputField("inputYear", form_data.year_of_manufacture, "Год выпуска:")
-
-        console.log(form_data)
 
     }
 
