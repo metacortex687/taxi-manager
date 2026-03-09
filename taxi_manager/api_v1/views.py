@@ -176,6 +176,10 @@ class EnterpriseDetailAPIView(generics.RetrieveAPIView):
 class DriverListAPIView(generics.ListAPIView):
     serializer_class = DriverSerializer
 
+    filterset_fields = {
+        "id": ["exact", "in"],
+    }
+
     def get_queryset(self):
         user = self.request.user
         if user.is_anonymous:

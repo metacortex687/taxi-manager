@@ -53,6 +53,23 @@
         `
     }
 
+    const renderMultySelectedDriverField = (form_drivers_data) => {
+        console.log(form_drivers_data)
+        const lis = form_drivers_data.map(record => `
+                <li class="list-group-item">${record.last_name} ${record.first_name}</li>
+
+        `).join("")
+
+        return `
+            <div class="mb-3">
+                <label for="inputDrivers" class="form-label">Водители:</label>
+                <ul class="list-group" id="inputDrivers">
+                ${lis}
+                </ul>
+            </div>             
+        `
+    }
+
     const renderForm = async () => {
         const form_fields = document.getElementById("form_fields")
         const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
@@ -62,6 +79,8 @@
         brands_data = (await fetch_data(`/api/v1/models/`)).results
         enterprises_data = (await fetch_data(`/api/v1/enterprises/`)).results 
 
+
+
         form_fields.innerHTML += renderSelectedField("inputEnterprise", form_data, enterprises_data, "Предприятие:",
             (form_data, selected_record) => form_data.enterprise_id === selected_record.id,
             (selected_record) => `${selected_record.name} (${selected_record.city})`, "Выберите предприятие")
@@ -69,6 +88,7 @@
         form_fields.innerHTML += renderSelectedField("inputBrand", form_data, brands_data, "Бренд:",
             (form_data, selected_record) => form_data.brand_id === selected_record.id,
             (selected_record) => `${selected_record.name} (${selected_record.color})`, "Выберите бренд")
+            
 
         form_fields.innerHTML += renderInputField("inputNumber", form_data.number, "Номер")
         form_fields.innerHTML += renderInputField("inputMileage", form_data.mileage, "Пробег (км):")
@@ -76,6 +96,10 @@
         form_fields.innerHTML += renderInputField("inputVin", form_data.vin, "VIN:")
         form_fields.innerHTML += renderInputField("inputYear", form_data.year_of_manufacture, "Год выпуска:")
 
+        console.log(form_data)
+        console.log(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}`)
+        form_drivers_data = (await fetch_data(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results 
+        form_fields.innerHTML += renderMultySelectedDriverField(form_drivers_data)
     }
 
     const initPage = async () => {
