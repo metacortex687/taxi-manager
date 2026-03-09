@@ -30,21 +30,49 @@
             {% endblock navbar_content %} 
         <ul>        
     </nav>
+
+    <div id="messages"> 
+    </div>
+
     <div class="px-3">
         {% block content %}{% endblock content %} 
     </div>   
     <script>
-        const fetch_data = async (url) => {
+        const clear_massages = () => {
+            const elemMessages = document.getElementById("messages")
+            elemMessages.innerHTML = `
+
+            `
+
+        }
+        const allert_message = (text) => {
+            const elemMessages = document.getElementById("messages")
+            elemMessages.innerHTML = `
+            <div class="alert alert-danger" role="alert">
+                ${text}
+            </div>
+            `
+        }
+        const fetch_data = async (url, method = "GET") => {
             const tokenAuth = localStorage.getItem("tokenAuth")
 
+            clear_massages()
+
             const response = await fetch(url, {
-                method: "GET",
+                method: method,
                 headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }
             })
-            
+
             const data = await response.json()
+
+            if (!response.ok) {
+                allert_message(data.detail)
+            } 
+            
             return data
         } 
+
+
     </script> 
     {% block script %}{% endblock script %} 
     <script>
