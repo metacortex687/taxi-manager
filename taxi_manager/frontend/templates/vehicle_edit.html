@@ -98,9 +98,8 @@
         form_fields.innerHTML += renderInputField("inputVin", form_data.vin, "VIN:")
         form_fields.innerHTML += renderInputField("inputYear", form_data.year_of_manufacture, "Год выпуска:")
 
-        console.log(form_data)
-        console.log(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}`)
-        form_drivers_data = (await fetch_data(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results 
+
+        // form_drivers_data = (await fetch_data(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
         form_fields.innerHTML += renderMultySelectedDriverField(form_drivers_data)
     }
 
