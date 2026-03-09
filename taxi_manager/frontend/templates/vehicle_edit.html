@@ -37,16 +37,16 @@
         `
     }
 
-    const renderSelectBrandField = (form_data, brands_data) => {
-        options = brands_data.map(brand => `
-            <option value="${brand.id}" ${brand.id === form_data.model_id ? "selected" : ""}>${brand.name} (${brand.color})</option>
+    const renderSelectedField = (id,form_data, selected_data,label,isSelect,representation,placeholder) => {
+        options = brands_data.map(selected_record => `
+            <option value="${selected_record.id}" ${isSelect(form_data,selected_record) ? "selected" : ""}>${representation(selected_record)}</option>
         `).join("")
 
         return `
             <div class="mb-3">
-                <label for="inputUser" class="form-label">Бренд:</label>
-                <select class="form-select" id="inputBrand">
-                    <option value="" disabled>Выберите бренд</option>
+                <label for="${id}" class="form-label">${label}</label>
+                <select class="form-select" id="${id}">
+                    <option value="" disabled>${placeholder}</option>
                     ${options}
                 </select>
             </div>
@@ -61,7 +61,9 @@
         form_data = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`)
         brands_data = (await fetch_data(`/api/v1/models/`)).results
 
-        form_fields.innerHTML += renderSelectBrandField(form_data,brands_data)
+
+        form_fields.innerHTML += renderSelectedField("inputBrand",form_data,brands_data,"Бренд:",(form_data,selected_record)=>form_data.brand_id===selected_record.id, (selected_record) => `${selected_record.name} (${selected_record.color})`, "Выберите бренд")
+
 
         form_fields.innerHTML += renderInputField("inputNumber",form_data.number,"Номер")
         form_fields.innerHTML += renderInputField("inputMileage",form_data.mileage,"Пробег (км):")
