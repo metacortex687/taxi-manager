@@ -49,10 +49,14 @@
             const elemMessages = document.getElementById("messages")
             elemMessages.innerHTML = `
             <div class="alert alert-danger" role="alert">
-                ${text}
+                <div id="messageText"><div>
             </div>
             `
+
+            elemMessages.querySelector("#messageText").textContent = text
+
         }
+
         const fetch_data = async (url, method = "GET") => {
             const tokenAuth = localStorage.getItem("tokenAuth")
 
