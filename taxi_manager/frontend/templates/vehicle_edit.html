@@ -56,9 +56,9 @@
     const renderMultySelectedDriverField = (form_drivers_data) => {
         console.log(form_drivers_data)
         const lis = form_drivers_data.map(record => `
-                <li class="list-group-item d-flex justify-content-between align-items-center">
+                <li class="list-group-item d-flex justify-content-between align-items-center js-removed-item">
                     <span>${record.last_name} ${record.first_name}</span>
-                    <button type="button" class="btn btn-sm btn-outline-danger">×</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger js-btn-remove-item">×</button>
                 </li>
         `).join("")
 
@@ -108,6 +108,13 @@
         renderForm()
 
     }
+
+    document.addEventListener("click", (event) => {
+        if(event.target.classList.contains("js-btn-remove-item")){
+            const item = event.target.closest(".js-removed-item");
+            item.remove()
+        }
+    })
 
 </script>
 {% endblock script %}
