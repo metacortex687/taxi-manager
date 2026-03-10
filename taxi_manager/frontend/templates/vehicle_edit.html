@@ -240,3 +240,16 @@
     }
 </style>
 {% endblock style %}
+
+
+{% block navbar_content %}
+    <li class="nav-item">
+        <a href="{% url 'enterprises' %}" class="btn btn-secondary btn-lg rounded-1 btn-light border">
+            Предприятия
+        </a>
+    </li>
+
+
+    {{ block.super }}
+
+{% endblock navbar_content %} 

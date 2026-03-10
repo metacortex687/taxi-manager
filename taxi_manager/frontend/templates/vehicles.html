@@ -69,7 +69,6 @@
         const elemTbodyVehicles = document.getElementById("tbodyVehicles")
         const pkEnterprise = document.getElementById("pageData").dataset.enterprisePk
 
-        console.log(pkEnterprise)
         const response = await fetch(`/api/v1/enterprises/${pkEnterprise}/vehicles/`, {
             method: "GET",
             headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }
@@ -87,6 +86,17 @@
     }
 
 </script>
+
 {% endblock script %}
 
-{{enterprise}}
+{% block navbar_content %}
+    <li class="nav-item">
+        <a href="{% url 'enterprises' %}" class="btn btn-secondary btn-lg rounded-1 btn-light border">
+            Предприятия
+        </a>
+    </li>
+
+
+    {{ block.super }}
+
+{% endblock navbar_content %} 
