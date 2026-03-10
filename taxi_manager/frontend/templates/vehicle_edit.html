@@ -167,18 +167,17 @@
         console.log(result)
     }
 
-    const updateEntity = async (body) => {
-        const result = await fetch_data(`/api/v1/vehicles/${getPk()}/`,"PUT", body)
+    const updateEntity = async (entity) => {
+        const result = await fetch_data(`/api/v1/vehicles/${getPk()}/`,"PUT", JSON.stringify(entity))
     }
 
-    const saveNewEntity = async (body) => {
-        const result = await fetch_data(`/api/v1/vehicles/`,"POST", body)
+    const saveNewEntity = async (entity) => {
+        const result = await fetch_data(`/api/v1/vehicles/`,"POST", JSON.stringify(entity))
         window.location.href = `/vehicles/${result.id}/edit/`        
     }
 
-    const saveEntity = async () => {
-
-        const body = JSON.stringify({      
+    const entityFromForm = () => {
+        return {      
                 enterprise: document.getElementById("inputEnterprise").value,            
                 model: document.getElementById("inputBrand").value,
                 number: document.getElementById("inputNumber").value,
@@ -186,14 +185,19 @@
                 year_of_manufacture: document.getElementById("inputYear").value,
                 mileage: document.getElementById("inputMileage").value,
                 price: document.getElementById("inputPrice").value,
-            })
+            }
+    }
+
+    const saveEntity = async () => {
+
+        const entity = entityFromForm() 
         
         if (isNew()) {
-            await saveNewEntity(body)
+            await saveNewEntity(entity)
             return
         } 
 
-        await updateEntity(body)
+        await updateEntity(entity)
 
     }
 
