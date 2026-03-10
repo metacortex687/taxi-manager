@@ -169,7 +169,7 @@
 
     const saveNewEntity = async (body) => {
         const result = await fetch_data(`/api/v1/vehicles/`,"POST", body)
-        console.log(result)
+        window.location.href = `/vehicles/${result.id}/edit/`        
     }
 
     const saveEntity = async () => {
