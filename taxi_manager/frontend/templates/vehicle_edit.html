@@ -72,31 +72,35 @@
         `
     }
 
-    const renderForm = async () => {
-        const form_fields = document.getElementById("form_fields")
+    const getData = async () => {
         const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
+        return {
+            entity: await fetch_data(`/api/v1/vehicles/${pkVehicle}/`),
+            brands:  (await fetch_data(`/api/v1/models/`)).results,
+            enterprises: (await fetch_data(`/api/v1/enterprises/`)).results  
+        }
+    }
 
+    const renderForm = async () => {               
 
-        form_data = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`)
-        brands_data = (await fetch_data(`/api/v1/models/`)).results
-        enterprises_data = (await fetch_data(`/api/v1/enterprises/`)).results 
+        const data = await getData()
 
+        const form_fields = document.getElementById("form_fields") 
 
-
-        form_fields.innerHTML += renderSelectedField("inputEnterprise", form_data, enterprises_data, "Предприятие:",
+        form_fields.innerHTML += renderSelectedField("inputEnterprise", data.entity, data.enterprises, "Предприятие:",
             (form_data, selected_record) => form_data.enterprise_id === selected_record.id,
             (selected_record) => `${selected_record.name} (${selected_record.city})`, "Выберите предприятие")
 
-        form_fields.innerHTML += renderSelectedField("inputBrand", form_data, brands_data, "Бренд:",
+        form_fields.innerHTML += renderSelectedField("inputBrand", data.entity, data.brands, "Бренд:",
             (form_data, selected_record) => form_data.brand_id === selected_record.id,
             (selected_record) => `${selected_record.name} (${selected_record.color})`, "Выберите бренд")
             
 
-        form_fields.innerHTML += renderInputField("inputNumber", form_data.number, "Номер")
-        form_fields.innerHTML += renderInputField("inputMileage", form_data.mileage, "Пробег (км):")
-        form_fields.innerHTML += renderInputField("inputPrice", form_data.price, "Цена (руб):")
-        form_fields.innerHTML += renderInputField("inputVin", form_data.vin, "VIN:")
-        form_fields.innerHTML += renderInputField("inputYear", form_data.year_of_manufacture, "Год выпуска:")
+        form_fields.innerHTML += renderInputField("inputNumber", data.entity.number, "Номер")
+        form_fields.innerHTML += renderInputField("inputMileage", data.entity.mileage, "Пробег (км):")
+        form_fields.innerHTML += renderInputField("inputPrice", data.entity.price, "Цена (руб):")
+        form_fields.innerHTML += renderInputField("inputVin", data.entity.vin, "VIN:")
+        form_fields.innerHTML += renderInputField("inputYear", data.entity.year_of_manufacture, "Год выпуска:")
 
 
         // form_drivers_data = (await fetch_data(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
