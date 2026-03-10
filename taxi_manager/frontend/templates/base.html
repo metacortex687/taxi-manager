@@ -71,7 +71,14 @@
             const data = await response.json()
 
             if (!response.ok) {
+                console.log(data)
+                if (data.detail === undefined) {  
+                    allert_message(JSON.stringify(data))                 
+                    return data
+                }
+
                 allert_message(data.detail)
+                
             } 
             
             return data
