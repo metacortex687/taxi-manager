@@ -95,6 +95,10 @@
         return document.getElementById("pageData").dataset.pkVehicle
     }   
 
+    const isNew = () => {
+        return getAction() === "new"
+    }
+
     const emptyEntity = () => {
         return {
                 id: undefined,
@@ -115,7 +119,7 @@
     const getData = async () => {
         console.log(getAction())
         return {
-            entity: getAction() === "new" ?  emptyEntity() : await fetch_data(`/api/v1/vehicles/${getPk()}/`),
+            entity: isNew() ?  emptyEntity() : await fetch_data(`/api/v1/vehicles/${getPk()}/`),
             brands:  (await fetch_data(`/api/v1/models/`)).results,
             enterprises: (await fetch_data(`/api/v1/enterprises/`)).results  
         }
@@ -159,8 +163,16 @@
         console.log(result)
     }
 
+    const updateEntity = async (body) => {
+        const result = await fetch_data(`/api/v1/vehicles/${getPk()}/`,"PUT", body)
+    }
+
+    const saveNewEntity = async (body) => {
+        const result = await fetch_data(`/api/v1/vehicles/`,"POST", body)
+        console.log(result)
+    }
+
     const saveEntity = async () => {
-        const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
 
         const body = JSON.stringify({      
                 enterprise: document.getElementById("inputEnterprise").value,            
@@ -171,9 +183,13 @@
                 mileage: document.getElementById("inputMileage").value,
                 price: document.getElementById("inputPrice").value,
             })
-        const result = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`,"PUT", body)
-        console.log(result)
+        
+        if (isNew()) {
+            await saveNewEntity(body)
+            return
+        } 
 
+        await updateEntity(body)
 
     }
 
