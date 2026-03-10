@@ -6,7 +6,7 @@
 
 <form class="d-flex justify-content-center">
     <div class="auth-box mb-3">
-        <h1 class="text-center">Автомобиль:</h1>
+        <h1 class="text-center">Автомобиль: {% if  action == "new"%}(+){% endif %}</h1>
         <div id="form_fields">
         </div>
         <div class="d-flex justify-content-end gap-1">
@@ -16,7 +16,14 @@
     </div>
 </form>
 
-<div id="pageData" data-pk-vehicle="{{vehicle.pk}}"></div>
+<div id="pageData" 
+    {% if vehicle %}
+    data-pk-vehicle="{{vehicle.pk}}"
+    {% endif %} 
+
+    data-action="{{action}}" >
+
+</div>
 
 {% endblock content %}
 
@@ -29,6 +36,7 @@
     // };
 
     const renderInputField = (id, value, label) => {
+        value ||= ""
         return `
             <div class="mb-3">
                 <label for="${id}" class="form-label">${label}</label>
@@ -38,15 +46,18 @@
     }
 
     const renderSelectedField = (id, form_data, selected_data, label, isSelect, representation, placeholder) => {
-        options = selected_data.map(selected_record => `
-            <option value="${selected_record.id}" ${isSelect(form_data, selected_record) ? "selected" : ""}>${representation(selected_record)}</option>
+
+        options = selected_data.map(option_data => `
+            <option value="${option_data.id}" ${isSelect(form_data, option_data) ? "selected" : ""}>${representation(option_data)}</option>
         `).join("")
+
+        hasSelectedOption = selected_data.some(option_data => isSelect(form_data, option_data))
 
         return `
             <div class="mb-3">
                 <label for="${id}" class="form-label">${label}</label>
                 <select class="form-select" id="${id}">
-                    <option value="" disabled>${placeholder}</option>
+                    <option value="" ${hasSelectedOption ? "" : "selected"} disabled>${placeholder}</option>
                     ${options}
                 </select>
             </div>
@@ -62,6 +73,8 @@
                 </li>
         `).join("")
 
+        
+
         return `
             <div class="mb-3">
                 <label for="inputDrivers" class="form-label">Водители:</label>
@@ -72,10 +85,35 @@
         `
     }
 
-    const getData = async () => {
-        const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
+    const getAction = () => {
+        return document.getElementById("pageData").dataset.action
+    }
+
+    const getPk = () => {
+        return document.getElementById("pageData").dataset.pkVehicle
+    }   
+
+    const emptyEntity = () => {
         return {
-            entity: await fetch_data(`/api/v1/vehicles/${pkVehicle}/`),
+                id: undefined,
+                "model_id": undefined,
+                "color": undefined,
+                "number": undefined,
+                "vin": undefined,
+                "year_of_manufacture": undefined,
+                "mileage": undefined,
+                "price": undefined,
+                "active_driver_id": undefined,
+                "model__name": undefined,
+                "enterprise_id": undefined,
+                "driver_ids": []
+            }
+    }
+
+    const getData = async () => {
+        console.log(getAction())
+        return {
+            entity: getAction() === "new" ?  emptyEntity() : await fetch_data(`/api/v1/vehicles/${getPk()}/`),
             brands:  (await fetch_data(`/api/v1/models/`)).results,
             enterprises: (await fetch_data(`/api/v1/enterprises/`)).results  
         }
@@ -84,6 +122,7 @@
     const renderForm = async () => {               
 
         const data = await getData()
+        console.log(data)
 
         const form_fields = document.getElementById("form_fields") 
 
