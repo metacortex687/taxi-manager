@@ -92,7 +92,7 @@
             (selected_record) => `${selected_record.name} (${selected_record.city})`, "Выберите предприятие")
 
         form_fields.innerHTML += renderSelectedField("inputBrand", data.entity, data.brands, "Бренд:",
-            (form_data, selected_record) => form_data.brand_id === selected_record.id,
+            (form_data, selected_record) => form_data.model_id === selected_record.id,
             (selected_record) => `${selected_record.name} (${selected_record.color})`, "Выберите бренд")
             
 
