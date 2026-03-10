@@ -164,7 +164,7 @@
     const deleteEntity = async () => {
         const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
         const result = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`,method="DELETE")
-        console.log(result)
+        window.location.href = "/enterprises/"
     }
 
     const updateEntity = async (entity) => {
