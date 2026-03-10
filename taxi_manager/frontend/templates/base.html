@@ -68,7 +68,7 @@
                 body: body
             })
 
-            const data = await response.json()
+            const data = response.statusText === "No Content" ? {} : await response.json()
 
             if (!response.ok) {
                 console.log(data)
