@@ -116,10 +116,14 @@
             }
     }
 
+    const loadEntity = async () => {
+        return await fetch_data(`/api/v1/vehicles/${getPk()}/`)
+    }
+
     const getData = async () => {
         console.log(getAction())
         return {
-            entity: isNew() ?  emptyEntity() : await fetch_data(`/api/v1/vehicles/${getPk()}/`),
+            entity: isNew() ?  emptyEntity() : await loadEntity(),
             brands:  (await fetch_data(`/api/v1/models/`)).results,
             enterprises: (await fetch_data(`/api/v1/enterprises/`)).results  
         }
