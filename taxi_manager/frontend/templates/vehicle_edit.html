@@ -11,7 +11,9 @@
         </div>
         <div class="d-flex justify-content-end gap-1">
             <button type="button" class="btn btn-primary" data-action="save">Сохранить</button>
+            {% if  action == "edit"%}
             <button type="button" class="btn btn-danger" data-action="delete">Удалить</button>
+            {% endif %}
         </div>
     </div>
 </form>
