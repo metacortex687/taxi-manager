@@ -112,6 +112,22 @@
         const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
         const result = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`,method="DELETE")
         console.log(result)
+    }
+
+    const saveEntity = async () => {
+        const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
+
+        const body = JSON.stringify({      
+                enterprise: document.getElementById("inputEnterprise").value,            
+                model: document.getElementById("inputBrand").value,
+                number: document.getElementById("inputNumber").value,
+                vin: document.getElementById("inputVin").value,
+                year_of_manufacture: document.getElementById("inputYear").value,
+                mileage: document.getElementById("inputMileage").value,
+                price: document.getElementById("inputPrice").value,
+            })
+        const result = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`,"PUT", body)
+        console.log(result)
 
 
     }
