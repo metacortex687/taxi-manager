@@ -12,4 +12,9 @@ def vehicle_edit(request, pk):
     return render(
         request, "vehicle_edit.html", {"vehicle": get_object_or_404(Vehicle, pk=pk)}
     )
+
+def vehicle_new(request):
+    return render(
+        request, "vehicle_edit.html", {"action": "new"}
+    )
 # Create your views here.
