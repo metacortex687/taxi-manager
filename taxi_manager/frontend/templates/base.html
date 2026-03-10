@@ -57,14 +57,15 @@
 
         }
 
-        const fetch_data = async (url, method = "GET") => {
+        const fetch_data = async (url, method = "GET", body=undefined) => {
             const tokenAuth = localStorage.getItem("tokenAuth")
 
             clear_massages()
 
             const response = await fetch(url, {
                 method: method,
-                headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` }
+                headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` },
+                body: body
             })
 
             const data = await response.json()
