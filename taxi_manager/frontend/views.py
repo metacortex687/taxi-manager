@@ -10,7 +10,7 @@ def vehicles(request, pk):
 
 def vehicle_edit(request, pk):
     return render(
-        request, "vehicle_edit.html", {"vehicle": get_object_or_404(Vehicle, pk=pk)}
+        request, "vehicle_edit.html", {"vehicle": get_object_or_404(Vehicle, pk=pk), "action": "edit"}
     )
 
 def vehicle_new(request):
