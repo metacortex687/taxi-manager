@@ -6,24 +6,19 @@
 
 <form class="d-flex justify-content-center">
     <div class="auth-box mb-3">
-        <h1 class="text-center">Автомобиль: {% if  action == "new"%}(+){% endif %}</h1>
+        <h1 class="text-center">Автомобиль: {% if action == "new"%}(+){% endif %}</h1>
         <div id="form_fields">
         </div>
         <div class="d-flex justify-content-end gap-1">
             <button type="button" class="btn btn-primary" data-action="save">Сохранить</button>
-            {% if  action == "edit"%}
+            {% if action == "edit"%}
             <button type="button" class="btn btn-danger" data-action="delete">Удалить</button>
             {% endif %}
         </div>
     </div>
 </form>
 
-<div id="pageData" 
-    {% if vehicle %}
-    data-pk-vehicle="{{vehicle.pk}}"
-    {% endif %} 
-
-    data-action="{{action}}" >
+<div id="pageData" {% if vehicle %} data-pk-vehicle="{{vehicle.pk}}" {% endif %} data-action="{{action}}">
 
 </div>
 
@@ -32,6 +27,8 @@
 
 {% block script %}
 <script>
+
+
     const authForm = document.getElementById("authForm")
 
     // authForm.onsubmit = async (event) => {
@@ -75,7 +72,7 @@
                 </li>
         `).join("")
 
-        
+
 
         return `
             <div class="mb-3">
@@ -93,7 +90,7 @@
 
     const getPk = () => {
         return document.getElementById("pageData").dataset.pkVehicle
-    }   
+    }
 
     const isNew = () => {
         return getAction() === "new"
@@ -101,19 +98,19 @@
 
     const emptyEntity = () => {
         return {
-                id: undefined,
-                "model_id": undefined,
-                "color": undefined,
-                "number": undefined,
-                "vin": undefined,
-                "year_of_manufacture": undefined,
-                "mileage": undefined,
-                "price": undefined,
-                "active_driver_id": undefined,
-                "model__name": undefined,
-                "enterprise_id": undefined,
-                "driver_ids": []
-            }
+            "id": undefined,
+            "model_id": undefined,
+            "color": undefined,
+            "number": undefined,
+            "vin": undefined,
+            "year_of_manufacture": undefined,
+            "mileage": undefined,
+            "price": undefined,
+            "active_driver_id": undefined,
+            "model__name": undefined,
+            "enterprise_id": undefined,
+            "driver_ids": []
+        }
     }
 
     const loadEntity = async () => {
@@ -123,18 +120,18 @@
     const getData = async () => {
         console.log(getAction())
         return {
-            entity: isNew() ?  emptyEntity() : await loadEntity(),
-            brands:  (await fetch_data(`/api/v1/models/`)).results,
-            enterprises: (await fetch_data(`/api/v1/enterprises/`)).results  
+            entity: isNew() ? emptyEntity() : await loadEntity(),
+            brands: (await fetch_data(`/api/v1/models/`)).results,
+            enterprises: (await fetch_data(`/api/v1/enterprises/`)).results
         }
     }
 
-    const renderForm = async () => {               
+    const renderForm = async () => {
 
         const data = await getData()
         console.log(data)
 
-        const form_fields = document.getElementById("form_fields") 
+        const form_fields = document.getElementById("form_fields")
 
         form_fields.innerHTML += renderSelectedField("inputEnterprise", data.entity, data.enterprises, "Предприятие:",
             (form_data, selected_record) => form_data.enterprise_id === selected_record.id,
@@ -143,7 +140,7 @@
         form_fields.innerHTML += renderSelectedField("inputBrand", data.entity, data.brands, "Бренд:",
             (form_data, selected_record) => form_data.model_id === selected_record.id,
             (selected_record) => `${selected_record.name} (${selected_record.color})`, "Выберите бренд")
-            
+
 
         form_fields.innerHTML += renderInputField("inputNumber", data.entity.number, "Номер")
         form_fields.innerHTML += renderInputField("inputMileage", data.entity.mileage, "Пробег (км):")
@@ -163,39 +160,39 @@
 
     const deleteEntity = async () => {
         const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
-        const result = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`,method="DELETE")
+        const result = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`, method = "DELETE")
         window.location.href = "/enterprises/"
     }
 
     const updateEntity = async (entity) => {
-        const result = await fetch_data(`/api/v1/vehicles/${getPk()}/`,"PUT", JSON.stringify(entity))
+        const result = await fetch_data(`/api/v1/vehicles/${getPk()}/`, "PUT", JSON.stringify(entity))
     }
 
     const saveNewEntity = async (entity) => {
-        const result = await fetch_data(`/api/v1/vehicles/`,"POST", JSON.stringify(entity))
-        window.location.href = `/vehicles/${result.id}/edit/`        
+        const result = await fetch_data(`/api/v1/vehicles/`, "POST", JSON.stringify(entity))
+        window.location.href = `/vehicles/${result.id}/edit/`
     }
 
     const entityFromForm = () => {
-        return {      
-                enterprise: document.getElementById("inputEnterprise").value,            
-                model: document.getElementById("inputBrand").value,
-                number: document.getElementById("inputNumber").value,
-                vin: document.getElementById("inputVin").value,
-                year_of_manufacture: document.getElementById("inputYear").value,
-                mileage: document.getElementById("inputMileage").value,
-                price: document.getElementById("inputPrice").value,
-            }
+        return {
+            enterprise: document.getElementById("inputEnterprise").value,
+            model: document.getElementById("inputBrand").value,
+            number: document.getElementById("inputNumber").value,
+            vin: document.getElementById("inputVin").value,
+            year_of_manufacture: document.getElementById("inputYear").value,
+            mileage: document.getElementById("inputMileage").value,
+            price: document.getElementById("inputPrice").value,
+        }
     }
 
     const saveEntity = async () => {
 
-        const entity = entityFromForm() 
-        
+        const entity = entityFromForm()
+
         if (isNew()) {
             await saveNewEntity(entity)
             return
-        } 
+        }
 
         await updateEntity(entity)
 
@@ -204,25 +201,25 @@
 
     document.addEventListener("click", (event) => {
         const target = event.target
-        if(target.classList.contains("js-btn-remove-item")){
+        if (target.classList.contains("js-btn-remove-item")) {
             const item = target.closest(".js-removed-item");
             item.remove()
             return
         }
 
-        if(!target.hasAttribute("data-action")){
+        if (!target.hasAttribute("data-action")) {
             return
         }
 
         const action = target.dataset.action
 
-        if(action==="delete") {
-            deleteEntity()            
+        if (action === "delete") {
+            deleteEntity()
             return
         }
 
-        if(action==="save") {
-            saveEntity()            
+        if (action === "save") {
+            saveEntity()
             return
         }
 
@@ -243,13 +240,13 @@
 
 
 {% block navbar_content %}
-    <li class="nav-item">
-        <a href="{% url 'enterprises' %}" class="btn btn-secondary btn-lg rounded-1 btn-light border">
-            Предприятия
-        </a>
-    </li>
+<li class="nav-item">
+    <a href="{% url 'enterprises' %}" class="btn btn-secondary btn-lg rounded-1 btn-light border">
+        Предприятия
+    </a>
+</li>
 
 
-    {{ block.super }}
+{{ block.super }}
 
-{% endblock navbar_content %} 
+{% endblock navbar_content %}
