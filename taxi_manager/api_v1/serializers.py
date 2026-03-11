@@ -51,17 +51,27 @@ class VehicleReadSerializer(serializers.ModelSerializer):
         )
 
 class VehicleWriteSerializer(serializers.ModelSerializer):
+    enterprise_id = serializers.PrimaryKeyRelatedField(
+        source="enterprise",
+        queryset=Enterprise.objects.all()
+    )
+
+    model_id = serializers.PrimaryKeyRelatedField(
+        source="model",
+        queryset=Model.objects.all()
+    )
+
     class Meta:
         model = Vehicle
         fields = (
             "id",
-            "model",
+            "model_id",
             "number",
             "vin",
             "year_of_manufacture",
             "mileage",
             "price",
-            "enterprise",
+            "enterprise_id",
         )
 
 
