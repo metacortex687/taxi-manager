@@ -18,7 +18,7 @@
     </div>
 </form>
 
-<div id="pageData" {% if vehicle %} data-pk-vehicle="{{vehicle.pk}}" {% endif %} data-action="{{action}}">
+<div id="pageData" {% if entity %} data-pk-entity="{{entity.pk}}" {% endif %} data-action="{{action}}">
 
 </div>
 
@@ -98,7 +98,7 @@
     }
 
     const getPk = () => {
-        return document.getElementById("pageData").dataset.pkVehicle
+        return document.getElementById("pageData").dataset.pkEtity
     }
 
     const isNew = () => {
