@@ -77,7 +77,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
             raise NotAuthenticated ("Авторизуйтесь", code='111')
 
         if not user.managed_enterprises.filter(
-            id=self.request.data["enterprise"]
+            id=self.request.data["enterprise_id"]
         ).exists():
             raise PermissionDenied(
                 "Вы можете добавлять авто только по своему предприятию"
@@ -91,7 +91,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
             raise NotAuthenticated("Авторизуйтесь")
 
         if not user.managed_enterprises.filter(
-            id=self.request.data["enterprise"]
+            id=self.request.data["enterprise_id"]
         ).exists():
             raise PermissionDenied("Вы можете устанавливать только свое предприятие")
 
