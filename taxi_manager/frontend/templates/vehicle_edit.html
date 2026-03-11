@@ -29,6 +29,73 @@
 <script>
 
 
+    const form = {
+        entity: "/api/v1/vehicles/",
+        fields: [
+            {
+                source_name: "enterprise_id",
+                empty_value: undefined,
+                label: "Предприятие:",
+                type: "option_field",
+                source_options: "/api/v1/enterprises/",
+                placeholder: "Выберите предприятие",
+                repr_option: (option_entity) => `${option_entity.name} (${option_entity.city})`
+            },
+            {
+                source_name: "model_id",
+                empty_value: undefined,
+                label: "Бренд:",
+                type: "option_field",
+                label: "Предприятие:",
+                source_options: "/api/v1/models/",
+                placeholder: "Выберите бренд",
+                repr_option: (option_entity) => option_entity.name
+            },
+            {
+                source_name: "number",
+                empty_value: undefined,
+                label: "Номер:",
+                type: "text_field",
+            },
+            {
+                source_name: "mileage",
+                empty_value: undefined,
+                label: "Пробег (км):",
+                type: "text_field",
+            },
+            {
+                source_name: "price",
+                empty_value: undefined,
+                label: "Цена (руб):",
+                type: "text_field",
+            },
+            {
+                source_name: "vin",
+                empty_value: undefined,
+                label: "VIN:",
+                type: "text_field",
+            },
+            {
+                source_name: "year_of_manufacture",
+                label: "Год выпуска:",
+                empty_value: undefined,
+                type: "text_field",
+            },
+        ]
+    }
+
+    const convertToCamelCase = (str) => {
+        return str
+            .split("_")
+            .map((word, index) => 
+                index === 0 
+                    ? word 
+                    : word.charAt(0).toUpperCase() + word.slice(1))
+            .join("")
+    }
+
+    const htmlIdField = (formField) => convertToCamelCase(`${formField.type}_${formField.source_name}`)
+
     const authForm = document.getElementById("authForm")
 
     // authForm.onsubmit = async (event) => {
@@ -44,13 +111,13 @@
         `
     }
 
-    const renderSelectedField = (id, form_data, selected_data, label, isSelect, representation, placeholder) => {
+    const renderSelectedField = (id, entity, selected_data, label, isSelect, representation, placeholder) => {
 
         options = selected_data.map(option_data => `
-            <option value="${option_data.id}" ${isSelect(form_data, option_data) ? "selected" : ""}>${representation(option_data)}</option>
+            <option value="${option_data.id}" ${isSelect(entity, option_data) ? "selected" : ""}>${representation(option_data)}</option>
         `).join("")
 
-        hasSelectedOption = selected_data.some(option_data => isSelect(form_data, option_data))
+        hasSelectedOption = selected_data.some(option_data => isSelect(entity, option_data))
 
         return `
             <div class="mb-3">
@@ -64,7 +131,7 @@
     }
 
     const renderMultySelectedDriverField = (form_drivers_data) => {
-        console.log(form_drivers_data)
+
         const lis = form_drivers_data.map(record => `
                 <li class="list-group-item d-flex justify-content-between align-items-center js-removed-item">
                     <span>${record.last_name} ${record.first_name}</span>
@@ -97,57 +164,45 @@
     }
 
     const emptyEntity = () => {
-        return {
-            "id": undefined,
-            "model_id": undefined,
-            "color": undefined,
-            "number": undefined,
-            "vin": undefined,
-            "year_of_manufacture": undefined,
-            "mileage": undefined,
-            "price": undefined,
-            "active_driver_id": undefined,
-            "model__name": undefined,
-            "enterprise_id": undefined,
-            "driver_ids": []
+        res = {}
+        for(let field of form.fields) {
+            res[field.source_name] = field.empty_value    
         }
+
+        return res
     }
 
     const loadEntity = async () => {
-        return await fetch_data(`/api/v1/vehicles/${getPk()}/`)
+        return await fetch_data(`${form.entity}${getPk()}/`)
     }
 
-    const getData = async () => {
-        console.log(getAction())
-        return {
-            entity: isNew() ? emptyEntity() : await loadEntity(),
-            brands: (await fetch_data(`/api/v1/models/`)).results,
-            enterprises: (await fetch_data(`/api/v1/enterprises/`)).results
+    const renderFormField = async (entity, field) => {
+
+        if (field.type === "text_field") {
+            return renderInputField(htmlIdField(field), entity[field["source_name"]], field.label)
         }
+
+        if (field.type === "option_field") {
+            const data = (await fetch_data(field.source_options)).results
+            return renderSelectedField(htmlIdField(field), entity, data, field.label,
+                (_entity, selected_record) => _entity[field["source_name"]] === selected_record.id,
+                field.repr_option,field.placeholder)
+        }
+
     }
 
     const renderForm = async () => {
 
-        const data = await getData()
-        console.log(data)
-
         const form_fields = document.getElementById("form_fields")
 
-        form_fields.innerHTML += renderSelectedField("inputEnterprise", data.entity, data.enterprises, "Предприятие:",
-            (form_data, selected_record) => form_data.enterprise_id === selected_record.id,
-            (selected_record) => `${selected_record.name} (${selected_record.city})`, "Выберите предприятие")
+        const entity = isNew() ? emptyEntity() : await loadEntity()
 
-        form_fields.innerHTML += renderSelectedField("inputBrand", data.entity, data.brands, "Бренд:",
-            (form_data, selected_record) => form_data.model_id === selected_record.id,
-            (selected_record) => `${selected_record.name} (${selected_record.color})`, "Выберите бренд")
-
-
-        form_fields.innerHTML += renderInputField("inputNumber", data.entity.number, "Номер")
-        form_fields.innerHTML += renderInputField("inputMileage", data.entity.mileage, "Пробег (км):")
-        form_fields.innerHTML += renderInputField("inputPrice", data.entity.price, "Цена (руб):")
-        form_fields.innerHTML += renderInputField("inputVin", data.entity.vin, "VIN:")
-        form_fields.innerHTML += renderInputField("inputYear", data.entity.year_of_manufacture, "Год выпуска:")
-
+        for (const field of form.fields) {
+            if (!field.type) {
+                continue
+            }
+            form_fields.innerHTML += await renderFormField(entity, field)
+        }
 
         // form_drivers_data = (await fetch_data(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
         // form_fields.innerHTML += renderMultySelectedDriverField(form_drivers_data)
@@ -174,15 +229,15 @@
     }
 
     const entityFromForm = () => {
-        return {
-            enterprise: document.getElementById("inputEnterprise").value,
-            model: document.getElementById("inputBrand").value,
-            number: document.getElementById("inputNumber").value,
-            vin: document.getElementById("inputVin").value,
-            year_of_manufacture: document.getElementById("inputYear").value,
-            mileage: document.getElementById("inputMileage").value,
-            price: document.getElementById("inputPrice").value,
+
+        res = {}
+        for(let field of form.fields) {
+            res[field.source_name] = document.getElementById(htmlIdField(field)).value    
         }
+
+        console.log(res)
+
+        return res
     }
 
     const saveEntity = async () => {
