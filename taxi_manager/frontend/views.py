@@ -17,4 +17,9 @@ def vehicle_new(request):
     return render(
         request, "vehicle_edit.html", {"action": "new"}
     )
+
+def enterprise_edit(request, pk):
+    return render(
+        request, "enterprise.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "edit"}
+    )
 # Create your views here.
