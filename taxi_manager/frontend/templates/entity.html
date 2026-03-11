@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование авто{% endblock title %}
+
+{% block content %}
+
+<form class="d-flex justify-content-center">
+    <div class="auth-box mb-3">
+        <h1 class="text-center">Автомобиль: {% if action == "new"%}(+){% endif %}</h1>
+        <div id="form_fields">
+        </div>
+        <div class="d-flex justify-content-end gap-1">
+            <button type="button" class="btn btn-primary" data-action="save">Сохранить</button>
+            {% if action == "edit"%}
+            <button type="button" class="btn btn-danger" data-action="delete">Удалить</button>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+<div id="pageData" {% if vehicle %} data-pk-vehicle="{{vehicle.pk}}" {% endif %} data-action="{{action}}">
+
+</div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+    const convertToCamelCase = (str) => {
+        return str
+            .split("_")
+            .map((word, index) => 
+                index === 0 
+                    ? word 
+                    : word.charAt(0).toUpperCase() + word.slice(1))
+            .join("")
+    }
+
+    const htmlIdField = (formField) => convertToCamelCase(`${formField.type}_${formField.source_name}`)
+
+    const authForm = document.getElementById("authForm")
+
+    // authForm.onsubmit = async (event) => {
+    // };
+
+    const renderInputField = (id, value, label) => {
+        value ||= ""
+        return `
+            <div class="mb-3">
+                <label for="${id}" class="form-label">${label}</label>
+                <input type="text" class="form-control" id="${id}" value="${value}">
+            </div> 
+        `
+    }
+
+    const renderSelectedField = (id, entity, selected_data, label, isSelect, representation, placeholder) => {
+
+        options = selected_data.map(option_data => `
+            <option value="${option_data.id}" ${isSelect(entity, option_data) ? "selected" : ""}>${representation(option_data)}</option>
+        `).join("")
+
+        hasSelectedOption = selected_data.some(option_data => isSelect(entity, option_data))
+
+        return `
+            <div class="mb-3">
+                <label for="${id}" class="form-label">${label}</label>
+                <select class="form-select" id="${id}">
+                    <option value="" ${hasSelectedOption ? "" : "selected"} disabled>${placeholder}</option>
+                    ${options}
+                </select>
+            </div>
+        `
+    }
+
+    const renderMultySelectedDriverField = (form_drivers_data) => {
+
+        const lis = form_drivers_data.map(record => `
+                <li class="list-group-item d-flex justify-content-between align-items-center js-removed-item">
+                    <span>${record.last_name} ${record.first_name}</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger js-btn-remove-item">×</button>
+                </li>
+        `).join("")
+
+
+
+        return `
+            <div class="mb-3">
+                <label for="inputDrivers" class="form-label">Водители:</label>
+                <ul class="list-group" id="inputDrivers">
+                ${lis}
+                </ul>
+            </div>             
+        `
+    }
+
+    const getAction = () => {
+        return document.getElementById("pageData").dataset.action
+    }
+
+    const getPk = () => {
+        return document.getElementById("pageData").dataset.pkVehicle
+    }
+
+    const isNew = () => {
+        return getAction() === "new"
+    }
+
+    const emptyEntity = () => {
+        res = {}
+        for(let field of form.fields) {
+            res[field.source_name] = field.empty_value    
+        }
+
+        return res
+    }
+
+    const loadEntity = async () => {
+        return await fetch_data(`${form.entity}${getPk()}/`)
+    }
+
+    const renderFormField = async (entity, field) => {
+
+        if (field.type === "text_field") {
+            return renderInputField(htmlIdField(field), entity[field["source_name"]], field.label)
+        }
+
+        if (field.type === "option_field") {
+            const data = (await fetch_data(field.source_options)).results
+            return renderSelectedField(htmlIdField(field), entity, data, field.label,
+                (_entity, selected_record) => _entity[field["source_name"]] === selected_record.id,
+                field.repr_option,field.placeholder)
+        }
+
+    }
+
+    const renderForm = async () => {
+
+        const form_fields = document.getElementById("form_fields")
+
+        const entity = isNew() ? emptyEntity() : await loadEntity()
+
+        for (const field of form.fields) {
+            if (!field.type) {
+                continue
+            }
+            form_fields.innerHTML += await renderFormField(entity, field)
+        }
+
+        // form_drivers_data = (await fetch_data(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
+        // form_fields.innerHTML += renderMultySelectedDriverField(form_drivers_data)
+    }
+
+    const initPage = async () => {
+        renderForm()
+
+    }
+
+    const deleteEntity = async () => {
+        const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
+        const result = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`, method = "DELETE")
+        window.location.href = "/enterprises/"
+    }
+
+    const updateEntity = async (entity) => {
+        const result = await fetch_data(`/api/v1/vehicles/${getPk()}/`, "PUT", JSON.stringify(entity))
+    }
+
+    const saveNewEntity = async (entity) => {
+        const result = await fetch_data(`/api/v1/vehicles/`, "POST", JSON.stringify(entity))
+        window.location.href = `/vehicles/${result.id}/edit/`
+    }
+
+    const entityFromForm = () => {
+
+        res = {}
+        for(let field of form.fields) {
+            res[field.source_name] = document.getElementById(htmlIdField(field)).value    
+        }
+
+        console.log(res)
+
+        return res
+    }
+
+    const saveEntity = async () => {
+
+        const entity = entityFromForm()
+
+        if (isNew()) {
+            await saveNewEntity(entity)
+            return
+        }
+
+        await updateEntity(entity)
+
+    }
+
+
+    document.addEventListener("click", (event) => {
+        const target = event.target
+        if (target.classList.contains("js-btn-remove-item")) {
+            const item = target.closest(".js-removed-item");
+            item.remove()
+            return
+        }
+
+        if (!target.hasAttribute("data-action")) {
+            return
+        }
+
+        const action = target.dataset.action
+
+        if (action === "delete") {
+            deleteEntity()
+            return
+        }
+
+        if (action === "save") {
+            saveEntity()
+            return
+        }
+
+
+    })
+
+</script>
+{% endblock script %}
+
+
+{% block style %}
+<style>
+    .auth-box {
+        width: 420px;
+    }
+</style>
+{% endblock style %}
+
+
+{% block navbar_content %}
+<li class="nav-item">
+    <a href="{% url 'enterprises' %}" class="btn btn-secondary btn-lg rounded-1 btn-light border">
+        Предприятия
+    </a>
+</li>
+
+
+{{ block.super }}
+
+{% endblock navbar_content %}
