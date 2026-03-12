@@ -57,7 +57,7 @@
         `
     }
 
-    const renderSelectedField = (field, entity) => {
+    const renderSelectedField = async (field, entity) => {
         const id = htmlIdField(field)
         const selected_data = (await fetch_data(field.source_options)).results
         const label = field.label
