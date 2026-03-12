@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'taxi_manager.api_v1',
     'taxi_manager.simply_site',
     'taxi_manager.frontend',
+    'taxi_manager.time_zones',
 ]
 
 MIDDLEWARE = [
