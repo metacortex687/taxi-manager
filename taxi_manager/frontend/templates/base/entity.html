@@ -43,7 +43,7 @@
     // authForm.onsubmit = async (event) => {
     // };
 
-    const renderInputField = (entity, field) => {
+    const renderInputField = async (field, entity) => {
         const id = htmlIdField(field)
         const value = entity[field["source_name"]]
         const label = field.label
@@ -125,7 +125,7 @@
     const renderFormField = async (entity, field) => {
 
         if (field.type === "text_field") {
-            return renderInputField(entity, field)
+            return await renderInputField(field, entity)
         }
 
         if (field.type === "option_field") {
