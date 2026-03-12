@@ -57,7 +57,13 @@
         `
     }
 
-    const renderSelectedField = (id, entity, selected_data, label, isSelect, representation, placeholder) => {
+    const renderSelectedField = (field, entity) => {
+        const id = htmlIdField(field)
+        const selected_data = (await fetch_data(field.source_options)).results
+        const label = field.label
+        const isSelect = (_entity, selected_record) => _entity[field["source_name"]] === selected_record.id
+        const representation = field.repr_option
+        const placeholder = field.placeholder
 
         options = selected_data.map(option_data => `
             <option value="${option_data.id}" ${isSelect(entity, option_data) ? "selected" : ""}>${representation(option_data)}</option>
@@ -129,10 +135,7 @@
         }
 
         if (field.type === "option_field") {
-            const data = (await fetch_data(field.source_options)).results
-            return renderSelectedField(htmlIdField(field), entity, data, field.label,
-                (_entity, selected_record) => _entity[field["source_name"]] === selected_record.id,
-                field.repr_option,field.placeholder)
+            return await renderSelectedField(field, entity)
         }
 
     }
