@@ -1,62 +1,10 @@
 {% extends "base/entity.html" %}
 
+{% load static %}
+
 {% block script %}
-<script>
-    const form = {
-            entity: "/api/v1/vehicles/",
-            fields: [
-                {
-                    source_name: "enterprise_id",
-                    empty_value: undefined,
-                    label: "Предприятие:",
-                    type: "option_field",
-                    source_options: "/api/v1/enterprises/",
-                    placeholder: "Выберите предприятие",
-                    repr_option: (option_entity) => `${option_entity.name} (${option_entity.city})`
-                },
-                {
-                    source_name: "model_id",
-                    empty_value: undefined,
-                    label: "Бренд:",
-                    type: "option_field",
-                    label: "Предприятие:",
-                    source_options: "/api/v1/models/",
-                    placeholder: "Выберите бренд",
-                    repr_option: (option_entity) => option_entity.name
-                },
-                {
-                    source_name: "number",
-                    empty_value: undefined,
-                    label: "Номер:",
-                    type: "text_field",
-                },
-                {
-                    source_name: "mileage",
-                    empty_value: undefined,
-                    label: "Пробег (км):",
-                    type: "text_field",
-                },
-                {
-                    source_name: "price",
-                    empty_value: undefined,
-                    label: "Цена (руб):",
-                    type: "text_field",
-                },
-                {
-                    source_name: "vin",
-                    empty_value: undefined,
-                    label: "VIN:",
-                    type: "text_field",
-                },
-                {
-                    source_name: "year_of_manufacture",
-                    label: "Год выпуска:",
-                    empty_value: undefined,
-                    type: "text_field",
-                },
-            ]
-        }
-</script>
+
+<script type="module" src="{% static 'js/vehicle.js' %}"></script>
 
 {{ block.super }}
 

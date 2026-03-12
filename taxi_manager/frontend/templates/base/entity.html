@@ -76,13 +76,7 @@
 
     const renderFormField = async (entity, field) => {
 
-        if (field.type === "text_field") {
-            return await renderInputField(field, entity)
-        }
-
-        if (field.type === "option_field") {
-            return await renderSelectedField(field, entity)
-        }
+        return await field.render_fn(field, entity)
 
     }
 
@@ -93,9 +87,6 @@
         const entity = isNew() ? emptyEntity() : await loadEntity()
 
         for (const field of form.fields) {
-            if (!field.type) {
-                continue
-            }
             form_fields.innerHTML += await renderFormField(entity, field)
         }
 
