@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from ..vehicle.models import Vehicle, Model, Driver
 from ..enterprise.models import Enterprise
-
+from taxi_manager.time_zones.models import TimeZone
 
 class VehicleReadSerializer(serializers.ModelSerializer):
     model_id = serializers.SerializerMethodField()
@@ -111,7 +111,7 @@ class EnterpriseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enterprise
 
-        fields = ("id", "name", "city",)
+        fields = ("id", "name", "city","time_zone")
 
 
 class DriverSerializer(serializers.ModelSerializer):
@@ -134,4 +134,17 @@ class DriverSerializer(serializers.ModelSerializer):
             "last_name",
             # "enterprise_id",
             # "vehicles",
+        )
+
+
+class TimeZoneSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TimeZone
+
+        fields = (
+            "id",
+            "code",
+            "utc_offset",
+            "display_name",           
         )

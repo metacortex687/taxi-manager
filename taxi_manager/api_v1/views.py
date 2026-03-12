@@ -1,12 +1,15 @@
 from rest_framework import generics, viewsets, filters
 from ..vehicle.models import Vehicle, Model, Driver, VehicleDriver
 from ..enterprise.models import Enterprise
+from taxi_manager.time_zones.models import TimeZone
+
 from .serializers import (
     VehicleReadSerializer,
     VehicleWriteSerializer,
     ModelSerializer,
     DriverSerializer,
     EnterpriseSerializer,
+    TimeZoneSerializer,
 )
 from django.db.models import OuterRef, Subquery, F
 from django.shortcuts import get_object_or_404
@@ -232,3 +235,7 @@ class SessionLogoutView(APIView):
         logout(request)
         return Response({"message": "Successfully logged out"}, status=200)
 
+
+class TimeZoneListAPIView(generics.ListAPIView):
+    queryset = TimeZone.objects.all()
+    serializer_class = TimeZoneSerializer
