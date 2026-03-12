@@ -152,7 +152,7 @@ class EnterpriseListAPIView(generics.ListAPIView):
         return user.managed_enterprises.all()
 
 
-class EnterpriseDetailAPIView(generics.RetrieveAPIView):
+class EnterpriseDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Enterprise.objects.all()
     serializer_class = EnterpriseSerializer
 
