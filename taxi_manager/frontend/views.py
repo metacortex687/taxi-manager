@@ -10,12 +10,12 @@ def vehicles(request, pk):
 
 def vehicle_edit(request, pk):
     return render(
-        request, "vehicle_edit.html", {"entity": get_object_or_404(Vehicle, pk=pk), "action": "edit"}
+        request, "vehicle.html", {"entity": get_object_or_404(Vehicle, pk=pk), "action": "edit"}
     )
 
 def vehicle_new(request):
     return render(
-        request, "vehicle_edit.html", {"action": "new"}
+        request, "vehicle.html", {"action": "new"}
     )
 
 def enterprise_edit(request, pk):
