@@ -101,16 +101,18 @@
 
     const deleteEntity = async () => {
         const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
-        const result = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`, method = "DELETE")
+        // const result = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`, method = "DELETE")
+        const result = await fetch_data(`${form.entity}${getPk()}/`,  method = "DELETE")
         window.location.href = "/enterprises/"
     }
 
     const updateEntity = async (entity) => {
-        const result = await fetch_data(`/api/v1/vehicles/${getPk()}/`, "PUT", JSON.stringify(entity))
+        const result = await fetch_data(`${form.entity}${getPk()}/`, "PUT", JSON.stringify(entity))
     }
 
     const saveNewEntity = async (entity) => {
-        const result = await fetch_data(`/api/v1/vehicles/`, "POST", JSON.stringify(entity))
+        // const result = await fetch_data(`/api/v1/vehicles/`, "POST", JSON.stringify(entity))
+        const result = await fetch_data(`${form.entity}${getPk()}/`, "POST", JSON.stringify(entity))
         window.location.href = `/vehicles/${result.id}/edit/`
     }
 
