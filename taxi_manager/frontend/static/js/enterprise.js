@@ -16,14 +16,14 @@ const form = {
                 render_fn: renderInputField
             },
             {
-                source_name: "timezone",
+                source_name: "time_zone",
                 empty_value: undefined,
                 label: "Временная зона:",
                 render_fn: renderSelectedField,
                 options : {
                     source: "/api/v1/timezones/",
                     placeholder: "Выберите временную зону",
-                    display_name_fn: (option_entity) => option_entity.display_name
+                    display_name_fn: (option_entity) => option_entity.display_name,
                 }
 
             },
