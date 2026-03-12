@@ -26,7 +26,7 @@
 
 {% block script %}
 <script>
-    const convertToCamelCase = (str) => {
+    const convertSnakeToCamelCase = (str) => {
         return str
             .split("_")
             .map((word, index) => 
@@ -36,7 +36,7 @@
             .join("")
     }
 
-    const htmlIdField = (formField) => convertToCamelCase(`${formField.type}_${formField.source_name}`)
+    const htmlIdField = (formField) => convertSnakeToCamelCase(`${formField.type}_${formField.source_name}`)
 
     const authForm = document.getElementById("authForm")
 
