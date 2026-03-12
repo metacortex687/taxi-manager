@@ -32,6 +32,8 @@ class Vehicle(models.Model):
 
     model = models.ForeignKey("Model", on_delete=models.RESTRICT, verbose_name="Модель")
 
+    purchased_at =  models.DateTimeField(verbose_name="Дата и время приобретения", null=True)
+
     enterprise = models.ForeignKey(
         Enterprise,
         on_delete=models.RESTRICT,
