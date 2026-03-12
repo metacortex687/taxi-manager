@@ -1,4 +1,4 @@
-import { renderInputField } from "./api/render.js";
+import { renderInputField, renderSelectedField } from "./api/render.js";
 
 const form = {
         entity: "/api/v1/enterprises/",
@@ -14,6 +14,18 @@ const form = {
                 empty_value: undefined,
                 label: "Город:",
                 render_fn: renderInputField
+            },
+            {
+                source_name: "timezone",
+                empty_value: undefined,
+                label: "Временная зона:",
+                render_fn: renderSelectedField,
+                options : {
+                    source: "/api/v1/timezones/",
+                    placeholder: "Выберите временную зону",
+                    display_name_fn: (option_entity) => option_entity.display_name
+                }
+
             },
         ]
     }

@@ -14,11 +14,11 @@ const renderInputField = async (field, entity) => {
 
 const renderSelectedField = async (field, entity) => {
     const id = htmlIdField(field)
-    const selected_data = (await fetch_data(field.source_options)).results
+    const selected_data = (await fetch_data(field.options.source)).results
     const label = field.label
     const isSelect = (_entity, selected_record) => _entity[field["source_name"]] === selected_record.id
-    const representation = field.repr_option
-    const placeholder = field.placeholder
+    const representation = field.options.display_name_fn
+    const placeholder = field.options.placeholder
 
     const options = selected_data.map(option_data => `
         <option value="${option_data.id}" ${isSelect(entity, option_data) ? "selected" : ""}>${representation(option_data)}</option>
