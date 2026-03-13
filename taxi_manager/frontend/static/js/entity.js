@@ -83,7 +83,7 @@ const saveNewEntity = async (entity) => {
 
 const entityFromForm = () => {
 
-    res = {}
+    let res = {}
     for(let field of form.fields) {
         res[field.source_name] = document.getElementById(htmlIdField(field)).value    
     }
@@ -93,9 +93,18 @@ const entityFromForm = () => {
     return res
 }
 
+const presaveEntity = (entity) => {
+    let res = {}
+    for(let field of form.fields){
+        const presave_fn = field.presave_fn || (value => value)
+        res[field.source_name] = presave_fn(entity[field.source_name])
+    }
+    return res
+}
+
 const saveEntity = async () => {
 
-    const entity = entityFromForm()
+    const entity = presaveEntity(entityFromForm())
 
     if (isNew()) {
         await saveNewEntity(entity)

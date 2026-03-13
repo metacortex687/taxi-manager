@@ -1,5 +1,11 @@
 import { renderInputField, renderSelectedField, renderInputDateTimeField} from "./api/render.js";
 
+const convert_from_locale_to_iso = (value) => {
+    const date = new Date(value) //Создается в ISO/Z
+    return date.toISOString()
+}
+
+
 const form = {
         entity: "/api/v1/vehicles/",
         fields: [
@@ -60,8 +66,10 @@ const form = {
                 label: "Приобретено:",
                 empty_value: undefined,
                 render_fn: renderInputDateTimeField,
+                presave_fn: convert_from_locale_to_iso
             },  
         ]
     }
+
 
 window.form = form
