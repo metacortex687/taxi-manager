@@ -2,6 +2,7 @@ from rest_framework import serializers
 from ..vehicle.models import Vehicle, Model, Driver
 from ..enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
+from zoneinfo import ZoneInfo
 
 class VehicleReadSerializer(serializers.ModelSerializer):
     model_id = serializers.SerializerMethodField()
@@ -21,6 +22,8 @@ class VehicleReadSerializer(serializers.ModelSerializer):
         return obj.enterprise.id
 
     def to_representation(self, instance):
+        self.fields['purchased_at'] = serializers.DateTimeField(default_timezone=ZoneInfo(instance.enterprise.time_zone.code))
+
         representation = super().to_representation(instance)
         representation["driver_ids"] = representation.pop("drivers")
 
