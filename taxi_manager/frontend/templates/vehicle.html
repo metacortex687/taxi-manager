@@ -1,12 +1,24 @@
 {% extends "base/entity.html" %}
 
+{% block title %}Редактирование авто{% endblock title %}
+
+
 {% load static %}
+
+{% block content %}
+<h1 class="text-center">Автомобиль: {% if action == "new"%}(+){% endif %}</h1>
+
+{{ block.super }}
+{% endblock content %}
+
+
+
 
 {% block script %}
 
 <script type="module" src="{% static 'js/vehicle.js' %}"></script>
 
-{{ block.super }}
+
 
 {% endblock script %}
 
