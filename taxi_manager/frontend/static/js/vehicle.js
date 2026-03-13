@@ -19,7 +19,6 @@ const form = {
                 empty_value: undefined,
                 label: "Бренд:",
                 render_fn: renderSelectedField,
-                label: "Предприятие:",
                 options : {
                     source: "/api/v1/models/",
                     placeholder: "Выберите бренд",
