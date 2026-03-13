@@ -1,4 +1,4 @@
-import { renderInputField, renderSelectedField } from "./api/render.js";
+import { renderInputField, renderSelectedField, renderInputDateTimeField} from "./api/render.js";
 
 const form = {
         entity: "/api/v1/vehicles/",
@@ -59,8 +59,8 @@ const form = {
                 source_name: "purchased_at",
                 label: "Приобретено:",
                 empty_value: undefined,
-                render_fn: renderInputField,
-            },            
+                render_fn: renderInputDateTimeField,
+            },  
         ]
     }
 

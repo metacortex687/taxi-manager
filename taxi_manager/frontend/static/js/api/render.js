@@ -13,6 +13,25 @@ const renderInputField = async (field, entity) => {
     `
 }
 
+const renderInputDateTimeField = async (field, entity) => {
+    const id = htmlIdField(field)
+    const value = entity[field["source_name"]] || ""
+    const label = field.label
+
+    const date = new Date(value) //Создается в ISO/Z
+
+    const local_datetime = new Date(
+            date.getTime() - date.getTimezoneOffset() * 60000)
+            .toISOString().slice(0, 16)
+
+    return `
+        <div class="mb-3">
+            <label for="${id}" class="form-label">${label}</label>
+            <input type="datetime-local" class="form-control" id="${id}" value="${local_datetime}">
+        </div> 
+    `
+}
+
 const renderSelectedField = async (field, entity) => {
     const id = htmlIdField(field)
     const selected_data = (await fetch_data(field.options.source)).results
@@ -60,4 +79,4 @@ const renderMultySelectedDriverField = (form_drivers_data) => {
 }
 
 
-export { renderInputField, renderSelectedField, renderMultySelectedDriverField }
+export { renderInputField, renderSelectedField, renderMultySelectedDriverField, renderInputDateTimeField}
