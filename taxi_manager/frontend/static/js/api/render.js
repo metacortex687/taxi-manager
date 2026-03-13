@@ -1,9 +1,8 @@
 const renderInputField = async (field, entity) => {
     const id = htmlIdField(field)
-    const value = entity[field["source_name"]]
+    const value = entity[field["source_name"]] || ""
     const label = field.label
 
-    value ||= ""
     return `
         <div class="mb-3">
             <label for="${id}" class="form-label">${label}</label>
