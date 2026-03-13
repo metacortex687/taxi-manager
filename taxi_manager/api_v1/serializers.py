@@ -48,6 +48,7 @@ class VehicleReadSerializer(serializers.ModelSerializer):
             "active_driver_id",
             "model__name",
             "enterprise_id",
+            "purchased_at",
         )
 
 class VehicleWriteSerializer(serializers.ModelSerializer):
@@ -72,6 +73,7 @@ class VehicleWriteSerializer(serializers.ModelSerializer):
             "mileage",
             "price",
             "enterprise_id",
+            "purchased_at",
         )
 
 
