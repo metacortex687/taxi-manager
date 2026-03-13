@@ -55,6 +55,12 @@ const form = {
                 empty_value: undefined,
                 render_fn: renderInputField,
             },
+            {
+                source_name: "purchased_at",
+                label: "Приобретено:",
+                empty_value: undefined,
+                render_fn: renderInputField,
+            },            
         ]
     }
 
