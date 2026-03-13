@@ -13,6 +13,7 @@ class VehicleAdmin(admin.ModelAdmin):
         "year_of_manufacture",
         "mileage",
         "price",
+        "purchased_at",
     )
 
     fields = (
@@ -23,9 +24,11 @@ class VehicleAdmin(admin.ModelAdmin):
         "mileage",
         "price",
         "enterprise",
+        "purchased_at",
     )
 
     list_select_related = ["enterprise"]
+    search_fields = ["=id"]
 
 
 class ModelAdmin(admin.ModelAdmin):
