@@ -1,3 +1,5 @@
+import {htmlIdField} from "../entity.js"
+
 const renderInputField = async (field, entity) => {
     const id = htmlIdField(field)
     const value = entity[field["source_name"]] || ""
