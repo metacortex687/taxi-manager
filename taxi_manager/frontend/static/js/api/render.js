@@ -34,24 +34,24 @@ const renderInputDateTimeField = async (field, entity) => {
 
 const renderSelectedField = async (field, entity) => {
     const id = htmlIdField(field)
-    const selected_data = (await fetch_data(field.options.source)).results
-    const label = field.label
-    const isSelect = (_entity, selected_record) => _entity[field["source_name"]] === selected_record.id
-    const representation = field.options.display_name_fn
-    const placeholder = field.options.placeholder
+    const optionsData = (await fetch_data(field.options.source)).results
+    const optionDisplayNameFn = field.options.display_name_fn
+    const placeholderText = field.options.placeholder
 
-    const options = selected_data.map(option_data => `
-        <option value="${option_data.id}" ${isSelect(entity, option_data) ? "selected" : ""}>${representation(option_data)}</option>
-    `).join("")
+    const isSelect = (item) => entity[field["source_name"]] === item.id
+    const hasSelectedOption = () => optionsData.some(option_data => isSelect(entity, option_data))
 
-    const hasSelectedOption = selected_data.some(option_data => isSelect(entity, option_data))
+    const renderPlaceholderOption = (_) => `<option value="" ${hasSelectedOption() ? "" : "selected"} disabled>${placeholderText}</option>`
+    const renderOption = (item) => `<option value="${item.id}" ${isSelect(entity, item) ? "selected" : ""}>${optionDisplayNameFn(item)}</option>`
+
+    const renderOptions = () => 
+        [renderPlaceholderOption(), ...optionsData.map(renderOption)].join("")
 
     return `
         <div class="mb-3">
-            <label for="${id}" class="form-label">${label}</label>
-            <select class="form-select" id="${id}">
-                <option value="" ${hasSelectedOption ? "" : "selected"} disabled>${placeholder}</option>
-                ${options}
+            <label for="${id}" class="form-label">${field.label}</label>
+            <select class="form-select" id="${id}">                
+                ${renderOptions()}
             </select>
         </div>
     `
