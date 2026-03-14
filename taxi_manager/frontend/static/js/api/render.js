@@ -33,24 +33,26 @@ const renderInputDateTimeField = async (field, entity) => {
 }
 
 const renderSelectedField = async (field, entity) => {
-    const id = htmlIdField(field)
-    const optionsData = (await fetch_data(field.options.source)).results
-    const optionDisplayNameFn = field.options.display_name_fn
+    const idHtml = htmlIdField(field)
+    const items = (await fetch_data(field.options.source)).results
     const placeholderText = field.options.placeholder
 
+    const displayName = (item) => field.options.display_name_fn(item)
+    
     const isSelect = (item) => entity[field["source_name"]] === item.id
-    const hasSelectedOption = () => optionsData.some(item => isSelect(item))
+    const hasSelectedOption = () => items.some(item => isSelect(item))
 
     const renderPlaceholderOption = (_) => `<option value="" ${hasSelectedOption() ? "" : "selected"} disabled>${placeholderText}</option>`
-    const renderOption = (item) => `<option value="${item.id}" ${isSelect(item) ? "selected" : ""}>${optionDisplayNameFn(item)}</option>`
+    const renderOption = (item) => `<option value="${item.id}" ${isSelect(item) ? "selected" : ""}>${displayName(item)}</option>`
 
     const renderOptions = () => 
-        [renderPlaceholderOption(), ...optionsData.map(renderOption)].join("")
+        [renderPlaceholderOption(), ...items.map(renderOption)]
+        .join("")
 
     return `
         <div class="mb-3">
-            <label for="${id}" class="form-label">${field.label}</label>
-            <select class="form-select" id="${id}">                
+            <label for="${idHtml}" class="form-label">${field.label}</label>
+            <select class="form-select" id="${idHtml}">                
                 ${renderOptions()}
             </select>
         </div>
