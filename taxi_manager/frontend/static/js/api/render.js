@@ -39,7 +39,7 @@ const renderSelectedField = async (field, entity) => {
     const placeholderText = field.options.placeholder
 
     const isSelect = (item) => entity[field["source_name"]] === item.id
-    const hasSelectedOption = () => optionsData.some(item => isSelect(entity, item))
+    const hasSelectedOption = () => optionsData.some(item => isSelect(item))
 
     const renderPlaceholderOption = (_) => `<option value="" ${hasSelectedOption() ? "" : "selected"} disabled>${placeholderText}</option>`
     const renderOption = (item) => `<option value="${item.id}" ${isSelect(item) ? "selected" : ""}>${optionDisplayNameFn(item)}</option>`
