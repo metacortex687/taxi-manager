@@ -71,6 +71,7 @@ class DriverAdmin(admin.ModelAdmin):
     )
 
     list_select_related = ["enterprise"]
+    search_fields = ["number", "vin"] 
 
 
 admin.site.register(Vehicle, VehicleAdmin)
