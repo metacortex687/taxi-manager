@@ -1,3 +1,8 @@
-from django.contrib import admin
+from django.contrib.gis import admin
 
-# Register your models here.
+from .models import VehicleLocation
+
+class VehicleLocationAdmin(admin.GISModelAdmin):
+    pass
+
+admin.site.register(VehicleLocation, VehicleLocationAdmin)
