@@ -53,7 +53,7 @@ class Vehicle(models.Model):
         verbose_name_plural = "Транспортные средства"
 
     def __str__(self):
-        res = f"{self.model.name} {self.number}"
+        res = f"{self.model.name} {self.number} ({self.id})"
 
         if self.enterprise:
             res += f" ({self.enterprise.name})"
