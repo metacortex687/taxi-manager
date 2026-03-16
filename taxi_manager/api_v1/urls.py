@@ -17,17 +17,19 @@ router.register(r"vehicles", VehicleViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
+
     path("drivers/<int:driver_id>/vehicles/", VehicleViewSet.as_view({"get":"list"})),
+    path("drivers/<int:pk>/", DriverDetailAPIView.as_view()),
+    path("drivers/", DriverListAPIView.as_view()),
     
     path("models/", ModelListAPIView.as_view()),
-    path("models/<int:pk>/", ModelDetailAPIView.as_view()),
-    path("drivers/", DriverListAPIView.as_view()),
-    path("enterprises/", EnterpriseListAPIView.as_view()),
-    
-    path("drivers/<int:pk>/", DriverDetailAPIView.as_view()),
+    path("models/<int:pk>/", ModelDetailAPIView.as_view()),  
+
     path("enterprises/<int:enterprise_id>/vehicles/", VehicleViewSet.as_view({"get":"list"})),
     path("enterprises/<int:enterprise_id>/drivers/", DriverListAPIView.as_view()),
     path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
+    path("enterprises/", EnterpriseListAPIView.as_view()),
+
     path("timezones/", TimeZoneListAPIView.as_view()),
 
     # path("logout/", SessionLogoutView.as_view()),
