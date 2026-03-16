@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_bootstrap5',
     'django_filters',
+    'django.contrib.gis',
     # 'dj_rest_auth',
     'taxi_manager.vehicle',
     'taxi_manager.enterprise',
@@ -108,6 +109,8 @@ db_from_env = dj_database_url.config(conn_max_age=600)
 DATABASES["default"].update(
     db_from_env
 )  # update from DATABASE_URL in .env if defined
+DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
