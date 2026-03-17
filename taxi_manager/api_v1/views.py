@@ -253,7 +253,7 @@ class VehicleLocationListAPIView(generics.ListAPIView):
 
         get_object_or_404(Vehicle, pk=vehicle_id)
 
-        return VehicleLocation.objects.filter(vehicle=vehicle_id)
+        return VehicleLocation.objects.filter(vehicle=vehicle_id).select_related("vehicle__enterprise__time_zone")
 
     def get_serializer_class(self):
        

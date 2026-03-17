@@ -18,6 +18,12 @@ class VehileLocationSerializerGeoJson(GeoFeatureModelSerializer):
             "tracked_at",
         )
 
+    def to_representation(self, instance):
+        self.fields["tracked_at"] = serializers.DateTimeField(
+            default_timezone=ZoneInfo(instance.vehicle.enterprise.time_zone.code)
+        )
+        return super().to_representation(instance)
+
 class VehileLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleLocation
@@ -28,6 +34,12 @@ class VehileLocationSerializer(serializers.ModelSerializer):
             "location",
             "tracked_at",
         )
+
+    def to_representation(self, instance):
+        self.fields["tracked_at"] = serializers.DateTimeField(
+            default_timezone=ZoneInfo(instance.vehicle.enterprise.time_zone.code)
+        )
+        return super().to_representation(instance)
 
 
 class VehicleReadSerializer(serializers.ModelSerializer):
