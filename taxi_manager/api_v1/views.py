@@ -3,6 +3,8 @@ from rest_framework import generics, viewsets, filters
 from taxi_manager.vehicle.models import Vehicle, Model, Driver, VehicleDriver
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
+from taxi_manager.geo_tracking.models import VehicleLocation
+
 
 from .serializers import (
     VehicleReadSerializer,
@@ -11,6 +13,7 @@ from .serializers import (
     DriverSerializer,
     EnterpriseSerializer,
     TimeZoneSerializer,
+    VehileLocationSerializerGeoJson,
 )
 from django.db.models import OuterRef, Subquery, F
 from django.shortcuts import get_object_or_404
@@ -240,3 +243,14 @@ class SessionLogoutView(APIView):
 class TimeZoneListAPIView(generics.ListAPIView):
     queryset = TimeZone.objects.all()
     serializer_class = TimeZoneSerializer
+
+
+class VehicleLocationListAPIView(generics.ListAPIView):
+    serializer_class = VehileLocationSerializerGeoJson
+
+    def get_queryset(self):
+        vehicle_id = self.kwargs["vehicle_id"]
+
+        get_object_or_404(Vehicle, pk=vehicle_id)
+
+        return VehicleLocation.objects.filter(vehicle=vehicle_id)

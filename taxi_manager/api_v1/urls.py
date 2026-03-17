@@ -7,7 +7,8 @@ from .views import (
     DriverDetailAPIView,
     EnterpriseDetailAPIView,
     EnterpriseListAPIView,
-    TimeZoneListAPIView
+    TimeZoneListAPIView,
+    VehicleLocationListAPIView,
 )
 
 from rest_framework.routers import DefaultRouter
@@ -31,6 +32,8 @@ urlpatterns = [
     path("enterprises/", EnterpriseListAPIView.as_view()),
 
     path("timezones/", TimeZoneListAPIView.as_view()),
+
+    path("vehicles/<int:vehicle_id>/locations/", VehicleLocationListAPIView.as_view()),
 
     # path("logout/", SessionLogoutView.as_view()),
     path(r"auth/", include("djoser.urls")),
