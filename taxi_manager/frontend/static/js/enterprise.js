@@ -20,6 +20,7 @@ const form = {
                 source_name: "time_zone",
                 empty_value: undefined,
                 label: "Временная зона:",
+                render_fn: renderSelectedField,
                 options : {
                     source: "/api/v1/timezones/",
                     placeholder: "Выберите временную зону",
