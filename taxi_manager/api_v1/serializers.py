@@ -18,6 +18,17 @@ class VehileLocationSerializerGeoJson(GeoFeatureModelSerializer):
             "tracked_at",
         )
 
+class VehileLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehicleLocation
+        geo_field = "location"
+        fields = (
+            "id",
+            "vehicle",
+            "location",
+            "tracked_at",
+        )
+
 
 class VehicleReadSerializer(serializers.ModelSerializer):
     model_id = serializers.SerializerMethodField()
