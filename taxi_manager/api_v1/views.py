@@ -1,6 +1,7 @@
 from rest_framework import generics, viewsets, filters
-from ..vehicle.models import Vehicle, Model, Driver, VehicleDriver
-from ..enterprise.models import Enterprise
+
+from taxi_manager.vehicle.models import Vehicle, Model, Driver, VehicleDriver
+from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 
 from .serializers import (

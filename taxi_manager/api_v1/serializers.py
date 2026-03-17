@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from ..vehicle.models import Vehicle, Model, Driver
-from ..enterprise.models import Enterprise
+from taxi_manager.vehicle.models import Vehicle, Model, Driver
+from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 from zoneinfo import ZoneInfo
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
