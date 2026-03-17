@@ -14,6 +14,7 @@ from .serializers import (
     EnterpriseSerializer,
     TimeZoneSerializer,
     VehileLocationSerializerGeoJson,
+    VehileLocationSerializer,
 )
 from django.db.models import OuterRef, Subquery, F
 from django.shortcuts import get_object_or_404
@@ -247,11 +248,18 @@ class TimeZoneListAPIView(generics.ListAPIView):
 
 
 class VehicleLocationListAPIView(generics.ListAPIView):
-    serializer_class = VehileLocationSerializerGeoJson
-
     def get_queryset(self):
         vehicle_id = self.kwargs["vehicle_id"]
 
         get_object_or_404(Vehicle, pk=vehicle_id)
 
         return VehicleLocation.objects.filter(vehicle=vehicle_id)
+
+    def get_serializer_class(self):
+       
+        response_format = self.request.query_params.get("response_format")
+
+        if response_format == 'geojson':
+            return VehileLocationSerializerGeoJson
+
+        return VehileLocationSerializer
