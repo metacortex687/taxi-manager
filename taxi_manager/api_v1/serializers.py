@@ -3,6 +3,21 @@ from ..vehicle.models import Vehicle, Model, Driver
 from ..enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 from zoneinfo import ZoneInfo
+from rest_framework_gis.serializers import GeoFeatureModelSerializer
+from taxi_manager.geo_tracking.models import VehicleLocation
+
+
+class VehileLocationSerializerGeoJson(GeoFeatureModelSerializer):
+    class Meta:
+        model = VehicleLocation
+        geo_field = "location"
+        fields = (
+            "id",
+            "vehicle",
+            "location",
+            "tracked_at",
+        )
+
 
 class VehicleReadSerializer(serializers.ModelSerializer):
     model_id = serializers.SerializerMethodField()
