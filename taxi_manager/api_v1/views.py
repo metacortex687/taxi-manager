@@ -35,7 +35,7 @@ User = get_user_model()
 class VehicleViewSet(viewsets.ModelViewSet):
     serializer_class = VehicleReadSerializer
     queryset = Vehicle.objects.all()
-    #filter_backends = [filters.OrderingFilter]
+    # filter_backends = [filters.OrderingFilter]
 
     http_method_names = ["get", "put", "post", "delete"]
 
@@ -58,13 +58,16 @@ class VehicleViewSet(viewsets.ModelViewSet):
         if enterprise_id:
             vehicles = vehicles.filter(enterprise=enterprise_id)
 
-
         enterprise_ids = user.managed_enterprises.values("id")
         vehicles = vehicles.filter(enterprise__in=enterprise_ids)
 
-        vehicles = vehicles.prefetch_related("model").select_related("enterprise__time_zone")
+        vehicles = vehicles.prefetch_related("model").select_related(
+            "enterprise__time_zone"
+        )
 
-        return vehicles.annotate(active_driver_id=Subquery(active_driver), color = F("model__color")).all()
+        return vehicles.annotate(
+            active_driver_id=Subquery(active_driver), color=F("model__color")
+        ).all()
 
     def get_object(self):
         pk = self.kwargs["pk"]
@@ -81,7 +84,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         if user.is_anonymous:
-            raise NotAuthenticated ("Авторизуйтесь", code='111')
+            raise NotAuthenticated("Авторизуйтесь", code="111")
 
         if not user.managed_enterprises.filter(
             id=self.request.data["enterprise_id"]
@@ -126,8 +129,6 @@ class VehicleViewSet(viewsets.ModelViewSet):
             return super().destroy(request, *args, **kwargs)
         except RestrictedError as e:
             raise DeletionConflict(str(e))
-
-
 
     # @action(detail=False, methods=["GET"], url_path="TEST", url_name="TTTTEST")
     # def vehicles_of_driver(self, request):
