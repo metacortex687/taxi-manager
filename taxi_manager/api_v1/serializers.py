@@ -37,7 +37,9 @@ class VehicleReadSerializer(serializers.ModelSerializer):
         return obj.enterprise.id
 
     def to_representation(self, instance):
-        self.fields['purchased_at'] = serializers.DateTimeField(default_timezone=ZoneInfo(instance.enterprise.time_zone.code))
+        self.fields["purchased_at"] = serializers.DateTimeField(
+            default_timezone=ZoneInfo(instance.enterprise.time_zone.code)
+        )
 
         representation = super().to_representation(instance)
         representation["driver_ids"] = representation.pop("drivers")
@@ -69,15 +71,14 @@ class VehicleReadSerializer(serializers.ModelSerializer):
             "purchased_at",
         )
 
+
 class VehicleWriteSerializer(serializers.ModelSerializer):
     enterprise_id = serializers.PrimaryKeyRelatedField(
-        source="enterprise",
-        queryset=Enterprise.objects.all()
+        source="enterprise", queryset=Enterprise.objects.all()
     )
 
     model_id = serializers.PrimaryKeyRelatedField(
-        source="model",
-        queryset=Model.objects.all()
+        source="model", queryset=Model.objects.all()
     )
 
     class Meta:
@@ -117,7 +118,6 @@ class ModelSerializer(serializers.ModelSerializer):
             "load_capacity_kg",
             "created_at",
             "updated_at",
-            
         )
 
 
@@ -131,7 +131,7 @@ class EnterpriseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enterprise
 
-        fields = ("id", "name", "city","time_zone")
+        fields = ("id", "name", "city", "time_zone")
 
 
 class DriverSerializer(serializers.ModelSerializer):
@@ -158,7 +158,6 @@ class DriverSerializer(serializers.ModelSerializer):
 
 
 class TimeZoneSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = TimeZone
 
@@ -166,5 +165,5 @@ class TimeZoneSerializer(serializers.ModelSerializer):
             "id",
             "code",
             "utc_offset",
-            "display_name",           
+            "display_name",
         )
