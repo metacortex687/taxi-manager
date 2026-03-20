@@ -25,6 +25,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from django.db.models.deletion import RestrictedError
@@ -253,7 +254,12 @@ class VehicleLocationListAPIView(generics.ListAPIView):
 
         get_object_or_404(Vehicle, pk=vehicle_id)
 
-        return VehicleLocation.objects.filter(vehicle=vehicle_id).select_related("vehicle__enterprise__time_zone")
+        _queryset = VehicleLocation.objects.filter(vehicle=vehicle_id).select_related("vehicle__enterprise__time_zone")
+
+        _queryset = _queryset.order_by("-id").filter(tracked_at__lte=timezone.now())
+
+
+        return _queryset
 
     def get_serializer_class(self):
        
