@@ -7,7 +7,7 @@ class VehicleLocation(models.Model):
     tracked_at = models.DateTimeField()
 
 class Trip(models.Model):
-    vehicle = models.ForeignKey(Vehicle,on_delete=models.RESTRICT, related_name="rides", verbose_name="Автомобиль")
+    vehicle = models.ForeignKey(Vehicle,on_delete=models.RESTRICT, related_name="trips", verbose_name="Автомобиль")
     started_at = models.DateTimeField()
     ended_at = models.DateTimeField() 
 
