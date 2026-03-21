@@ -1,5 +1,7 @@
 from django.contrib.gis.db import models
+
 from taxi_manager.vehicle.models import Vehicle
+from taxi_manager.enterprise.models import Enterprise
 
 
 class VehicleLocation(models.Model):
@@ -16,6 +18,9 @@ class VehicleLocation(models.Model):
 
 
 class Trip(models.Model):
+    enterprise = models.ForeignKey(
+        Enterprise, on_delete=models.RESTRICT, verbose_name="Предприятие", related_name="trips"
+    )
     vehicle = models.ForeignKey(
         Vehicle,
         on_delete=models.RESTRICT,
