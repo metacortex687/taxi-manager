@@ -67,12 +67,13 @@ class Command(BaseCommand):
         self.stdout.write("Сохранение данных...")
 
         vehicle = Vehicle.objects.get(id=options["vehicle_id"])
-        self.save_data(vehicle,points)
+        enterprise=vehicle.enterprise
+        self.save_data(enterprise, vehicle, points)
         
         self.stdout.write("Генерация данных завершена.")
 
 
-    def save_data(self, vehicle, points):
+    def save_data(self, enterprise, vehicle, points):
         start_time = timezone.now()
 
 
@@ -80,6 +81,7 @@ class Command(BaseCommand):
         for lon, lat, seconds_from_start in points:
             locations.append(
                 VehicleLocation(
+                    enterprise=enterprise,
                     vehicle=vehicle,
                     location=Point(lon, lat, srid=4326),
                     tracked_at=start_time + timedelta(seconds=seconds_from_start),
