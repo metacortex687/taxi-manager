@@ -31,7 +31,7 @@ from rest_framework.permissions import SAFE_METHODS
 from django.db.models.deletion import RestrictedError
 from .exceptions import DeletionConflict
 
-from django.utils.dateparse import parse_datetime
+from datetime import datetime
 
 User = get_user_model()
 
@@ -280,8 +280,8 @@ class TripListAPIView(generics.ListAPIView):
         vehicle_id = self.kwargs.get("vehicle_id")
         vehicle = Vehicle.objects.get(pk=vehicle_id)
 
-        trips_from = parse_datetime(self.request.query_params.get("from"))
-        trips_to = parse_datetime(self.request.query_params.get("to"))
+        trips_from = datetime.strptime(self.request.query_params.get("from"),"%Y-%m-%dT%H:%M:%S%z")
+        trips_to = datetime.strptime(self.request.query_params.get("to"),"%Y-%m-%dT%H:%M:%S%z")
 
         trip = (
             Trip.objects.filter(vehicle=vehicle)
