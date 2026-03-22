@@ -254,18 +254,18 @@ class VehicleLocationListAPIView(generics.ListAPIView):
 
         get_object_or_404(Vehicle, pk=vehicle_id)
 
-        _queryset = VehicleLocation.objects.filter(vehicle=vehicle_id).select_related("vehicle__enterprise__time_zone")
+        _queryset = VehicleLocation.objects.filter(vehicle=vehicle_id).select_related(
+            "vehicle__enterprise__time_zone"
+        )
 
         _queryset = _queryset.order_by("-id").filter(tracked_at__lte=timezone.now())
-
 
         return _queryset
 
     def get_serializer_class(self):
-       
         response_format = self.request.query_params.get("response_format")
 
-        if response_format == 'geojson':
+        if response_format == "geojson":
             return VehileLocationSerializerGeoJson
 
         return VehileLocationSerializer
