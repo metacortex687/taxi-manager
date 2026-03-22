@@ -5,6 +5,13 @@ from taxi_manager.enterprise.models import Enterprise
 
 
 class VehicleLocation(models.Model):
+    enterprise = models.ForeignKey(
+        Enterprise,
+        on_delete=models.RESTRICT,
+        verbose_name="Предприятие",
+        related_name="trips",
+        null=True,
+    )
     vehicle = models.ForeignKey(
         Vehicle,
         on_delete=models.RESTRICT,
