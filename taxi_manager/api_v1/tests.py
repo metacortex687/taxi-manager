@@ -1,10 +1,18 @@
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+
+from django.contrib.gis.geos import Point
+
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from taxi_manager.api_v1.views import VehicleViewSet
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.vehicle.models import Model, Vehicle, Driver
+from taxi_manager.geo_tracking.models import Trip, VehicleLocation
+from taxi_manager.time_zones.models import TimeZone
+
+from datetime import datetime, UTC
 
 
 class VehicleAPITest(TestCase):
@@ -683,3 +691,102 @@ class EnterpriseAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 401)
+
+
+class TripAPITest(TestCase):
+    def setUp(self):
+        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0) 
+        self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city", time_zone=self.time_zone)
+        self.passwords = {}
+
+        password = "secret"
+        self.manager1 = get_user_model().objects.create_user(
+            username="manager1", email="manager1@mail.com", password=password
+        )
+        self.passwords[self.manager1.username] = password
+
+        self.model1 = Model.objects.create(
+            name="model1",
+            type="PCR",
+            number_of_seats=5,
+            tank_capacity_l=20,
+            load_capacity_kg=500,
+        )
+
+        self.vehicle1 = Vehicle.objects.create(
+            model=self.model1,
+            number="num1",
+            vin="Z948741AA12323456",
+            year_of_manufacture=2025,
+            mileage=100,
+            enterprise=self.enterprise1,
+            price=125000,
+        )
+
+
+        self.trip1 = Trip.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            started_at=datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC),
+            ended_at=datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC),
+        )
+
+
+        self.location_in_trip = VehicleLocation.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            location=Point(37.6173, 55.7558, srid=4326),
+            tracked_at=datetime(2026, 3, 10, 10, 30, 0, tzinfo=UTC),
+        )
+
+
+        self.location_not_in_trip = VehicleLocation.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            location=Point(37.6180, 55.7560, srid=4326),
+            tracked_at=datetime(2026, 3, 10, 11, 30, 0, tzinfo=UTC),
+        )
+
+    def get_token(self, user):
+
+        response = self.client.post(
+            "/api/v1/auth/token/login/", {"username": user.username, "password": self.passwords[user.username]}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["auth_token"])
+        return response.data["auth_token"]
+
+
+
+    def test_return_status_code_200(self):
+        """
+        Получение точек трекинга для поездки работает
+        """
+
+        token = self.get_token(self.manager1)
+        
+        response = self.client.get(
+            f"/api/v1/vehicles/{self.vehicle1.pk}/trip-points/?from=2026-03-01T00:00:00Z&to=2026-03-31T23:59:59Z",
+            headers={"Authorization": f"Token {token}"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_return_list_points_only_in_trip_200(self):
+
+        token = self.get_token(self.manager1)
+
+        response = self.client.get(
+            f"/api/v1/vehicles/{self.vehicle1.pk}/trip-points/?from=2026-03-01T00:00:00Z&to=2026-03-31T23:59:59Z",
+            headers={"Authorization": f"Token {token}"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # ожидаем только 1 точку — ту, что попала в Trip
+        results = response.data["results"]
+        print(results)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["id"], self.location_in_trip.id)
+    

@@ -188,3 +188,16 @@ class TimeZoneSerializer(serializers.ModelSerializer):
             "utc_offset",
             "display_name",
         )
+
+class TripSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True) 
+    trip = serializers.IntegerField(read_only=True) 
+    tracked_at = serializers.DateTimeField(read_only=True)
+    location = serializers.CharField(read_only=True)
+
+    def to_representation(self, instance):
+        self.fields["tracked_at"] = serializers.DateTimeField(
+            default_timezone=ZoneInfo(instance.vehicle.enterprise.time_zone.code)
+        )
+        return super().to_representation(instance)
+    

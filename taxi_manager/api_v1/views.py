@@ -3,8 +3,7 @@ from rest_framework import generics, viewsets, filters
 from taxi_manager.vehicle.models import Vehicle, Model, Driver, VehicleDriver
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
-from taxi_manager.geo_tracking.models import VehicleLocation
-
+from taxi_manager.geo_tracking.models import VehicleLocation, Trip
 
 from .serializers import (
     VehicleReadSerializer,
@@ -15,8 +14,9 @@ from .serializers import (
     TimeZoneSerializer,
     VehileLocationSerializerGeoJson,
     VehileLocationSerializer,
+    TripSerializer,
 )
-from django.db.models import OuterRef, Subquery, F
+from django.db.models import OuterRef, Subquery, F, Q
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
@@ -30,6 +30,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from django.db.models.deletion import RestrictedError
 from .exceptions import DeletionConflict
+
+from django.utils.dateparse import parse_datetime
 
 User = get_user_model()
 
@@ -269,3 +271,29 @@ class VehicleLocationListAPIView(generics.ListAPIView):
             return VehileLocationSerializerGeoJson
 
         return VehileLocationSerializer
+
+
+class TripListAPIView(generics.ListAPIView):
+    serializer_class = TripSerializer
+
+    def get_queryset(self):
+        vehicle_id = self.kwargs.get("vehicle_id")
+        vehicle = Vehicle.objects.get(pk=vehicle_id)
+
+        trips_from = parse_datetime(self.request.query_params.get("from"))
+        trips_to = parse_datetime(self.request.query_params.get("to"))
+
+        trip = (
+            Trip.objects.filter(vehicle=vehicle)
+            .filter(Q(started_at__lte=trips_to) & Q(ended_at__gt=trips_from))
+            .filter(
+                started_at__lte=OuterRef("tracked_at"),
+                ended_at__gt=OuterRef("tracked_at"),
+            )
+        ).values("id")[:1]
+
+        queryset = VehicleLocation.objects.filter(
+            vehicle=vehicle, tracked_at__gte=trips_from, tracked_at__lt=trips_to
+        ).annotate(trip=Subquery(trip)).filter(trip__isnull=False)
+
+        return queryset
