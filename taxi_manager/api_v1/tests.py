@@ -1,9 +1,10 @@
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate
-from ..api_v1.views import VehicleViewSet
-from ..enterprise.models import Enterprise
-from ..vehicle.models import Model, Vehicle, Driver
+
+from taxi_manager.api_v1.views import VehicleViewSet
+from taxi_manager.enterprise.models import Enterprise
+from taxi_manager.vehicle.models import Model, Vehicle, Driver
 
 
 class VehicleAPITest(TestCase):
