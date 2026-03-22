@@ -9,7 +9,7 @@ class VehicleLocation(models.Model):
         Enterprise,
         on_delete=models.RESTRICT,
         verbose_name="Предприятие",
-        related_name="trips",
+        related_name="locations",
         null=True,
     )
     vehicle = models.ForeignKey(
