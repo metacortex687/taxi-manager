@@ -790,3 +790,16 @@ class TripAPITest(TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], self.location_in_trip.id)
     
+    def test_return_list_points_only_in_trip_utc_plus_3(self):
+        token = self.get_token(self.manager1)
+
+        response = self.client.get(
+            f"/api/v1/vehicles/{self.vehicle1.pk}/trip-points/?from=2026-03-01T00:00:00%2B03:00&to=2026-03-31T23:59:59%2B03:00",
+            headers={"Authorization": f"Token {token}"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["id"], self.location_in_trip.id)
