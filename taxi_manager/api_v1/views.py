@@ -280,12 +280,12 @@ class TripListAPIView(generics.ListAPIView):
         vehicle_id = self.kwargs.get("vehicle_id")
         vehicle = Vehicle.objects.get(pk=vehicle_id)
 
-        trips_from = datetime.strptime(self.request.query_params.get("from"),"%Y-%m-%dT%H:%M:%S%z")
-        trips_to = datetime.strptime(self.request.query_params.get("to"),"%Y-%m-%dT%H:%M:%S%z")
+        filter_data_from = datetime.strptime(self.request.query_params.get("from"),"%Y-%m-%dT%H:%M:%S%z")
+        filter_data_to = datetime.strptime(self.request.query_params.get("to"),"%Y-%m-%dT%H:%M:%S%z")
 
         trip = (
             Trip.objects.filter(vehicle=vehicle)
-            .filter(Q(started_at__lte=trips_to) & Q(ended_at__gt=trips_from))
+            .filter(started_at__gte=filter_data_from, ended_at__lte=filter_data_to)
             .filter(
                 started_at__lte=OuterRef("tracked_at"),
                 ended_at__gt=OuterRef("tracked_at"),
@@ -293,7 +293,7 @@ class TripListAPIView(generics.ListAPIView):
         ).values("id")[:1]
 
         queryset = VehicleLocation.objects.filter(
-            vehicle=vehicle, tracked_at__gte=trips_from, tracked_at__lt=trips_to
+            vehicle=vehicle, tracked_at__gte=filter_data_from, tracked_at__lt=filter_data_to
         ).annotate(trip=Subquery(trip)).filter(trip__isnull=False)
 
         return queryset
