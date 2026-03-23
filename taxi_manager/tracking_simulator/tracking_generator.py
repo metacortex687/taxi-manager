@@ -178,7 +178,7 @@ class TrackingGenerator:
             path = TrackingGenerator.truncate_path_by_length(path, distance - length)
             res_path.extend(path)
 
-            length = TrackingGenerator.path_length(path)
+            length += TrackingGenerator.path_length(path)
 
         return path
 
