@@ -17,6 +17,7 @@ from datetime import datetime, UTC
 
 class VehicleAPITest(TestCase):
     def setUp(self):
+        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0) 
         self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city")
         self.enterprise2 = Enterprise.objects.create(name="enterprise2", city="city")
         self.enterprise3 = Enterprise.objects.create(name="enterprise3", city="city")
@@ -533,6 +534,7 @@ class VehicleAPITest(TestCase):
 
 class TokenAPITest(TestCase):
     def setUp(self):
+        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0) 
         self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city")
         self.manager1 = get_user_model().objects.create_user(
             username="manager1", email="manager1@mail.com", password="secret"
@@ -613,6 +615,7 @@ class TokenAPITest(TestCase):
 
 class EnterpriseAPITest(TestCase):
     def setUp(self):
+        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0) 
         self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city")
         self.enterprise2 = Enterprise.objects.create(name="enterprise2", city="city")
         self.enterprise3 = Enterprise.objects.create(name="enterprise3", city="city")
@@ -692,18 +695,38 @@ class EnterpriseAPITest(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
+class BaseAuthTestCase(TestCase):
+    def __init__(self, methodName = "runTest"):
+        self.passwords = {}
 
-class TripAPITest(TestCase):
+        super().__init__(methodName)
+
+    def create_user(self, username, email, password):
+        self.passwords[username] = password
+
+        return get_user_model().objects.create_user(
+            username=username, email=email, password=password
+        )
+    
+    def get_token(self, user):
+
+        response = self.client.post(
+            "/api/v1/auth/token/login/", {"username": user.username, "password": self.passwords[user.username]}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["auth_token"])
+        return response.data["auth_token"]
+
+
+class TripAPITest(BaseAuthTestCase):
     def setUp(self):
         self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0) 
         self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city", time_zone=self.time_zone)
-        self.passwords = {}
+        
 
         password = "secret"
-        self.manager1 = get_user_model().objects.create_user(
-            username="manager1", email="manager1@mail.com", password=password
-        )
-        self.passwords[self.manager1.username] = password
+        self.manager1 = self.create_user(username="manager1", email="manager1@mail.com", password=password)
 
         self.model1 = Model.objects.create(
             name="model1",
@@ -747,15 +770,7 @@ class TripAPITest(TestCase):
             tracked_at=datetime(2026, 3, 10, 11, 30, 0, tzinfo=UTC),
         )
 
-    def get_token(self, user):
 
-        response = self.client.post(
-            "/api/v1/auth/token/login/", {"username": user.username, "password": self.passwords[user.username]}
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.data["auth_token"])
-        return response.data["auth_token"]
 
 
 
