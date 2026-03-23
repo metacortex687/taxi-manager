@@ -196,6 +196,7 @@ class TrackingGenerator:
             res_path.extend(path)
 
             length += TrackingGenerator.path_length(path)
+            print(f"Построено маршрута {length}/{distance}")
 
         return path
 
