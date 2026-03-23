@@ -162,6 +162,8 @@ class TrackingGenerator:
         start_point = TrackingGenerator.random_node(
             roads
         )  # Упростил так как стандартный метод shortest_path ищет путь только между узалми
+        
+        attempt = 0
         res_path = [start_point]
         length = 0
         while length < distance:
@@ -172,6 +174,17 @@ class TrackingGenerator:
             path_on_graph = ox.routing.shortest_path(
                 roads, start_point, next_point, weight="length"
             )
+
+            if not path_on_graph and attempt<5: #были две точки по которым не удалось найти кратчайший путь
+                print("не удалось построить маршрут")
+                continue
+
+            if not path_on_graph:
+                raise Exception(f"Не удалось за {attempt} попыток, найти точки между которыми возможен маршрут")
+            
+            attempt = 0
+
+
             path = TrackingGenerator.path_to_geo_points_with_distances(
                 roads, path_on_graph
             )
