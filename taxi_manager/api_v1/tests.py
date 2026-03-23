@@ -786,7 +786,6 @@ class TripAPITest(TestCase):
 
         # ожидаем только 1 точку — ту, что попала в Trip
         results = response.data["results"]
-        print(results)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], self.location_in_trip.id)
     
