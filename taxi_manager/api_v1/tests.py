@@ -695,8 +695,9 @@ class EnterpriseAPITest(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
+
 class BaseAuthTestCase(TestCase):
-    def __init__(self, methodName = "runTest"):
+    def __init__(self, methodName="runTest"):
         self.passwords = {}
 
         super().__init__(methodName)
@@ -707,11 +708,11 @@ class BaseAuthTestCase(TestCase):
         return get_user_model().objects.create_user(
             username=username, email=email, password=password
         )
-    
-    def get_token(self, user):
 
+    def get_token(self, user):
         response = self.client.post(
-            "/api/v1/auth/token/login/", {"username": user.username, "password": self.passwords[user.username]}
+            "/api/v1/auth/token/login/",
+            {"username": user.username, "password": self.passwords[user.username]},
         )
 
         self.assertEqual(response.status_code, 200)
@@ -721,12 +722,15 @@ class BaseAuthTestCase(TestCase):
 
 class TripAPITest(BaseAuthTestCase):
     def setUp(self):
-        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0) 
-        self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city", time_zone=self.time_zone)
-        
+        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
+        self.enterprise1 = Enterprise.objects.create(
+            name="enterprise1", city="city", time_zone=self.time_zone
+        )
 
         password = "secret"
-        self.manager1 = self.create_user(username="manager1", email="manager1@mail.com", password=password)
+        self.manager1 = self.create_user(
+            username="manager1", email="manager1@mail.com", password=password
+        )
 
         self.model1 = Model.objects.create(
             name="model1",
@@ -746,14 +750,12 @@ class TripAPITest(BaseAuthTestCase):
             price=125000,
         )
 
-
         self.trip1 = Trip.objects.create(
             enterprise=self.enterprise1,
             vehicle=self.vehicle1,
             started_at=datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC),
             ended_at=datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC),
         )
-
 
         self.location_in_trip = VehicleLocation.objects.create(
             enterprise=self.enterprise1,
@@ -762,7 +764,6 @@ class TripAPITest(BaseAuthTestCase):
             tracked_at=datetime(2026, 3, 10, 10, 30, 0, tzinfo=UTC),
         )
 
-
         self.location_not_in_trip = VehicleLocation.objects.create(
             enterprise=self.enterprise1,
             vehicle=self.vehicle1,
@@ -770,17 +771,13 @@ class TripAPITest(BaseAuthTestCase):
             tracked_at=datetime(2026, 3, 10, 11, 30, 0, tzinfo=UTC),
         )
 
-
-
-
-
     def test_return_status_code_200(self):
         """
         Получение точек трекинга для поездки работает
         """
 
         token = self.get_token(self.manager1)
-        
+
         response = self.client.get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/trip-points/?from=2026-03-01T00:00:00Z&to=2026-03-31T23:59:59Z",
             headers={"Authorization": f"Token {token}"},
@@ -789,7 +786,6 @@ class TripAPITest(BaseAuthTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_return_list_points_only_in_trip_200(self):
-
         token = self.get_token(self.manager1)
 
         response = self.client.get(
@@ -803,7 +799,7 @@ class TripAPITest(BaseAuthTestCase):
         results = response.data["results"]
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], self.location_in_trip.id)
-    
+
     def test_return_list_points_only_in_trip_utc_plus_3(self):
         token = self.get_token(self.manager1)
 
