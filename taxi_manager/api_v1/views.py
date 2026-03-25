@@ -4,6 +4,7 @@ from taxi_manager.vehicle.models import Vehicle, Model, Driver, VehicleDriver
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 from taxi_manager.geo_tracking.models import VehicleLocation, Trip
+from taxi_manager.geocoding.models import GeoAddress
 
 from .serializers import (
     VehicleReadSerializer,
@@ -325,4 +326,14 @@ class TripListAPIView(generics.ListAPIView):
 
         return queryset
 
+
+    def list(self, request, *args, **kwargs):
+
+        point_need_load_address = []
+        point_need_load_address.extend([v.start_point for v in self.get_queryset() if v.start_address is None])
+        point_need_load_address.extend([v.end_point for v in self.get_queryset() if v.end_address is None])
+
+        GeoAddress.load_address_for_points(point_need_load_address)
+
+        return super().list(request, *args, **kwargs)
 
