@@ -170,3 +170,9 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend','rest_framework.filters.OrderingFilter'],
 }
+
+ADDRESS_PROVIDER = {
+    "URL": "https://us1.locationiq.com/v1/reverse",
+    "DELAY_REQUEST": 0.1,
+    "KEY": os.getenv("LOCATIONIQ_KEY"),
+}
