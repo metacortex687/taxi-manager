@@ -17,7 +17,7 @@ from datetime import datetime, UTC
 
 class VehicleAPITest(TestCase):
     def setUp(self):
-        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0) 
+        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
         self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city")
         self.enterprise2 = Enterprise.objects.create(name="enterprise2", city="city")
         self.enterprise3 = Enterprise.objects.create(name="enterprise3", city="city")
@@ -534,7 +534,7 @@ class VehicleAPITest(TestCase):
 
 class TokenAPITest(TestCase):
     def setUp(self):
-        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0) 
+        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
         self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city")
         self.manager1 = get_user_model().objects.create_user(
             username="manager1", email="manager1@mail.com", password="secret"
@@ -615,7 +615,7 @@ class TokenAPITest(TestCase):
 
 class EnterpriseAPITest(TestCase):
     def setUp(self):
-        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0) 
+        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
         self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city")
         self.enterprise2 = Enterprise.objects.create(name="enterprise2", city="city")
         self.enterprise3 = Enterprise.objects.create(name="enterprise3", city="city")
