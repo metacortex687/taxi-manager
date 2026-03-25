@@ -23,6 +23,7 @@ class VehileLocationSerializerGeoJson(GeoFeatureModelSerializer):
         )
         return super().to_representation(instance)
 
+
 class VehileLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleLocation
@@ -189,9 +190,10 @@ class TimeZoneSerializer(serializers.ModelSerializer):
             "display_name",
         )
 
+
 class TripPointSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True) 
-    trip = serializers.IntegerField(read_only=True) 
+    id = serializers.IntegerField(read_only=True)
+    trip = serializers.IntegerField(read_only=True)
     tracked_at = serializers.DateTimeField(read_only=True)
     location = serializers.CharField(read_only=True)
 
@@ -201,25 +203,22 @@ class TripPointSerializer(serializers.Serializer):
         )
         return super().to_representation(instance)
 
+
 class TripSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True) 
+    id = serializers.IntegerField(read_only=True)
     start_point = serializers.SerializerMethodField(read_only=True)
     end_point = serializers.SerializerMethodField(read_only=True)
-    # start_point = PointField(read_only=True) 
 
     def get_start_point(self, obj):
-        return {            
+        return {
             "lon": obj.start_point.x,
             "lat": obj.start_point.y,
-            "address": obj.start_address
-            }
-    
+            "address": obj.start_address,
+        }
+
     def get_end_point(self, obj):
-        return {            
+        return {
             "lon": obj.end_point.x,
             "lat": obj.end_point.y,
-            "address": obj.end_address
-            }
-
-    
-    
+            "address": obj.end_address,
+        }
