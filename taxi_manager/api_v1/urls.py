@@ -36,7 +36,7 @@ urlpatterns = [
     path("timezones/", TimeZoneListAPIView.as_view()),
 
     path("vehicles/<int:vehicle_id>/locations/", VehicleLocationListAPIView.as_view()),
-    path("vehicles/<int:vehicle_id>/trip-points/", TripListAPIView.as_view()),
+    path("vehicles/<int:vehicle_id>/trip-points/", TripPointListAPIView.as_view()),
     
 
     # path("logout/", SessionLogoutView.as_view()),

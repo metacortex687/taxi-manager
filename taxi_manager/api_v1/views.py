@@ -273,7 +273,7 @@ class VehicleLocationListAPIView(generics.ListAPIView):
         return VehileLocationSerializer
 
 
-class TripListAPIView(generics.ListAPIView):
+class TripPointListAPIView(generics.ListAPIView):
     serializer_class = TripSerializer
 
     def get_queryset(self):
