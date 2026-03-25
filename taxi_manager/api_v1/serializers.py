@@ -210,13 +210,15 @@ class TripSerializer(serializers.Serializer):
     def get_start_point(self, obj):
         return {            
             "lon": obj.start_point.x,
-            "lat": obj.start_point.y
+            "lat": obj.start_point.y,
+            "address": obj.start_address
             }
     
     def get_end_point(self, obj):
         return {            
             "lon": obj.end_point.x,
-            "lat": obj.end_point.y
+            "lat": obj.end_point.y,
+            "address": obj.end_address
             }
 
     

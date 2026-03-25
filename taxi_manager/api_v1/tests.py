@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, Polygon
 
 from rest_framework.test import APIRequestFactory, force_authenticate
 
@@ -11,6 +11,7 @@ from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.vehicle.models import Model, Vehicle, Driver
 from taxi_manager.geo_tracking.models import Trip, VehicleLocation
 from taxi_manager.time_zones.models import TimeZone
+from taxi_manager.geocoding.models import GeoAddress
 
 from datetime import datetime, UTC
 
@@ -909,6 +910,25 @@ class TripAPITest(BaseAuthTestCase):
         )
 
 
+        self.address1 = "Address1"
+
+        west = 37.6123784
+        east = 37.6255645 
+        north = 55.7559849
+        south = 55.7480273
+
+        polygon = Polygon((
+                (west, south),
+                (east, south),
+                (east, north),
+                (west, north),
+                (west, south),
+            ), srid=4326
+        )
+        GeoAddress.objects.create(display_name=self.address1, area = polygon)
+
+
+
     def test_list_trips_returns_200_for_manager(self): 
         '''
         Менеджер может получить список поездок автомобиля 
@@ -932,8 +952,9 @@ class TripAPITest(BaseAuthTestCase):
         results = response.data["results"]
 
         self.assertEqual(len(results),1)
-        self.assertEqual(results[0]["start_point"]["lon"],self.location_in_trip_min.location.x)
-        self.assertEqual(results[0]["start_point"]["lat"],self.location_in_trip_min.location.y)
+        self.assertEqual(results[0]["start_point"]["lon"],self.start_point.location.x)
+        self.assertEqual(results[0]["start_point"]["lat"],self.start_point.location.y)
+        self.assertEqual(results[0]["start_point"]["address"],self.address1)
 
 
     def test_trip_list_contains_end_point(self): 
@@ -947,5 +968,5 @@ class TripAPITest(BaseAuthTestCase):
         results = response.data["results"]
 
         self.assertEqual(len(results),1)
-        self.assertEqual(results[0]["end_point"]["lon"],self.location_in_trip_max.location.x)
-        self.assertEqual(results[0]["end_point"]["lat"],self.location_in_trip_max.location.y)
+        self.assertEqual(results[0]["end_point"]["lon"],self.end_point.location.x)
+        self.assertEqual(results[0]["end_point"]["lat"],self.end_point.location.y)
