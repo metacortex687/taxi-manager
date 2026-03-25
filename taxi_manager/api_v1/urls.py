@@ -9,7 +9,7 @@ from .views import (
     EnterpriseListAPIView,
     TimeZoneListAPIView,
     VehicleLocationListAPIView,
-    TripListAPIView,
+    TripPointListAPIView,
 )
 
 from rest_framework.routers import DefaultRouter
