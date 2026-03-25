@@ -10,6 +10,7 @@ from .views import (
     TimeZoneListAPIView,
     VehicleLocationListAPIView,
     TripPointListAPIView,
+    TripListAPIView,
 )
 
 from rest_framework.routers import DefaultRouter
@@ -37,6 +38,7 @@ urlpatterns = [
 
     path("vehicles/<int:vehicle_id>/locations/", VehicleLocationListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/trip-points/", TripPointListAPIView.as_view()),
+    path("vehicles/<int:vehicle_id>/trips/", TripListAPIView.as_view()),
     
 
     # path("logout/", SessionLogoutView.as_view()),

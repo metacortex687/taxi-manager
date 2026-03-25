@@ -200,4 +200,24 @@ class TripPointSerializer(serializers.Serializer):
             default_timezone=ZoneInfo(instance.vehicle.enterprise.time_zone.code)
         )
         return super().to_representation(instance)
+
+class TripSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True) 
+    start_point = serializers.SerializerMethodField(read_only=True)
+    end_point = serializers.SerializerMethodField(read_only=True)
+    # start_point = PointField(read_only=True) 
+
+    def get_start_point(self, obj):
+        return {            
+            "lon": obj.start_point.x,
+            "lat": obj.start_point.y
+            }
+    
+    def get_end_point(self, obj):
+        return {            
+            "lon": obj.end_point.x,
+            "lat": obj.end_point.y
+            }
+
+    
     

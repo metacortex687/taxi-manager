@@ -15,6 +15,7 @@ from .serializers import (
     VehileLocationSerializerGeoJson,
     VehileLocationSerializer,
     TripPointSerializer,
+    TripSerializer,
 )
 from django.db.models import OuterRef, Subquery, F, Q
 from django.shortcuts import get_object_or_404
@@ -297,3 +298,24 @@ class TripPointListAPIView(generics.ListAPIView):
         ).annotate(trip=Subquery(trip)).filter(trip__isnull=False)
 
         return queryset
+
+class TripListAPIView(generics.ListAPIView):
+    serializer_class = TripSerializer
+
+    def get_queryset(self):
+        vehicle_id = self.kwargs.get("vehicle_id")
+        vehicle = Vehicle.objects.get(pk=vehicle_id)
+
+        queryset = vehicle.trips.all()
+
+        points = VehicleLocation.objects.filter(vehicle=vehicle).filter(
+            tracked_at__gte=OuterRef("started_at"),
+            tracked_at__lt=OuterRef("ended_at"),
+        ).values("location")
+
+        queryset = queryset.annotate(start_point = Subquery(points.order_by("tracked_at")[:1]),
+                                     end_point = Subquery(points.order_by("-tracked_at")[:1]))
+
+        return queryset
+
+

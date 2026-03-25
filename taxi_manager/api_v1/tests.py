@@ -813,3 +813,135 @@ class TripAPITest(BaseAuthTestCase):
         results = response.data["results"]
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], self.location_in_trip.id)
+
+
+class TripAPITest(BaseAuthTestCase):
+    def setUp(self):
+        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
+        self.enterprise1 = Enterprise.objects.create(
+            name="enterprise1", city="city", time_zone=self.time_zone
+        )
+
+        password = "secret"
+        self.manager1 = self.create_user(
+            username="manager1", email="manager1@mail.com", password=password
+        )
+
+        self.model1 = Model.objects.create(
+            name="model1",
+            type="PCR",
+            number_of_seats=5,
+            tank_capacity_l=20,
+            load_capacity_kg=500,
+        )
+
+        self.vehicle1 = Vehicle.objects.create(
+            model=self.model1,
+            number="num1",
+            vin="Z948741AA12323456",
+            year_of_manufacture=2025,
+            mileage=100,
+            enterprise=self.enterprise1,
+            price=125000,
+        )
+
+        self.vehicle2 = Vehicle.objects.create(
+            model=self.model1,
+            number="num2",
+            vin="Z948741AA12322222",
+            year_of_manufacture=2025,
+            mileage=100,
+            enterprise=self.enterprise1,
+            price=125000,
+        )       
+
+        self.trip1 = Trip.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            started_at=datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC),
+            ended_at=datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC),
+        )
+
+        self.trip2 = Trip.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle2,
+            started_at=datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC),
+            ended_at=datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC),
+        )
+
+        self.location_not_in_trip_min = VehicleLocation.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            location=Point(37.6173, 55.7558, srid=4326),
+            tracked_at=datetime(2026, 3, 10, 9, 15, 0, tzinfo=UTC),
+        )
+
+        self.location_in_trip_min = VehicleLocation.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            location=Point(37.6173, 55.7558, srid=4326),
+            tracked_at=datetime(2026, 3, 10, 10, 15, 0, tzinfo=UTC),
+        )
+
+        self.location_in_trip_average = VehicleLocation.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            location=Point(37.6173, 55.7558, srid=4326),
+            tracked_at=datetime(2026, 3, 10, 10, 15, 0, tzinfo=UTC),
+        )
+
+        self.location_in_trip_max = VehicleLocation.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            location=Point(37.6180, 55.7560, srid=4326),
+            tracked_at=datetime(2026, 3, 10, 10, 25, 0, tzinfo=UTC),
+        )
+
+        self.location_not_in_trip_max = VehicleLocation.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            location=Point(37.6180, 55.7560, srid=4326),
+            tracked_at=datetime(2026, 3, 10, 11, 25, 0, tzinfo=UTC),
+        )
+
+
+    def test_list_trips_returns_200_for_manager(self): 
+        '''
+        Менеджер может получить список поездок автомобиля 
+        '''
+        response = self.client_get(f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1)
+
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+        self.assertEqual(len(results),1)
+
+
+    def test_trip_list_contains_start_point(self): 
+        '''
+        В информации по поездке есть стартовая точка
+        '''
+        response = self.client_get(f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1)
+
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+
+        self.assertEqual(len(results),1)
+        self.assertEqual(results[0]["start_point"]["lon"],self.location_in_trip_min.location.x)
+        self.assertEqual(results[0]["start_point"]["lat"],self.location_in_trip_min.location.y)
+
+
+    def test_trip_list_contains_end_point(self): 
+        '''
+        В информации по поездке есть стартовая точка
+        '''
+        response = self.client_get(f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1)
+
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+
+        self.assertEqual(len(results),1)
+        self.assertEqual(results[0]["end_point"]["lon"],self.location_in_trip_max.location.x)
+        self.assertEqual(results[0]["end_point"]["lat"],self.location_in_trip_max.location.y)
