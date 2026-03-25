@@ -14,7 +14,7 @@ from .serializers import (
     TimeZoneSerializer,
     VehileLocationSerializerGeoJson,
     VehileLocationSerializer,
-    TripSerializer,
+    TripPointSerializer,
 )
 from django.db.models import OuterRef, Subquery, F, Q
 from django.shortcuts import get_object_or_404
@@ -274,7 +274,7 @@ class VehicleLocationListAPIView(generics.ListAPIView):
 
 
 class TripPointListAPIView(generics.ListAPIView):
-    serializer_class = TripSerializer
+    serializer_class = TripPointSerializer
 
     def get_queryset(self):
         vehicle_id = self.kwargs.get("vehicle_id")

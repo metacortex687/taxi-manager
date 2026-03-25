@@ -189,7 +189,7 @@ class TimeZoneSerializer(serializers.ModelSerializer):
             "display_name",
         )
 
-class TripSerializer(serializers.Serializer):
+class TripPointSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True) 
     trip = serializers.IntegerField(read_only=True) 
     tracked_at = serializers.DateTimeField(read_only=True)
