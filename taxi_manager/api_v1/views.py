@@ -313,8 +313,15 @@ class TripListAPIView(generics.ListAPIView):
             tracked_at__lt=OuterRef("ended_at"),
         ).values("location")
 
+        start_address = GeoAddress.objects.filter(area__covers=OuterRef("start_point")).values("display_name")[:1]
+        end_address = GeoAddress.objects.filter(area__covers=OuterRef("end_point")).values("display_name")[:1]
+
+
         queryset = queryset.annotate(start_point = Subquery(points.order_by("tracked_at")[:1]),
-                                     end_point = Subquery(points.order_by("-tracked_at")[:1]))
+                                     end_point = Subquery(points.order_by("-tracked_at")[:1])).annotate(
+                                         start_address = Subquery(start_address),
+                                         end_address= Subquery(end_address),                                         
+                                     )
 
         return queryset
 

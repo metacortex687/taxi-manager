@@ -725,7 +725,10 @@ class BaseAuthTestCase(TestCase):
             headers={"Authorization": f"Token {self.get_token(user)}"},
         )
 
-class TripAPITest(BaseAuthTestCase):
+
+
+
+class TripPointAPITest(BaseAuthTestCase):
     def setUp(self):
         self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
         self.enterprise1 = Enterprise.objects.create(
@@ -881,7 +884,7 @@ class TripAPITest(BaseAuthTestCase):
             tracked_at=datetime(2026, 3, 10, 9, 15, 0, tzinfo=UTC),
         )
 
-        self.location_in_trip_min = VehicleLocation.objects.create(
+        self.start_point = VehicleLocation.objects.create(
             enterprise=self.enterprise1,
             vehicle=self.vehicle1,
             location=Point(37.6173, 55.7558, srid=4326),
@@ -895,7 +898,7 @@ class TripAPITest(BaseAuthTestCase):
             tracked_at=datetime(2026, 3, 10, 10, 15, 0, tzinfo=UTC),
         )
 
-        self.location_in_trip_max = VehicleLocation.objects.create(
+        self.end_point = VehicleLocation.objects.create(
             enterprise=self.enterprise1,
             vehicle=self.vehicle1,
             location=Point(37.6180, 55.7560, srid=4326),
@@ -959,7 +962,7 @@ class TripAPITest(BaseAuthTestCase):
 
     def test_trip_list_contains_end_point(self): 
         '''
-        В информации по поездке есть стартовая точка
+        В информации по поездке есть последняя точка
         '''
         response = self.client_get(f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1)
 
@@ -970,3 +973,4 @@ class TripAPITest(BaseAuthTestCase):
         self.assertEqual(len(results),1)
         self.assertEqual(results[0]["end_point"]["lon"],self.end_point.location.x)
         self.assertEqual(results[0]["end_point"]["lat"],self.end_point.location.y)
+        self.assertIsNotNone(results[0]["end_point"]["address"])
