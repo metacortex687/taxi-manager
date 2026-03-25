@@ -718,7 +718,11 @@ class BaseAuthTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data["auth_token"])
         return response.data["auth_token"]
-
+   
+    def client_get(self, url, user):
+        return self.client.get(url,
+            headers={"Authorization": f"Token {self.get_token(user)}"},
+        )
 
 class TripAPITest(BaseAuthTestCase):
     def setUp(self):
