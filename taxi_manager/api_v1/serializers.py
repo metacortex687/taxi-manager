@@ -210,15 +210,24 @@ class TripSerializer(serializers.Serializer):
     end_point = serializers.SerializerMethodField(read_only=True)
 
     def get_start_point(self, obj):
+        address = obj.start_address
+        if address is None and obj.near_start_address is not None:
+            address = f"(~{round(obj.near_start_address_distance.m)} м) {obj.near_start_address}"
+
+
         return {
             "lon": obj.start_point.x,
             "lat": obj.start_point.y,
-            "address": obj.start_address,
+            "address": address,
         }
 
     def get_end_point(self, obj):
+        address = obj.end_address
+        if address is None and obj.near_end_address is not None:
+            address = f"(~{round(obj.near_end_address_distance.m)} м) {obj.near_end_address}"
+
         return {
             "lon": obj.end_point.x,
             "lat": obj.end_point.y,
-            "address": obj.end_address,
+            "address": address,
         }

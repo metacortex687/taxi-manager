@@ -6,6 +6,9 @@ from taxi_manager.time_zones.models import TimeZone
 from taxi_manager.geo_tracking.models import VehicleLocation, Trip
 from taxi_manager.geocoding.models import GeoAddress
 
+from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.db.models import PointField
+
 from .serializers import (
     VehicleReadSerializer,
     VehicleWriteSerializer,
@@ -18,7 +21,7 @@ from .serializers import (
     TripPointSerializer,
     TripSerializer,
 )
-from django.db.models import OuterRef, Subquery, F, Q
+from django.db.models import OuterRef, Subquery, F, Q, ExpressionWrapper
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
@@ -318,10 +321,31 @@ class TripListAPIView(generics.ListAPIView):
         end_address = GeoAddress.objects.filter(area__covers=OuterRef("end_point")).values("display_name")[:1]
 
 
+
+
+        radius_search_m = 150
+        start_point_ref = ExpressionWrapper(
+        OuterRef("start_point"),
+        output_field=PointField(srid=4326, geography=True),
+        )
+        end_point_ref = ExpressionWrapper(
+            OuterRef("end_point"),
+            output_field=PointField(srid=4326, geography=True),
+        )
+        near_start_address = GeoAddress.objects.filter(area__dwithin=(OuterRef("start_point"),radius_search_m)).annotate(distance=Distance("area",start_point_ref)).order_by("distance")
+        near_end_address = GeoAddress.objects.filter(area__dwithin=(OuterRef("end_point"),radius_search_m)).annotate(distance=Distance("area",end_point_ref)).order_by("distance")
+
+
+        
         queryset = queryset.annotate(start_point = Subquery(points.order_by("tracked_at")[:1]),
                                      end_point = Subquery(points.order_by("-tracked_at")[:1])).annotate(
                                          start_address = Subquery(start_address),
                                          end_address= Subquery(end_address),                                         
+                                     ).annotate(
+                                         near_start_address = Subquery(near_start_address.values("display_name")[:1]),
+                                         near_end_address = Subquery(near_end_address.values("display_name")[:1]),
+                                         near_start_address_distance = Subquery(near_start_address.values("distance")[:1]),
+                                         near_end_address_distance = Subquery(near_end_address.values("distance")[:1]),                                         
                                      )
 
         return queryset
