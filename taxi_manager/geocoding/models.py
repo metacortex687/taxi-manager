@@ -55,6 +55,10 @@ class GeoAddress(models.Model):
                 (west, south),
             ), srid=4326
         )
+
+        if GeoAddress.objects.filter(area=polygon).exists(): #Избежать повторного внесени в базу
+            return
+        
         GeoAddress.objects.create(display_name=json_data["display_name"], area = polygon)
         
 
