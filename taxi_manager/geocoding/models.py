@@ -36,7 +36,8 @@ class GeoAddress(models.Model):
             "lat": point.y,
             "lon": point.x,
             "key": settings.ADDRESS_PROVIDER["KEY"],
-            "format": "json"
+            "format": "json",
+            "accept-language": settings.LANGUAGE_CODE,
         }
         response = requests.get(url, headers=headers, params=params)
 
