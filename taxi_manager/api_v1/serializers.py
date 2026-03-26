@@ -227,8 +227,8 @@ class TripSerializer(serializers.Serializer):
 
 
         return {
-            "lon": obj.start_point.x,
             "lat": obj.start_point.y,
+            "lon": obj.start_point.x,
             "address": address,
         }
 
@@ -238,7 +238,7 @@ class TripSerializer(serializers.Serializer):
             address = f"(~{round(obj.near_end_address_distance.m)} м) {obj.near_end_address}"
 
         return {
-            "lon": obj.end_point.x,
             "lat": obj.end_point.y,
+            "lon": obj.end_point.x,
             "address": address,
         }
