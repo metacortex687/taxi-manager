@@ -60,7 +60,9 @@ class GeoAddress(models.Model):
         if GeoAddress.objects.filter(area=polygon).exists(): #Избежать повторного внесени в базу
             return
         
-        GeoAddress.objects.create(display_name=json_data["display_name"], area = polygon)
+        address = json_data["display_name"]
+        address = address.replace("Asc","АЗС")
+        GeoAddress.objects.create(display_name=address, area = polygon)
         
 
 
