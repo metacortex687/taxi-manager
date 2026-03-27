@@ -42,9 +42,9 @@ const loadEntity = async () => {
     return await fetch_data(`${form.entity}${getPk()}/`)
 }
 
-const renderFormField = async (entity, field) => {
+const renderFormField = async (entity, field, form_fields) => {
 
-    return await field.render_fn(field, entity)
+    await field.render_fn(field, entity, form_fields)
 
 }
 
@@ -55,7 +55,7 @@ const renderForm = async () => {
     const entity = isNew() ? emptyEntity() : await loadEntity()
 
     for (const field of form.fields) {
-        form_fields.innerHTML += await renderFormField(entity, field)
+        await renderFormField(entity, field, form_fields)
     }
 
     // form_drivers_data = (await fetch_data(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
