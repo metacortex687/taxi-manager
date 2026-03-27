@@ -285,8 +285,12 @@ class TripPointListAPIView(generics.ListAPIView):
         vehicle_id = self.kwargs.get("vehicle_id")
         vehicle = Vehicle.objects.get(pk=vehicle_id)
 
-        filter_data_from = datetime.strptime(self.request.query_params.get("from"),"%Y-%m-%dT%H:%M:%S%z")
-        filter_data_to = datetime.strptime(self.request.query_params.get("to"),"%Y-%m-%dT%H:%M:%S%z")
+        filter_data_from = datetime.strptime(
+            self.request.query_params.get("from"), "%Y-%m-%dT%H:%M:%S%z"
+        )
+        filter_data_to = datetime.strptime(
+            self.request.query_params.get("to"), "%Y-%m-%dT%H:%M:%S%z"
+        )
 
         trip = (
             Trip.objects.filter(vehicle=vehicle)
@@ -297,11 +301,18 @@ class TripPointListAPIView(generics.ListAPIView):
             )
         ).values("id")[:1]
 
-        queryset = VehicleLocation.objects.filter(
-            vehicle=vehicle, tracked_at__gte=filter_data_from, tracked_at__lt=filter_data_to
-        ).annotate(trip=Subquery(trip)).filter(trip__isnull=False)
+        queryset = (
+            VehicleLocation.objects.filter(
+                vehicle=vehicle,
+                tracked_at__gte=filter_data_from,
+                tracked_at__lt=filter_data_to,
+            )
+            .annotate(trip=Subquery(trip))
+            .filter(trip__isnull=False)
+        )
 
         return queryset
+
 
 class TripListAPIView(generics.ListAPIView):
     serializer_class = TripSerializer
@@ -312,52 +323,80 @@ class TripListAPIView(generics.ListAPIView):
 
         queryset = vehicle.trips.all()
 
-        points = VehicleLocation.objects.filter(vehicle=vehicle).filter(
-            tracked_at__gte=OuterRef("started_at"),
-            tracked_at__lt=OuterRef("ended_at"),
-        ).values("location")
+        points = (
+            VehicleLocation.objects.filter(vehicle=vehicle)
+            .filter(
+                tracked_at__gte=OuterRef("started_at"),
+                tracked_at__lt=OuterRef("ended_at"),
+            )
+            .values("location")
+        )
 
-        start_address = GeoAddress.objects.filter(area__covers=OuterRef("start_point")).values("display_name")[:1]
-        end_address = GeoAddress.objects.filter(area__covers=OuterRef("end_point")).values("display_name")[:1]
-
-
-
+        start_address = GeoAddress.objects.filter(
+            area__covers=OuterRef("start_point")
+        ).values("display_name")[:1]
+        end_address = GeoAddress.objects.filter(
+            area__covers=OuterRef("end_point")
+        ).values("display_name")[:1]
 
         radius_search_m = 150
         start_point_ref = ExpressionWrapper(
-        OuterRef("start_point"),
-        output_field=PointField(srid=4326, geography=True),
+            OuterRef("start_point"),
+            output_field=PointField(srid=4326, geography=True),
         )
         end_point_ref = ExpressionWrapper(
             OuterRef("end_point"),
             output_field=PointField(srid=4326, geography=True),
         )
-        near_start_address = GeoAddress.objects.filter(area__dwithin=(OuterRef("start_point"),radius_search_m)).annotate(distance=Distance("area",start_point_ref)).order_by("distance")
-        near_end_address = GeoAddress.objects.filter(area__dwithin=(OuterRef("end_point"),radius_search_m)).annotate(distance=Distance("area",end_point_ref)).order_by("distance")
+        near_start_address = (
+            GeoAddress.objects.filter(
+                area__dwithin=(OuterRef("start_point"), radius_search_m)
+            )
+            .annotate(distance=Distance("area", start_point_ref))
+            .order_by("distance")
+        )
+        near_end_address = (
+            GeoAddress.objects.filter(
+                area__dwithin=(OuterRef("end_point"), radius_search_m)
+            )
+            .annotate(distance=Distance("area", end_point_ref))
+            .order_by("distance")
+        )
 
-
-        
-        queryset = queryset.annotate(start_point = Subquery(points.order_by("tracked_at")[:1]),
-                                     end_point = Subquery(points.order_by("-tracked_at")[:1])).annotate(
-                                         start_address = Subquery(start_address),
-                                         end_address= Subquery(end_address),                                         
-                                     ).annotate(
-                                         near_start_address = Subquery(near_start_address.values("display_name")[:1]),
-                                         near_end_address = Subquery(near_end_address.values("display_name")[:1]),
-                                         near_start_address_distance = Subquery(near_start_address.values("distance")[:1]),
-                                         near_end_address_distance = Subquery(near_end_address.values("distance")[:1]),                                         
-                                     )
+        queryset = (
+            queryset.annotate(
+                start_point=Subquery(points.order_by("tracked_at")[:1]),
+                end_point=Subquery(points.order_by("-tracked_at")[:1]),
+            )
+            .annotate(
+                start_address=Subquery(start_address),
+                end_address=Subquery(end_address),
+            )
+            .annotate(
+                near_start_address=Subquery(
+                    near_start_address.values("display_name")[:1]
+                ),
+                near_end_address=Subquery(near_end_address.values("display_name")[:1]),
+                near_start_address_distance=Subquery(
+                    near_start_address.values("distance")[:1]
+                ),
+                near_end_address_distance=Subquery(
+                    near_end_address.values("distance")[:1]
+                ),
+            )
+        )
 
         return queryset
 
-
     def list(self, request, *args, **kwargs):
-
         point_need_load_address = []
-        point_need_load_address.extend([v.start_point for v in self.get_queryset() if v.start_address is None])
-        point_need_load_address.extend([v.end_point for v in self.get_queryset() if v.end_address is None])
+        point_need_load_address.extend(
+            [v.start_point for v in self.get_queryset() if v.start_address is None]
+        )
+        point_need_load_address.extend(
+            [v.end_point for v in self.get_queryset() if v.end_address is None]
+        )
 
         GeoAddress.load_address_for_points(point_need_load_address)
 
         return super().list(request, *args, **kwargs)
-
