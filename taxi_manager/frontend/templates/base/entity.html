@@ -8,7 +8,9 @@
         <div id="form_fields">
         </div>
         <div class="d-flex justify-content-end gap-1">
+            {% if action != "view"%}
             <button type="button" class="btn btn-primary" data-action="save">Сохранить</button>
+            {% endif %}
             {% if action == "edit"%}
             <button type="button" class="btn btn-danger" data-action="delete">Удалить</button>
             {% endif %}

@@ -18,6 +18,11 @@ def vehicle_new(request):
         request, "vehicle.html", {"action": "new"}
     )
 
+def vehicle_trips(request, pk):
+    return render(
+        request, "vehicle_trips.html", {"entity": get_object_or_404(Vehicle, pk=pk), "action": "view"}
+    )
+
 def enterprise_edit(request, pk):
     return render(
         request, "enterprise.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "edit"}
