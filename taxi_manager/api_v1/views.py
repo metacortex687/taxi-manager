@@ -20,6 +20,7 @@ from .serializers import (
     VehileLocationSerializer,
     TripPointSerializer,
     TripSerializer,
+    TripPointSerializerGeoJSON,
 )
 from django.db.models import OuterRef, Subquery, F, Q, ExpressionWrapper
 from django.shortcuts import get_object_or_404
@@ -279,7 +280,14 @@ class VehicleLocationListAPIView(generics.ListAPIView):
 
 
 class TripPointListAPIView(generics.ListAPIView):
-    serializer_class = TripPointSerializer
+    def get_serializer_class(self):
+        response_format = self.request.query_params.get("response_format")
+
+        if response_format == "geojson":
+            return TripPointSerializerGeoJSON
+
+        return TripPointSerializer
+
 
     def get_queryset(self):
         vehicle_id = self.kwargs.get("vehicle_id")

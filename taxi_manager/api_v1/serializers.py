@@ -200,6 +200,26 @@ class TripPointSerializer(serializers.Serializer):
             default_timezone=ZoneInfo(instance.vehicle.enterprise.time_zone.code)
         )
         return super().to_representation(instance)
+    
+
+class TripPointSerializerGeoJSON(GeoFeatureModelSerializer):
+    trip = serializers.IntegerField(read_only=True)
+    
+    def to_representation(self, instance):
+        self.fields["tracked_at"] = serializers.DateTimeField(
+            default_timezone=ZoneInfo(instance.vehicle.enterprise.time_zone.code)
+        )
+        return super().to_representation(instance)
+    
+    class Meta:
+        model = VehicleLocation
+        geo_field = "location"
+        fields = (
+            "id",
+            "tracked_at",
+            "trip",
+        )
+    
 
 
 class TripSerializer(serializers.Serializer):
