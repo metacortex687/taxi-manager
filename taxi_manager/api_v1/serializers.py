@@ -26,7 +26,6 @@ class VehileLocationSerializerGeoJson(GeoFeatureModelSerializer):
 class VehileLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleLocation
-        geo_field = "location"
         fields = (
             "id",
             "location",
