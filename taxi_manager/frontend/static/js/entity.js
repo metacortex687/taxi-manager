@@ -39,7 +39,10 @@ const emptyEntity = () => {
 }
 
 const loadEntity = async () => {
-    return await fetch_data(`${form.entity}${getPk()}/`)
+
+    const patch = form.entity.includes("<int:pk>") ? form.entity.replace("<int:pk>",getPk()) : `${form.entity}${getPk()}/`
+
+    return await fetch_data(patch)
 }
 
 const renderFormField = async (entity, field, form_fields) => {
