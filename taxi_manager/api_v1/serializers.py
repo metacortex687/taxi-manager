@@ -13,7 +13,6 @@ class VehileLocationSerializerGeoJson(GeoFeatureModelSerializer):
         geo_field = "location"
         fields = (
             "id",
-            "location",
             "tracked_at",
         )
 
