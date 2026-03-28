@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django_bootstrap5',
     'django_filters',
     'django.contrib.gis',
+    'rest_framework_gis',
     # 'dj_rest_auth',
     'taxi_manager.vehicle',
     'taxi_manager.enterprise',
