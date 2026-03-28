@@ -12,7 +12,7 @@ const renderMapField = (field, entity, parentElement) => {
 
 
 
-    var map = L.map(wrapper, { attributionControl: false }).setView([51.505, -0.09], 13);
+    var map = L.map(wrapper, { attributionControl: false });
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -22,11 +22,16 @@ const renderMapField = (field, entity, parentElement) => {
     //     .bindPopup('A pretty CSS popup.<br> Easily customizable.')
     //     .openPopup();
 
-    const lineLayer = L.geoJSON(entity.results, {
+    const geoLayer = L.geoJSON(entity.results, {
         style: function (feature) {
             return { color: '#1976d2', weight: 4, opacity: 0.9 };
         }
     }).addTo(map);
+
+    const bounds = geoLayer.getBounds()
+    map.fitBounds(bounds)
+
+
 
 }
 
