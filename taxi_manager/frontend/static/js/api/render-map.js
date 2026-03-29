@@ -22,16 +22,35 @@ const renderMapField = (field, entity, parentElement) => {
     //     .bindPopup('A pretty CSS popup.<br> Easily customizable.')
     //     .openPopup();
 
+    const grayIcon = L.icon({
+        iconUrl: "/frontend/static/img/marker-gray.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+        className: "marker-gray"
+    })
+
+    const greenIcon = L.icon({
+        iconUrl: "/frontend/static/img/marker-green.png", 
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+        className: "marker-green"
+    })
+
     const geoLayer = L.geoJSON(entity.results, {
-        style: function (feature) {
-            return { color: '#1976d2', weight: 4, opacity: 0.9 };
+        pointToLayer: function (feature, latlng) {
+            const icon = feature.properties.trip === 2 ? greenIcon : grayIcon
+            return L.marker(latlng, { icon })
         }
     }).addTo(map);
 
     const bounds = geoLayer.getBounds()
     map.fitBounds(bounds)
-
-
 
 }
 
