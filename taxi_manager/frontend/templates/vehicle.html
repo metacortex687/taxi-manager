@@ -7,7 +7,7 @@
 
 {% block content %}
 <h1 class="text-center">Автомобиль: {% if action == "new"%}(+){% endif %}</h1>
-
+<a href=" {% url "vehicle_trips" entity.pk %}">Маршруты</a>
 {{ block.super }}
 {% endblock content %}
 
