@@ -40,9 +40,9 @@ const emptyEntity = () => {
     return res
 }
 
-const loadEntity = async () => {
+const loadEntity = async (api_path) => {
 
-    const patch = form.entity.includes("<int:pk>") ? form.entity.replace("<int:pk>",getPk()) : `${form.entity}${getPk()}/`
+    const patch = api_path.includes("<int:pk>") ? api_path.replace("<int:pk>",getPk()) : `${api_path}${getPk()}/`
 
     return await fetch_data(patch)
 }
@@ -69,10 +69,15 @@ const renderForm = async () => {
 
     const formHTMLElement = document.getElementById("form_fields")
 
-    const entity = isNew() ? emptyEntity() : await loadEntity()
+    let entityForm = undefined
+    if(form.entity){
+        entityForm = isNew() ? emptyEntity() : await loadEntity(form.entity)
+    }
 
     for (const field of form.fields) {
-        await renderFormField(entity, field, formHTMLElement)
+        const entityField = field.entity ? await loadEntity(field.entity) : undefined
+  
+        await renderFormField(entityField || entityForm, field, formHTMLElement)
     }
 
     // form_drivers_data = (await fetch_data(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
