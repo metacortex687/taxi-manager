@@ -19,7 +19,7 @@ const renderInputField = async (field, entity, parentElement) => {
     const value = entity[field["source_name"]] || ""
     const label = field.label
 
-    const wrapper = createDefaultWrapper(parentElement)
+    const wrapper = parentElement
     wrapper.innerHTML =`
             <label for="${id}" class="form-label">${label}</label>
             <input type="text" class="form-control" id="${id}" value="${value}">
@@ -40,7 +40,7 @@ const renderInputDateTimeField = async (field, entity, parentElement) => {
         
     }
 
-    const wrapper = createDefaultWrapper(parentElement)
+    const wrapper = parentElement
     wrapper.innerHTML =`
             <label for="${id}" class="form-label">${label}</label>
             <input type="datetime-local" class="form-control" id="${id}" value="${local_datetime}">
@@ -64,7 +64,7 @@ const renderSelectedField = async (field, entity, parentElement) => {
         [renderPlaceholderOption(), ...items.map(renderOption)]
         .join("")
 
-    const wrapper = createDefaultWrapper(parentElement)
+    const wrapper = parentElement
     wrapper.innerHTML =`
             <label for="${idHtml}" class="form-label">${field.label}</label>
             <select class="form-select" id="${idHtml}">                
@@ -83,7 +83,7 @@ const renderMultySelectedDriverField = (form_drivers_data, parentElement) => {
     `).join("")
 
 
-    const wrapper = createDefaultWrapper(parentElement)
+    const wrapper = parentElement
     wrapper.innerHTML = `
             <label for="inputDrivers" class="form-label">Водители:</label>
             <ul class="list-group" id="inputDrivers">

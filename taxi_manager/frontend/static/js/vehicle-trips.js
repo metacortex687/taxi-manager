@@ -8,6 +8,7 @@ const form = {
             {
                 source_name: "list",
                 empty_value: [],
+                updateEvent: "tripSelected",
                 render_fn: renderMapField,  
              },
         ]

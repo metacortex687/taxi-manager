@@ -1,10 +1,10 @@
 import { createDefaultWrapper } from "./render.js"
 
-const renderMapField = (field, entity, parentElement) => {
+const renderMapField = (field, entity, parentElement, eventData = {id: undefined}) => {
 
     console.log(entity)
 
-    const wrapper = createDefaultWrapper(parentElement)
+    const wrapper = parentElement
 
     // wrapper.style.cssText = field.cssText
     wrapper.style.cssText = "width: 800px; height: 500px;"
@@ -44,8 +44,13 @@ const renderMapField = (field, entity, parentElement) => {
 
     const geoLayer = L.geoJSON(entity.results, {
         pointToLayer: function (feature, latlng) {
-            const icon = feature.properties.trip === 2 ? greenIcon : grayIcon
-            return L.marker(latlng, { icon })
+
+            if (eventData && feature.properties.trip === eventData.id) {
+                return L.marker(latlng, { icon:  greenIcon})
+            }
+
+            return L.marker(latlng, { icon:  grayIcon})
+            
         }
     }).addTo(map);
 

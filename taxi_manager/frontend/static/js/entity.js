@@ -1,3 +1,5 @@
+import { createDefaultWrapper } from "./api/render.js"
+
 const convertSnakeToCamelCase = (str) => {
         return str
             .split("_")
@@ -45,20 +47,32 @@ const loadEntity = async () => {
     return await fetch_data(patch)
 }
 
-const renderFormField = async (entity, field, form_fields) => {
+const renderFormField = async (entity, field, formHTMLElement) => {
+    const wrapper = createDefaultWrapper(formHTMLElement)
 
-    await field.render_fn(field, entity, form_fields)
+    const render = async (eventData = null) => {
+        wrapper.innerHTML = ""
+        await field.render_fn(field, entity, wrapper, eventData)
+    }
+
+    await render()
+
+    if (field.updateEvent) {
+        window.addEventListener(field.updateEvent, async (event) => {
+            await render(event.detail)
+        })
+    }
 
 }
 
 const renderForm = async () => {
 
-    const form_fields = document.getElementById("form_fields")
+    const formHTMLElement = document.getElementById("form_fields")
 
     const entity = isNew() ? emptyEntity() : await loadEntity()
 
     for (const field of form.fields) {
-        await renderFormField(entity, field, form_fields)
+        await renderFormField(entity, field, formHTMLElement)
     }
 
     // form_drivers_data = (await fetch_data(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
