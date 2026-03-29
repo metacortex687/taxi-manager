@@ -46,7 +46,7 @@ const loadEntity = async (api_path, getParams = {}) => {
 
     const params = Object.entries(getParams).map(([key, value]) => `${key}=${value}`)
     if (params.length>0) {
-        patch += "&"+params.join("&")
+        patch += (patch.includes("?") ? "&" : "?") + params.join("&")
     }
 
     console.log(patch)

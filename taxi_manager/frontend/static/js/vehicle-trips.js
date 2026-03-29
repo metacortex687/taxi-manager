@@ -21,6 +21,7 @@ const form = {
             {
                 entity: "/api/v1/vehicles/<int:pk>/trips/",  
                 empty_value: [],
+                updateDataEvent: "periodSelected",
                 render_fn: renderListTripField,  
              },
         ]

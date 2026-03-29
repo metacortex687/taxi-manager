@@ -2,6 +2,8 @@ import { createDefaultWrapper } from "./render.js"
 import {fromISOtoLocaleDateTimeString} from "./date-time.js"
 
 const renderListTripField = (field, entity, parentElement) => {
+    console.log("const renderListTripField = (field, entity, parentElement) => {")
+    console.log(entity.results)
     const trips = entity.results || []
 
     const rows = trips.map(record => `
