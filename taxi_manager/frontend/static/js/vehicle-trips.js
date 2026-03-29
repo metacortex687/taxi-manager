@@ -17,12 +17,14 @@ const form = {
              },
             {
                 render_fn: renderPeriodField,
+                nameGeneratedEvent: "periodSelected",
             },            
             {
                 entity: "/api/v1/vehicles/<int:pk>/trips/",  
                 empty_value: [],
                 updateDataEvent: "periodSelected",
-                render_fn: renderListTripField,  
+                render_fn: renderListTripField,
+                nameGeneratedEvent: "tripSelected",  
              },
         ]
     }

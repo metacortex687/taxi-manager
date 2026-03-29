@@ -48,7 +48,7 @@ const renderListTripField = (field, entity, parentElement) => {
 
         row.classList.add("table-active")
 
-        window.dispatchEvent(new CustomEvent("tripSelected", {
+        window.dispatchEvent(new CustomEvent(field.nameGeneratedEvent, {
             detail: {
                 id: Number(row.dataset.id)
             }

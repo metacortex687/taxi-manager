@@ -49,7 +49,7 @@ const renderPeriodField = (field, entity, parentElement) => {
             detail.to = convert_from_locale_to_iso(inputTo.value)
         }
 
-        window.dispatchEvent(new CustomEvent("periodSelected", {
+        window.dispatchEvent(new CustomEvent(field.nameGeneratedEvent, {
             detail
         }))
     })
