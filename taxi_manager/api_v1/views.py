@@ -295,14 +295,14 @@ class TripPointListAPIView(generics.ListAPIView):
 
         filter_data_from = None
         if self.request.query_params.get("from"):
-            filter_data_from = datetime.strptime(
-                self.request.query_params.get("from"), "%Y-%m-%dT%H:%M:%S%z"
+            filter_data_from = datetime.fromisoformat(
+                self.request.query_params.get("from").replace("Z", "+00:00")
             )
-
+        print(filter_data_from)
         filter_data_to = None
         if self.request.query_params.get("to"):
-            filter_data_to = datetime.strptime(
-                self.request.query_params.get("to"), "%Y-%m-%dT%H:%M:%S%z"
+            filter_data_from = datetime.fromisoformat(
+                self.request.query_params.get("from").replace("Z", "+00:00")
             )
 
         trip = Trip.objects.filter(vehicle=vehicle).filter(
