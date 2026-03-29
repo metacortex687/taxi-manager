@@ -293,31 +293,44 @@ class TripPointListAPIView(generics.ListAPIView):
         vehicle_id = self.kwargs.get("vehicle_id")
         vehicle = Vehicle.objects.get(pk=vehicle_id)
 
-        filter_data_from = datetime.strptime(
-            self.request.query_params.get("from"), "%Y-%m-%dT%H:%M:%S%z"
-        )
-        filter_data_to = datetime.strptime(
-            self.request.query_params.get("to"), "%Y-%m-%dT%H:%M:%S%z"
-        )
+        filter_data_from = None
+        if self.request.query_params.get("from"):
+            filter_data_from = datetime.strptime(
+                self.request.query_params.get("from"), "%Y-%m-%dT%H:%M:%S%z"
+            )
 
-        trip = (
-            Trip.objects.filter(vehicle=vehicle)
-            .filter(started_at__gte=filter_data_from, ended_at__lte=filter_data_to)
-            .filter(
+        filter_data_to = None
+        if self.request.query_params.get("to"):
+            filter_data_to = datetime.strptime(
+                self.request.query_params.get("to"), "%Y-%m-%dT%H:%M:%S%z"
+            )
+
+        trip = Trip.objects.filter(vehicle=vehicle).filter(
                 started_at__lte=OuterRef("tracked_at"),
                 ended_at__gt=OuterRef("tracked_at"),
             )
-        ).values("id")[:1]
+        
+        if filter_data_from:
+            trip = trip.filter(started_at__gte=filter_data_from)
+
+        if filter_data_to:
+            trip = trip.filter(ended_at__lte=filter_data_to)
+
+        trip = trip.values("id")[:1]
 
         queryset = (
             VehicleLocation.objects.filter(
-                vehicle=vehicle,
-                tracked_at__gte=filter_data_from,
-                tracked_at__lt=filter_data_to,
+                vehicle=vehicle
             )
             .annotate(trip=Subquery(trip))
             .filter(trip__isnull=False)
         )
+
+        if filter_data_from:
+            queryset = queryset.filter(tracked_at__gte=filter_data_from)
+
+        if filter_data_to:
+            queryset = queryset.filter(tracked_at__lt=filter_data_to)   
 
         return queryset
 
