@@ -56,7 +56,11 @@ const renderMapField = (field, entity, parentElement, eventData = {id: undefined
     }).addTo(map);
 
     const bounds = geoLayer.getBounds()
-    map.fitBounds(bounds)
+    if (bounds.isValid()) {
+         map.fitBounds(bounds)
+         return
+    }
+    map.setView([61, 105], 3)   
 
 }
 

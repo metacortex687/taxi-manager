@@ -1,3 +1,5 @@
+import {convert_from_locale_to_iso} from "./date-time.js"
+
 const renderPeriodField = (field, entity, parentElement) => {
     const wrapper = parentElement
 
@@ -37,11 +39,18 @@ const renderPeriodField = (field, entity, parentElement) => {
     const buttonApply = wrapper.querySelector(".js-period-apply-btn")
 
     buttonApply.addEventListener("click", () => {
+        const detail = {}
+
+        if (inputFrom.value) {
+            detail.from = convert_from_locale_to_iso(inputFrom.value)
+        }
+
+        if (inputTo.value) {
+            detail.to = convert_from_locale_to_iso(inputTo.value)
+        }
+
         window.dispatchEvent(new CustomEvent("periodSelected", {
-            detail: {
-                from: inputFrom.value,
-                to: inputTo.value,
-            }
+            detail
         }))
     })
 }

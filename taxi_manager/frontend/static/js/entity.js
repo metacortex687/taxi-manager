@@ -40,26 +40,44 @@ const emptyEntity = () => {
     return res
 }
 
-const loadEntity = async (api_path) => {
+const loadEntity = async (api_path, getParams = {}) => {
 
-    const patch = api_path.includes("<int:pk>") ? api_path.replace("<int:pk>",getPk()) : `${api_path}${getPk()}/`
+    let patch = api_path.includes("<int:pk>") ? api_path.replace("<int:pk>",getPk()) : `${api_path}${getPk()}/`
 
+    const params = Object.entries(getParams).map(([key, value]) => `${key}=${value}`)
+    if (params.length>0) {
+        patch += "&"+params.join("&")
+    }
+
+    console.log(patch)
+    
     return await fetch_data(patch)
 }
 
-const renderFormField = async (entity, field, formHTMLElement) => {
-    const wrapper = createDefaultWrapper(formHTMLElement)
+const renderFormField = async (entity, field, wrapper) => {
+    let currentEntity = entity
 
     const render = async (eventData = null) => {
         wrapper.innerHTML = ""
-        await field.render_fn(field, entity, wrapper, eventData)
+        await field.render_fn(field, currentEntity, wrapper, eventData)
+    }
+
+    const renderWithReloadData = async (eventData = {}) => {
+        currentEntity = await loadEntity(field.entity, eventData)
+        render()
     }
 
     await render()
 
-    if (field.updateEvent) {
-        window.addEventListener(field.updateEvent, async (event) => {
+    if (field.updateViewEvent) {
+        window.addEventListener(field.updateViewEvent, async (event) => {
             await render(event.detail)
+        })
+    }
+
+    if (field.updateDataEvent) {
+        window.addEventListener(field.updateDataEvent, async (event) => {
+            await renderWithReloadData(event.detail)
         })
     }
 
@@ -76,8 +94,9 @@ const renderForm = async () => {
 
     for (const field of form.fields) {
         const entityField = field.entity ? await loadEntity(field.entity) : undefined
-  
-        await renderFormField(entityField || entityForm, field, formHTMLElement)
+
+        const wrapper = createDefaultWrapper(formHTMLElement)
+        await renderFormField(entityField || entityForm, field, wrapper)
     }
 
     // form_drivers_data = (await fetch_data(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
