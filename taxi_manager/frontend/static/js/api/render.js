@@ -1,4 +1,5 @@
 import {htmlIdField} from "../entity.js"
+import {fromISOtoLocaleDateTime} from "./date-time.js"
 
 const createElementFromHTML = (html) => {
     const template = document.createElement("template")
@@ -31,14 +32,7 @@ const renderInputDateTimeField = async (field, entity, parentElement) => {
     const value = entity[field["source_name"]] || ""
     const label = field.label
 
-    let local_datetime = ""
-    if(value.trim().length !== 0) {
-        const date = new Date(value) //Создается в ISO/Z
-        local_datetime = new Date(
-                date.getTime() - date.getTimezoneOffset() * 60000)
-                .toISOString().slice(0, 16)
-        
-    }
+    let local_datetime = fromISOtoLocaleDateTime(value)
 
     const wrapper = parentElement
     wrapper.innerHTML =`
