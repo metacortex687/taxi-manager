@@ -10,6 +10,10 @@ const fromISOtoLocaleDateTime = (value) => {
     return local_datetime
 }
 
+const fromISOtoLocaleDateTimeString = (value) => {
+    return fromISOtoLocaleDateTime(value).replace("-",".").replace("-",".").replace("T", " ")
+}
 
 
-export {fromISOtoLocaleDateTime}
+
+export {fromISOtoLocaleDateTime, fromISOtoLocaleDateTimeString}

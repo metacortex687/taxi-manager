@@ -1,4 +1,5 @@
 import { createDefaultWrapper } from "./render.js"
+import {fromISOtoLocaleDateTimeString} from "./date-time.js"
 
 const renderListTripField = (field, entity, parentElement) => {
     const trips = entity.results || []
@@ -6,9 +7,9 @@ const renderListTripField = (field, entity, parentElement) => {
     const rows = trips.map(record => `
         <tr class="js-trip-row" data-id="${record.id}" style="cursor: pointer;">
             <td>${record.id}</td>
-            <td>${record.started_at}</td>
+            <td>${fromISOtoLocaleDateTimeString(record.started_at)}</td>
             <td>${record.start_point.address}</td>
-            <td>${record.ended_at}</td>
+            <td>${fromISOtoLocaleDateTimeString(record.ended_at)}</td>
             <td>${record.end_point.address}</td>
         </tr>
     `).join("")
