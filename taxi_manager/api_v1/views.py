@@ -340,9 +340,29 @@ class TripListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         vehicle_id = self.kwargs.get("vehicle_id")
+
+        filter_data_from = None
+        if self.request.query_params.get("from"):
+            filter_data_from = datetime.fromisoformat(
+                self.request.query_params.get("from").replace("Z", "+00:00")
+            )
+
+        filter_data_to = None
+        if self.request.query_params.get("to"):
+            filter_data_to = datetime.fromisoformat(
+                self.request.query_params.get("to").replace("Z", "+00:00")
+            )
+
+
         vehicle = Vehicle.objects.get(pk=vehicle_id)
 
         queryset = vehicle.trips.all()
+
+        if filter_data_from:
+            queryset = queryset.filter(started_at__gte=filter_data_from)
+
+        if filter_data_to:
+            queryset = queryset.filter(ended_at__lte=filter_data_to)
 
         points = (
             VehicleLocation.objects.filter(vehicle=vehicle)
