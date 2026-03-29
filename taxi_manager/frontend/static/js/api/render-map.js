@@ -4,7 +4,8 @@ const renderMapField = (field, entity, parentElement, eventData = {id: undefined
 
     console.log(entity)
 
-    const wrapper = parentElement
+    const wrapper = createDefaultWrapper(parentElement)
+
 
     // wrapper.style.cssText = field.cssText
     wrapper.style.cssText = "width: 800px; height: 500px;"
