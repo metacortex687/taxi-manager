@@ -1,9 +1,6 @@
 import { renderInputField, renderSelectedField, renderInputDateTimeField} from "./api/render.js";
 
-const convert_from_locale_to_iso = (value) => {
-    const date = new Date(value) //Создается в ISO/Z
-    return date.toISOString()
-}
+import {convert_from_locale_to_iso} from "./api/date-time.js"
 
 
 const form = {

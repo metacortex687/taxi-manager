@@ -15,5 +15,9 @@ const fromISOtoLocaleDateTimeString = (value) => {
 }
 
 
+const convert_from_locale_to_iso = (value) => {
+    const date = new Date(value) //Создается в ISO/Z
+    return date.toISOString()
+}
 
-export {fromISOtoLocaleDateTime, fromISOtoLocaleDateTimeString}
+export {fromISOtoLocaleDateTime, fromISOtoLocaleDateTimeString, convert_from_locale_to_iso}
