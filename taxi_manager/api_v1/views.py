@@ -334,6 +334,9 @@ class TripPointListAPIView(generics.ListAPIView):
         if filter_data_to:
             queryset = queryset.filter(tracked_at__lt=filter_data_to)   
 
+        queryset = queryset.values("trip").annotate(route=MakeLine(Cast("location", output_field=GeometryField(srid=4326))))
+       
+
         return queryset
 
 
