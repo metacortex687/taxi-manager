@@ -3,7 +3,7 @@ from taxi_manager.vehicle.models import Vehicle, Model, Driver
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 from zoneinfo import ZoneInfo
-from rest_framework_gis.serializers import GeoFeatureModelSerializer
+from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometrySerializerMethodField
 from taxi_manager.geo_tracking.models import VehicleLocation
 
 
@@ -204,19 +204,21 @@ class TripPointSerializer(serializers.Serializer):
 
 class TripPointSerializerGeoJSON(GeoFeatureModelSerializer):
     trip = serializers.IntegerField(read_only=True)
+    route = GeometrySerializerMethodField()
+
+    def get_route(self, obj):
+        return obj["route"]
     
-    def to_representation(self, instance):
-        self.fields["tracked_at"] = serializers.DateTimeField(
-            default_timezone=ZoneInfo(instance.vehicle.enterprise.time_zone.code)
-        )
-        return super().to_representation(instance)
+    # def to_representation(self, instance):
+    #     self.fields["tracked_at"] = serializers.DateTimeField(
+    #         default_timezone=ZoneInfo(instance.vehicle.enterprise.time_zone.code)
+    #     )
+    #     return super().to_representation(instance)
     
     class Meta:
         model = VehicleLocation
-        geo_field = "location"
+        geo_field = "route"
         fields = (
-            "id",
-            "tracked_at",
             "trip",
         )
     

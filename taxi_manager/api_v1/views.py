@@ -7,7 +7,7 @@ from taxi_manager.geo_tracking.models import VehicleLocation, Trip
 from taxi_manager.geocoding.models import GeoAddress
 
 from django.contrib.gis.db.models.functions import Distance
-from django.contrib.gis.db.models import PointField
+from django.contrib.gis.db.models import PointField, MakeLine,  GeometryField
 
 from .serializers import (
     VehicleReadSerializer,
@@ -38,6 +38,8 @@ from django.db.models.deletion import RestrictedError
 from .exceptions import DeletionConflict
 
 from datetime import datetime
+
+from django.db.models.functions import Cast
 
 User = get_user_model()
 
