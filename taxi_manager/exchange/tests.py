@@ -14,7 +14,7 @@ class ExchangeTest(TestCase):
         self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
         self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city")
         
-    def test_time_zone_export(self):
+    def test_time_zone_export_json_csv(self):
         dataset = TimeZoneResource().export()
 
         self.assertTrue(len(dataset) > 0)
