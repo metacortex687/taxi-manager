@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django.contrib.gis',
     'rest_framework_gis',
+    'import_export',
     # 'dj_rest_auth',
     'taxi_manager.vehicle',
     'taxi_manager.enterprise',
