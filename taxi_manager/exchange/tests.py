@@ -61,6 +61,24 @@ class ExchangeTest(TestCase):
         self.assertEqual(1, self.get_queryset_b(TimeZone).count())
 
 
+    def test_import_time_zone_uses_code_as_unique_key(self): 
+        self.assertEqual(0, self.get_queryset_b(TimeZone).count())
+
+        dataset = tablib.Dataset(['UTC', '0'], headers=['code', 'utc_offset'])
+        self.get_resource_b(TimeZoneResource).import_data(dataset)
+        self.assertEqual(1, self.get_queryset_b(TimeZone).count())
+
+
+        dataset = tablib.Dataset(['UTC', '0'], headers=['code', 'utc_offset'])
+        self.get_resource_b(TimeZoneResource).import_data(dataset)
+        self.assertEqual(1, self.get_queryset_b(TimeZone).count())
+
+        dataset = tablib.Dataset(['123', '0'], headers=['code', 'utc_offset'])
+        self.get_resource_b(TimeZoneResource).import_data(dataset)
+        self.assertEqual(2, self.get_queryset_b(TimeZone).count())
+        
+
+
 
 
 

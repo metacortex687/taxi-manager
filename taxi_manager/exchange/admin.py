@@ -22,5 +22,7 @@ class SelectableDBAAliasResourceMixin: #Нужен для тестов, что �
 class TimeZoneResource(SelectableDBAAliasResourceMixin, resources.ModelResource):
     class Meta:
         model = TimeZone
+        exclude = ("id",)
+        import_id_fields = ("code",)
 
 
