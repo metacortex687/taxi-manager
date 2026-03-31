@@ -82,6 +82,7 @@ class ExchangeTest(TestCase):
         dataset = self.get_resource_a(TimeZoneResource).export()
         headers = dataset.headers
 
+        self.assertTrue(type(headers) is list)
         self.assertTrue("code" in headers)
         self.assertTrue("utc_offset" in headers)
         self.assertFalse("id" in headers)
