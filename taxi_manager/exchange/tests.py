@@ -55,7 +55,7 @@ class ExchangeTest(TestCase):
         dataset = self.get_resource_a(TimeZoneResource).export()
         self.assertTrue(len(dataset) > 0)
 
-        self.get_resource_b(TimeZoneResource).import_data(dataset, dry_run=False,)
+        self.get_resource_b(TimeZoneResource).import_data(dataset)
 
         self.assertEqual(1, self.get_queryset_a(TimeZone).count())
         self.assertEqual(1, self.get_queryset_b(TimeZone).count())
