@@ -76,6 +76,17 @@ class ExchangeTest(TestCase):
         dataset = tablib.Dataset(['123', '0'], headers=['code', 'utc_offset'])
         self.get_resource_b(TimeZoneResource).import_data(dataset)
         self.assertEqual(2, self.get_queryset_b(TimeZone).count())
+
+
+    def test_export_time_zone_does_not_include_id(self): 
+        dataset = self.get_resource_a(TimeZoneResource).export()
+        headers = dataset.headers
+
+        self.assertTrue("code" in headers)
+        self.assertTrue("utc_offset" in headers)
+        self.assertFalse("id" in headers)
+
+
         
 
 
