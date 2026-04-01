@@ -43,11 +43,24 @@ class EnterpriseResource(resources.ModelResource):
         return super().export(**kwargs)
     
     def get_instance(self, instance_loader, row):
+
+        exchange_item = ExchangeItem.objects.filter(content_type=self._get_content_type(), uuid=row["exchange_uuid"]).first()
+        
+        print(exchange_item)
+        if exchange_item is not None:
+            print(f"exchange_item.content_object={exchange_item.content_object}")
+            return exchange_item.content_object
+
         return None
     
-    def after_save_instance(self, instance, row, **kwargs):
+    def save_instance(self, instance, is_create, row, **kwargs):
+        super().save_instance(instance, is_create, row, **kwargs)
+    
+        if not is_create:
+            return
+                
         ExchangeItem.objects.create(content_type=self._get_content_type(), uuid=row["exchange_uuid"], object_id=instance.id)
-        return super().after_save_instance(instance, row, **kwargs)
+
 
     def _ensure_exchange_uuids_exist(self):
 

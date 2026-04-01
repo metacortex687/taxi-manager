@@ -25,6 +25,7 @@ class ExchangeTest(TestCase):
     def _clear_db(self):
         Enterprise.objects.all().delete()
         TimeZone.objects.all().delete()
+        ExchangeItem.objects.all().delete()
 
 
     def test_time_zone_export_json_csv(self):
@@ -126,8 +127,32 @@ class ExchangeTest(TestCase):
         EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
 
         self.assertTrue(ExchangeItem.objects.filter(uuid=dataset_enterprise["exchange_uuid"][0], content_type = ContentType.objects.get_for_model(Enterprise) ).exists())
+  
 
-    
+    def test_import_enterprise_only_once(self):
+        self.assertEqual(1, TimeZone.objects.all().count())
+        self.assertEqual(1, Enterprise.objects.all().count()) 
+
+        dataset_time_zone = TimeZoneResource().export()
+        dataset_enterprise = EnterpriseResource().export()
+
+        self._clear_db()
+        self.assertEqual(0, TimeZone.objects.all().count())
+        self.assertEqual(0, Enterprise.objects.all().count())
+
+        TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
+        EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+
+        self.assertEqual(1, TimeZone.objects.all().count())
+        self.assertEqual(1, Enterprise.objects.all().count())  
+
+        EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+        self.assertEqual(1, Enterprise.objects.all().count()) 
+
+
+
+
+
 
 
 
