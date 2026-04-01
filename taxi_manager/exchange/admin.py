@@ -45,9 +45,9 @@ class EnterpriseResource(resources.ModelResource):
     def get_instance(self, instance_loader, row):
         return None
     
-    def init_instance(self, row = None):
-        row.pop("exchange_uuid")
-        return super().init_instance(row)
+    def after_save_instance(self, instance, row, **kwargs):
+        ExchangeItem.objects.create(content_type=self._get_content_type(), uuid=row["exchange_uuid"], object_id=instance.id)
+        return super().after_save_instance(instance, row, **kwargs)
 
     def _ensure_exchange_uuids_exist(self):
 

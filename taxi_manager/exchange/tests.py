@@ -6,6 +6,8 @@ from .models import ExchangeItem
 
 from django.db.models import QuerySet
 
+from django.contrib.contenttypes.models import ContentType
+
 import tablib
 from import_export import resources
 
@@ -111,6 +113,21 @@ class ExchangeTest(TestCase):
         self.assertEqual(1, TimeZone.objects.all().count())
         self.assertEqual(1, Enterprise.objects.all().count())  
 
+    def test_import_enterprise_creates_exchange_item(self):
+        self.assertEqual(1, TimeZone.objects.all().count())
+        self.assertEqual(1, Enterprise.objects.all().count()) 
+
+        dataset_time_zone = TimeZoneResource().export()
+        dataset_enterprise = EnterpriseResource().export()
+
+        self._clear_db()
+
+        TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
+        EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+
+        self.assertTrue(ExchangeItem.objects.filter(uuid=dataset_enterprise["exchange_uuid"][0], content_type = ContentType.objects.get_for_model(Enterprise) ).exists())
+
+    
 
 
 
