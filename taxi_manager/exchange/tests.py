@@ -1,7 +1,7 @@
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 
-from .admin import TimeZoneResource
+from .admin import TimeZoneResource, EnterpriseResource
 
 from django.db.models import QuerySet
 
@@ -86,6 +86,18 @@ class ExchangeTest(TestCase):
         self.assertTrue("code" in headers)
         self.assertTrue("utc_offset" in headers)
         self.assertFalse("id" in headers)
+
+
+    def test_export_enterprise_create_uuid(self):
+        dataset = self.get_resource_a(EnterpriseResource).export()
+
+        self.assertTrue("exchange_uuid" in dataset.headers)
+        self.assertTrue(dataset["exchange_uuid"][0] != "")
+
+        
+
+
+    
 
 
         
