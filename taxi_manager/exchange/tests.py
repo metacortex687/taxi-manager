@@ -2,6 +2,7 @@ from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 
 from .admin import TimeZoneResource, EnterpriseResource
+from .models import ExchangeItem
 
 from django.db.models import QuerySet
 
@@ -93,6 +94,25 @@ class ExchangeTest(TestCase):
 
         self.assertTrue("exchange_uuid" in dataset.headers)
         self.assertTrue(dataset["exchange_uuid"][0] != "")
+
+
+    def test_export_enterprise_create_uuid_only_once(self):
+        first_dataset = self.get_resource_a(EnterpriseResource).export()
+        first_exchange_uuid = first_dataset ["exchange_uuid"][0]
+
+        second_dataset = self.get_resource_a(EnterpriseResource).export()
+        self.assertEqual(first_exchange_uuid, second_dataset["exchange_uuid"][0])
+
+        ExchangeItem.objects.all().delete() #После удаление уникальный идентификатор пересоздастся
+        third_dataset = self.get_resource_a(EnterpriseResource).export()
+        self.assertNotEqual(first_exchange_uuid, third_dataset["exchange_uuid"][0])
+
+
+
+
+
+
+
 
         
 
