@@ -6,7 +6,7 @@ from .models import ExchangeItem
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 
-from import_export import resources, fields
+from import_export import resources, fields, widgets
 
 class TimeZoneResource(resources.ModelResource):
     class Meta:
@@ -17,34 +17,46 @@ class TimeZoneResource(resources.ModelResource):
 
 class EnterpriseResource(resources.ModelResource):
     exchange_uuid = fields.Field(attribute="exchange_uuid", column_name="exchange_uuid")
-    time_zone = fields.Field(attribute="time_zone__code", column_name="time_zone")
+    time_zone = fields.Field(attribute="time_zone", column_name="time_zone",  widget=widgets.ForeignKeyWidget(TimeZone, "code"),)
 
     class Meta:
         model = Enterprise
         fields = ("name", "city", "time_zone", "exchange_uuid")
-        exclude = ("id",)
+        import_id_fields = ("exchange_uuid",)
+
+    def get_queryset(self):
+        uuid_subquery = (
+            ExchangeItem.objects.filter(
+                content_type=self._get_content_type(),
+                object_id=models.OuterRef("pk"),
+            )
+            .values("uuid")[:1]
+        )
+
+        return super().get_queryset().annotate(
+            exchange_uuid=models.Subquery(uuid_subquery)
+        )
 
     def export(self, **kwargs):
         self._ensure_exchange_uuids_exist()
 
         return super().export(**kwargs)
     
-    def get_queryset(self):
-        uuid_subquery = ExchangeItem.objects.filter(
-            content_type=self._get_content_type(), object_id=models.OuterRef("pk")
-        ).values("uuid")[:1]
-
-        return super().get_queryset().annotate(
-            exchange_uuid=models.Subquery(uuid_subquery)
-        ).all()
-
-    def _get_content_type(self):
-        return ContentType.objects.get_for_model(Enterprise)
+    def get_instance(self, instance_loader, row):
+        return None
+    
+    def init_instance(self, row = None):
+        row.pop("exchange_uuid")
+        return super().init_instance(row)
 
     def _ensure_exchange_uuids_exist(self):
+
         ExchangeItem.objects.bulk_create(
             [
                 ExchangeItem(content_type=self._get_content_type(), object_id=enterprise.pk)
                 for enterprise in self.get_queryset().filter(exchange_uuid__isnull=True)
             ]
         )
+
+    def _get_content_type(self):
+        return ContentType.objects.get_for_model(Enterprise)   

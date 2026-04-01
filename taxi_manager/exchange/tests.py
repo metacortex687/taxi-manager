@@ -94,23 +94,23 @@ class ExchangeTest(TestCase):
         self.assertNotEqual(first_exchange_uuid, third_dataset["exchange_uuid"][0])
 
 
-    # def test_import_enterprise(self):
-    #     self.assertEqual(1, self.get_queryset_a(TimeZone).count())
-    #     self.assertEqual(1, self.get_queryset_a(Enterprise).count())  
-    #     self.assertEqual(0, self.get_queryset_b(TimeZone).count())
-    #     self.assertEqual(0, self.get_queryset_b(Enterprise).count())
+    def test_import_enterprise(self):
+        self.assertEqual(1, TimeZone.objects.all().count())
+        self.assertEqual(1, Enterprise.objects.all().count()) 
 
+        dataset_time_zone = TimeZoneResource().export()
+        dataset_enterprise = EnterpriseResource().export()
 
-    #     dataset_time_zone = self.get_resource_a(TimeZoneResource).export()
-    #     dataset_enterprise = self.get_resource_a(EnterpriseResource).export()
+        self._clear_db()
+        self.assertEqual(0, TimeZone.objects.all().count())
+        self.assertEqual(0, Enterprise.objects.all().count())
 
-    #     self.get_resource_b(TimeZoneResource).import_data(dataset_time_zone, raise_errors=True)
-    #     self.get_resource_b(EnterpriseResource).import_data(dataset_enterprise, raise_errors=True)
+        TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
+        EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
 
-    #     self.assertEqual(1, self.get_queryset_a(TimeZone).count())
-    #     self.assertEqual(1, self.get_queryset_a(Enterprise).count())  
-    #     self.assertEqual(1, self.get_queryset_b(TimeZone).count())
-    #     self.assertEqual(1, self.get_queryset_b(Enterprise).count())
+        self.assertEqual(1, TimeZone.objects.all().count())
+        self.assertEqual(1, Enterprise.objects.all().count())  
+
 
 
 
