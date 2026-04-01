@@ -46,9 +46,7 @@ class EnterpriseResource(resources.ModelResource):
 
         exchange_item = ExchangeItem.objects.filter(content_type=self._get_content_type(), uuid=row["exchange_uuid"]).first()
         
-        print(exchange_item)
         if exchange_item is not None:
-            print(f"exchange_item.content_object={exchange_item.content_object}")
             return exchange_item.content_object
 
         return None

@@ -150,6 +150,32 @@ class ExchangeTest(TestCase):
         self.assertEqual(1, Enterprise.objects.all().count()) 
 
 
+    def test_import_enterprise_updates_existing_object(self):
+        self.assertEqual(1, TimeZone.objects.all().count())
+        self.assertEqual(1, Enterprise.objects.all().count()) 
+
+        dataset_time_zone = TimeZoneResource().export()
+        dataset_enterprise = EnterpriseResource().export()
+
+        self._clear_db()
+        self.assertEqual(0, TimeZone.objects.all().count())
+        self.assertEqual(0, Enterprise.objects.all().count())
+
+        TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
+        EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+
+        self.assertEqual(1, TimeZone.objects.all().count())
+        self.assertEqual(1, Enterprise.objects.all().count())  
+
+        self.assertEqual(Enterprise.objects.first().name,"enterprise1")
+
+        name, city, time_zone, exchange_uuid = dataset_enterprise[0]
+        dataset_enterprise[0] = ("new_name", city, time_zone, exchange_uuid)
+
+        EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+        self.assertEqual(1, Enterprise.objects.all().count()) 
+        self.assertEqual(Enterprise.objects.first().name,"new_name")
+
 
 
 
