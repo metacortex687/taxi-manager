@@ -14,15 +14,8 @@ class TimeZoneResource(resources.ModelResource):
         exclude = ("id",)
         import_id_fields = ("code",)
 
-
-class EnterpriseResource(resources.ModelResource):
+class ExchangeUuidResource(resources.ModelResource):
     exchange_uuid = fields.Field(attribute="exchange_uuid", column_name="exchange_uuid")
-    time_zone = fields.Field(attribute="time_zone", column_name="time_zone",  widget=widgets.ForeignKeyWidget(TimeZone, "code"),)
-
-    class Meta:
-        model = Enterprise
-        fields = ("name", "city", "time_zone", "exchange_uuid")
-        import_id_fields = ("exchange_uuid",)
 
     def get_queryset(self):
         uuid_subquery = (
@@ -50,15 +43,14 @@ class EnterpriseResource(resources.ModelResource):
             return exchange_item.content_object
 
         return None
-    
+
     def save_instance(self, instance, is_create, row, **kwargs):
         super().save_instance(instance, is_create, row, **kwargs)
     
         if not is_create:
             return
                 
-        ExchangeItem.objects.create(content_type=self._get_content_type(), uuid=row["exchange_uuid"], object_id=instance.id)
-
+        ExchangeItem.objects.create(content_type=self._get_content_type(), uuid=row["exchange_uuid"], object_id=instance.id)   
 
     def _ensure_exchange_uuids_exist(self):
 
@@ -70,4 +62,23 @@ class EnterpriseResource(resources.ModelResource):
         )
 
     def _get_content_type(self):
-        return ContentType.objects.get_for_model(Enterprise)   
+        return ContentType.objects.get_for_model(self._meta.model)   
+
+
+class EnterpriseResource(ExchangeUuidResource):
+    
+    time_zone = fields.Field(attribute="time_zone", column_name="time_zone",  widget=widgets.ForeignKeyWidget(TimeZone, "code"),)
+
+    class Meta:
+        model = Enterprise
+        fields = ("name", "city", "time_zone", "exchange_uuid")
+        import_id_fields = ("exchange_uuid",)
+
+    
+
+    
+
+
+
+
+
