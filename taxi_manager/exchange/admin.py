@@ -10,9 +10,7 @@ from import_export import resources, fields
 
 
 class SelectableDBAAliasResourceMixin:  # Нужен для тестов, что бы выбирать базу данных
-    db_alias: str
-
-    def __init__(self, db_alias: str = "default", **kwargs):
+    def __init__(self, db_alias: str, **kwargs):
         super().__init__(**kwargs)
         self.db_alias = db_alias
 
@@ -44,11 +42,11 @@ class EnterpriseResource(SelectableDBAAliasResourceMixin, resources.ModelResourc
         return super().export(**kwargs)
 
     def get_queryset(self):
-        uuid_subquery = ExchangeItem.objects.filter(
+        uuid_subquery = ExchangeItem.objects.using(self.db_alias).filter(
             content_type=self._get_content_type(), object_id=models.OuterRef("pk")
         ).values("uuid")[:1]
 
-        return Enterprise.objects.annotate(
+        return super().get_queryset().annotate(
             exchange_uuid=models.Subquery(uuid_subquery)
         ).all()
 
@@ -56,7 +54,7 @@ class EnterpriseResource(SelectableDBAAliasResourceMixin, resources.ModelResourc
         return ContentType.objects.get_for_model(Enterprise)
 
     def _ensure_exchange_uuids_exist(self):
-        ExchangeItem.objects.bulk_create(
+        ExchangeItem.objects.using(self.db_alias).bulk_create(
             [
                 ExchangeItem(content_type=self._get_content_type(), object_id=enterprise.pk)
                 for enterprise in self.get_queryset().filter(exchange_uuid__isnull=True)

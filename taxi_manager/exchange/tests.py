@@ -18,16 +18,16 @@ class ExchangeTest(TestCase):
     databases = {"default", "import_target"}
 
     def get_queryset_a(self, model_class) -> QuerySet:
-        return model_class._default_manager.using("default")
+        return model_class._default_manager.using("import_target")
     
     def get_queryset_b(self, model_class) -> QuerySet:
-        return model_class._default_manager.using("import_target") 
+        return model_class._default_manager.using("default") 
 
     def get_resource_a(self, resource_class) -> resources.ModelResource:
-        return resource_class(db_alias="default")
+        return resource_class(db_alias="import_target")
     
     def get_resource_b(self, resource_class) -> resources.ModelResource:
-        return resource_class(db_alias="import_target")
+        return resource_class(db_alias="default")
 
 
     def setUp(self):
@@ -103,9 +103,28 @@ class ExchangeTest(TestCase):
         second_dataset = self.get_resource_a(EnterpriseResource).export()
         self.assertEqual(first_exchange_uuid, second_dataset["exchange_uuid"][0])
 
-        ExchangeItem.objects.all().delete() #После удаление уникальный идентификатор пересоздастся
+        self.get_queryset_a(ExchangeItem).all().delete() #После удаление уникальный идентификатор пересоздастся
         third_dataset = self.get_resource_a(EnterpriseResource).export()
         self.assertNotEqual(first_exchange_uuid, third_dataset["exchange_uuid"][0])
+
+
+    # def test_import_enterprise(self):
+    #     self.assertEqual(1, self.get_queryset_a(TimeZone).count())
+    #     self.assertEqual(1, self.get_queryset_a(Enterprise).count())  
+    #     self.assertEqual(0, self.get_queryset_b(TimeZone).count())
+    #     self.assertEqual(0, self.get_queryset_b(Enterprise).count())
+
+
+    #     dataset_time_zone = self.get_resource_a(TimeZoneResource).export()
+    #     dataset_enterprise = self.get_resource_a(EnterpriseResource).export()
+
+    #     self.get_resource_b(TimeZoneResource).import_data(dataset_time_zone, raise_errors=True)
+    #     self.get_resource_b(EnterpriseResource).import_data(dataset_enterprise, raise_errors=True)
+
+    #     self.assertEqual(1, self.get_queryset_a(TimeZone).count())
+    #     self.assertEqual(1, self.get_queryset_a(Enterprise).count())  
+    #     self.assertEqual(1, self.get_queryset_b(TimeZone).count())
+    #     # self.assertEqual(1, self.get_queryset_b(Enterprise).count())
 
 
 
