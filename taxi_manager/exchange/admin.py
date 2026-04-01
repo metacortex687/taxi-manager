@@ -42,7 +42,7 @@ class EnterpriseResource(SelectableDBAAliasResourceMixin, resources.ModelResourc
         return super().export(**kwargs)
 
     def get_queryset(self):
-        uuid_subquery = ExchangeItem.objects.using(self.db_alias).filter(
+        uuid_subquery = ExchangeItem.objects.db_manager(self.db_alias).filter(
             content_type=self._get_content_type(), object_id=models.OuterRef("pk")
         ).values("uuid")[:1]
 
@@ -51,7 +51,7 @@ class EnterpriseResource(SelectableDBAAliasResourceMixin, resources.ModelResourc
         ).all()
 
     def _get_content_type(self):
-        return ContentType.objects.get_for_model(Enterprise)
+        return ContentType.objects.db_manager(self.db_alias).get_for_model(Enterprise)
 
     def _ensure_exchange_uuids_exist(self):
         ExchangeItem.objects.using(self.db_alias).bulk_create(
