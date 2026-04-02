@@ -1,6 +1,6 @@
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
-from taxi_manager.vehicle.models import Model
+from taxi_manager.vehicle.models import Model, Vehicle
 
 from .models import ExchangeItem
 
@@ -82,4 +82,22 @@ class EnterpriseResource(ExchangeUuidResource):
         fields = ("exchange_uuid", "name", "city", "time_zone")
         import_id_fields = ("exchange_uuid",)
 
+class ForeignUuidKeyWidget(widgets.ForeignKeyWidget):
+    def render(self, value, obj = None, **kwargs):
+        exchange_item = ExchangeItem.objects.get(content_type=self._get_content_type(), object_id=value.id)
+
+        return str(exchange_item.uuid)
+    
+    def _get_content_type(self):
+        return ContentType.objects.get_for_model(self.model)   
+
+
+class VehicleResource(ExchangeUuidResource):
+
+    model = fields.Field(attribute="time_zone", column_name="time_zone",  widget=widgets.ForeignKeyWidget(Model, "name"),) 
+    enterprise = fields.Field(attribute="enterprise", column_name="enterprise", widget=ForeignUuidKeyWidget(Enterprise, "id"))
+
+    class Meta:
+        model = Vehicle
+        fields = ("exchange_uuid", "price", "year_of_manufacture", "mileage", "number", "vin", "model", "enterprise") #enterprise пока нет возможности внешний ключ по uuid
         import_id_fields = ("exchange_uuid",)

@@ -315,24 +315,32 @@ class ExchangeVehicleTest(TestCase):
 
         Vehicle.objects.create(**self.vehicle1)
 
-    # def test_export_vehicle_create_uuid(self):
-    #     dataset = EnterpriseResource().export()
+    def test_export_vehicle_create_uuid(self):
+        EnterpriseResource().export()
+        dataset = VehicleResource().export()
 
-    #     self.assertTrue("exchange_uuid" in dataset.headers)
-    #     self.assertTrue(dataset["exchange_uuid"][0] != "")
+        self.assertTrue("exchange_uuid" in dataset.headers)
+        self.assertTrue(dataset["exchange_uuid"][0] != "")
 
-    # def test_export_enterprise_create_uuid_only_once(self):
-    #     first_dataset = EnterpriseResource().export()
-    #     first_exchange_uuid = first_dataset["exchange_uuid"][0]
+    def test_export_vehicle_create_uuid_only_once(self):
+        EnterpriseResource().export()
+        first_dataset = VehicleResource().export()
+        first_exchange_uuid = first_dataset["exchange_uuid"][0]
 
-    #     second_dataset = EnterpriseResource().export()
-    #     self.assertEqual(first_exchange_uuid, second_dataset["exchange_uuid"][0])
+        second_dataset = VehicleResource().export()
+        self.assertEqual(first_exchange_uuid, second_dataset["exchange_uuid"][0])
 
-    #     ExchangeItem.objects.all().delete()  # После удаление уникальный идентификатор пересоздастся
-    #     third_dataset = EnterpriseResource().export()
-    #     self.assertNotEqual(first_exchange_uuid, third_dataset["exchange_uuid"][0])
+        ExchangeItem.objects.filter(content_type = ExchangeItem.get_content_type_for_model(Vehicle)).delete()  # После удаление уникальный идентификатор пересоздастся
+        third_dataset = VehicleResource().export()
+        self.assertNotEqual(first_exchange_uuid, third_dataset["exchange_uuid"][0])
 
-    # def test_import_enterprise(self):
+    def test_vehicle_export_uses_enterprise_exchange_uuid_for_foreign_key(self):
+        dataset_enterprise = EnterpriseResource().export()
+        dataset_vehicle = VehicleResource().export()
+
+        self.assertEqual(dataset_vehicle["enterprise"][0], dataset_enterprise["exchange_uuid"][0])
+    
+
     #     self.assertEqual(1, TimeZone.objects.all().count())
     #     self.assertEqual(1, Enterprise.objects.all().count())
 
