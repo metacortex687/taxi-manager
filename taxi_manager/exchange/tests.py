@@ -2,7 +2,7 @@ from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 from taxi_manager.vehicle.models import Vehicle, Model
 
-from .resources import TimeZoneResource, EnterpriseResource, ModelResource
+from .resources import VehicleResource, EnterpriseResource, TimeZoneResource, ModelResource
 from .models import ExchangeItem
 
 from django.db.models import QuerySet
@@ -339,8 +339,17 @@ class ExchangeVehicleTest(TestCase):
         dataset_vehicle = VehicleResource().export()
 
         self.assertEqual(dataset_vehicle["enterprise"][0], dataset_enterprise["exchange_uuid"][0])
-    
 
+    def test_vehicle_export_raises_error_if_enterprise_exchange_uuid_is_missing(self):
+        with self.assertRaisesMessage(
+            ValueError,
+            "Невозможно выполнить экспорт значения "
+        ):
+            VehicleResource().export()
+
+
+
+    # def test_import_vehicle(self):
     #     self.assertEqual(1, TimeZone.objects.all().count())
     #     self.assertEqual(1, Enterprise.objects.all().count())
 

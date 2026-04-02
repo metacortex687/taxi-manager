@@ -84,9 +84,15 @@ class EnterpriseResource(ExchangeUuidResource):
 
 class ForeignUuidKeyWidget(widgets.ForeignKeyWidget):
     def render(self, value, obj = None, **kwargs):
-        exchange_item = ExchangeItem.objects.get(content_type=self._get_content_type(), object_id=value.id)
-
-        return str(exchange_item.uuid)
+        exchange_item = ExchangeItem.objects.filter(content_type=self._get_content_type(), object_id=value.id).first()
+        if exchange_item:
+            return str(exchange_item.uuid)
+        
+        raise ValueError(
+            f"Невозможно выполнить экспорт значения: {value}: "
+            f"связанный объект {self.model.__name__} не имеет exchange_uuid. "
+            f"Сначала экспортируйте {self.model.__name__}, затем повторите экспорт."
+        )            
     
     def _get_content_type(self):
         return ContentType.objects.get_for_model(self.model)   
