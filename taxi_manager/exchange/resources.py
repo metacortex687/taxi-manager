@@ -91,7 +91,7 @@ class ForeignUuidKeyWidget(widgets.ForeignKeyWidget):
         if exchange_item:
             return str(exchange_item.uuid)
         
-        raise ValueError(
+        raise exceptions.FieldError(
             f"Невозможно выполнить экспорт значения: {value}: "
             f"связанный объект {self.model.__name__} не имеет exchange_uuid. "
             f"Сначала экспортируйте {self.model.__name__}, затем повторите экспорт."

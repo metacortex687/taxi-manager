@@ -342,7 +342,7 @@ class ExchangeVehicleTest(TestCase):
 
     def test_vehicle_export_raises_error_if_enterprise_exchange_uuid_is_missing(self):
         with self.assertRaisesMessage(
-            ValueError,
+            exceptions.FieldError,
             "Невозможно выполнить экспорт значения:"
         ):
             VehicleResource().export()
