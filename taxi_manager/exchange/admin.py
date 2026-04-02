@@ -8,12 +8,6 @@ from django.contrib.contenttypes.models import ContentType
 
 from import_export import resources, fields, widgets
 
-class TimeZoneResource(resources.ModelResource):
-    class Meta:
-        model = TimeZone
-        exclude = ("id",)
-        import_id_fields = ("code",)
-
 class ExchangeUuidResource(resources.ModelResource):
     exchange_uuid = fields.Field(attribute="exchange_uuid", column_name="exchange_uuid")
 
@@ -64,6 +58,12 @@ class ExchangeUuidResource(resources.ModelResource):
     def _get_content_type(self):
         return ContentType.objects.get_for_model(self._meta.model)   
 
+
+class TimeZoneResource(resources.ModelResource):
+    class Meta:
+        model = TimeZone
+        fields = ("code","utc_offset",)
+        import_id_fields = ("code",)
 
 class EnterpriseResource(ExchangeUuidResource):
     
