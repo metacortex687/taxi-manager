@@ -79,5 +79,7 @@ class EnterpriseResource(ExchangeUuidResource):
 
     class Meta:
         model = Enterprise
-        fields = ("name", "city", "time_zone", "exchange_uuid")
+        fields = ("exchange_uuid", "name", "city", "time_zone")
+        import_id_fields = ("exchange_uuid",)
+
         import_id_fields = ("exchange_uuid",)
