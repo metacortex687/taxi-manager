@@ -1,5 +1,6 @@
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
+from taxi_manager.vehicle.models import Vehicle, Model
 
 from .admin import TimeZoneResource, EnterpriseResource
 from .models import ExchangeItem
@@ -8,15 +9,17 @@ from django.db.models import QuerySet
 
 from django.contrib.contenttypes.models import ContentType
 
-import tablib
-from import_export import resources
 
+from import_export import resources
+import tablib
 
 from django.test import TestCase
 
-#uv run manage.py test taxi_manager.exchange.tests.ExchangeTest --settings=taxi_manager.exchange.settings_test
 
-class ExchangeTest(TestCase):
+#uv run manage.py test taxi_manager.exchange.tests
+
+
+class ExchangeTimeZoneTest(TestCase):
 
     def setUp(self):
         self.time_zone = {
@@ -24,20 +27,14 @@ class ExchangeTest(TestCase):
             "utc_offset": 0,
         }
         
-        time_zone = TimeZone.objects.create(**self.time_zone)
+        TimeZone.objects.create(**self.time_zone)
 
-        self.enterprise1 = {
-            "name": "enterprise1", 
-            "city": "city", 
-            "time_zone": time_zone
-        }     
 
-        enterprise1 = Enterprise.objects.create(**self.enterprise1)
     def _clear_db(self):
-        Enterprise.objects.all().delete()
-        TimeZone.objects.all().delete()
         ExchangeItem.objects.all().delete()
 
+        TimeZone.objects.all().delete()        
+ 
 
     def test_time_zone_export_json_csv(self):
         dataset = TimeZoneResource().export()
@@ -45,6 +42,7 @@ class ExchangeTest(TestCase):
         self.assertTrue(len(dataset) > 0)
         self.assertTrue(len(dataset.json) > 0)
         self.assertTrue(len(dataset.csv) > 1) #1-я это строка заголовок
+
 
     def test_import_export_time_zone(self):        
 
@@ -59,7 +57,6 @@ class ExchangeTest(TestCase):
         TimeZoneResource().import_data(dataset)
 
         self.assertEqual(1, TimeZone.objects.count())
-
 
 
     def test_import_time_zone_uses_code_as_unique_key(self): 
@@ -87,6 +84,30 @@ class ExchangeTest(TestCase):
         self.assertTrue("code" in headers)
         self.assertTrue("utc_offset" in headers)
         self.assertFalse("id" in headers)
+
+class ExchangeEnterpriseTest(TestCase):
+    def setUp(self):
+        self.time_zone = {
+            "code": "UTC",
+            "utc_offset": 0,
+        }
+        
+        time_zone = TimeZone.objects.create(**self.time_zone)
+
+        self.enterprise1 = {
+            "name": "enterprise1", 
+            "city": "city", 
+            "time_zone": time_zone
+        }     
+
+        Enterprise.objects.create(**self.enterprise1)
+
+
+    def _clear_db(self):
+        ExchangeItem.objects.all().delete()
+
+        Enterprise.objects.all().delete()
+        TimeZone.objects.all().delete()  
 
 
     def test_export_enterprise_create_uuid(self):
@@ -186,6 +207,9 @@ class ExchangeTest(TestCase):
         EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
         self.assertEqual(1, Enterprise.objects.all().count()) 
         self.assertEqual(Enterprise.objects.first().name,"new_name")
+
+
+
 
 
 
