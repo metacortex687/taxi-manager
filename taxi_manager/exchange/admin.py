@@ -1,5 +1,6 @@
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
+from taxi_manager.vehicle.models import Model
 
 from .models import ExchangeItem
 
@@ -64,6 +65,12 @@ class TimeZoneResource(resources.ModelResource):
         model = TimeZone
         fields = ("code","utc_offset",)
         import_id_fields = ("code",)
+
+class ModelResource(resources.ModelResource):
+    class Meta:
+        model = Model
+        fields = ("name","type","number_of_seats", "tank_capacity_l", "load_capacity_kg", "color")
+        import_id_fields = ("name",)
 
 class EnterpriseResource(ExchangeUuidResource):
     
