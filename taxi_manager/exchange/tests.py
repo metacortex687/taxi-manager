@@ -10,7 +10,7 @@ from django.db.models import QuerySet
 from django.contrib.contenttypes.models import ContentType
 
 
-from import_export import resources
+from import_export import resources, exceptions
 import tablib
 
 from django.test import TestCase
@@ -366,6 +366,30 @@ class ExchangeVehicleTest(TestCase):
 
         self.assertEqual(1, Vehicle.objects.all().count())
 
+    def test_vehicle_import_raises_error_if_enterprise_exchange_uuid_is_missing(self):
+        self.assertEqual(1, TimeZone.objects.all().count())
+        self.assertEqual(1, Enterprise.objects.all().count())
+
+        dataset_time_zone = TimeZoneResource().export()
+        EnterpriseResource().export()
+        dataset_model = ModelResource().export()
+        dataset_vehicle = VehicleResource().export()
+
+        clear_db()
+        self.assertEqual(0, Vehicle.objects.all().count())
+
+        TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
+        # EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+        ModelResource().import_data(dataset_model, raise_errors=True)
+
+        
+        with self.assertRaisesMessage(
+            exceptions.ImportError,
+            "Невозможно выполнить импорт ссылки:"
+        ):
+            VehicleResource().import_data(dataset_vehicle, raise_errors=True)        
+
+        self.assertEqual(0, Vehicle.objects.all().count())
 
     # def test_import_enterprise_creates_exchange_item(self):
     #     self.assertEqual(1, TimeZone.objects.all().count())

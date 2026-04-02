@@ -7,7 +7,7 @@ from .models import ExchangeItem
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 
-from import_export import resources, fields, widgets
+from import_export import resources, fields, widgets, exceptions
 
 
 class ExchangeUuidResource(resources.ModelResource):
@@ -99,7 +99,13 @@ class ForeignUuidKeyWidget(widgets.ForeignKeyWidget):
     
     def clean(self, value, row = None, **kwargs):
         exchange_item = ExchangeItem.objects.filter(content_type=self._get_content_type(), uuid=value).first()
-        return super().clean(exchange_item.object_id, row, **kwargs)
+        if exchange_item:
+            return super().clean(exchange_item.object_id, row, **kwargs)
+        
+        raise exceptions.FieldError(
+            f"Невозможно выполнить импорт ссылки: {value}. "
+            f"Сначала импортируйте объект {value} в {self.model.__name__}, затем повторите."
+        )          
 
     def _get_content_type(self):
         return ExchangeItem.get_content_type_for_model(self.model)  
