@@ -2,7 +2,7 @@ from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 from taxi_manager.vehicle.models import Vehicle, Model
 
-from .admin import TimeZoneResource, EnterpriseResource, ModelResource
+from .resources import TimeZoneResource, EnterpriseResource, ModelResource
 from .models import ExchangeItem
 
 from django.db.models import QuerySet
@@ -26,6 +26,7 @@ def dataset_from_dict(data: dict) -> tuple[list, list]:
 def clear_db():
     ExchangeItem.objects.all().delete()
 
+    Vehicle.objects.all().delete()
     Enterprise.objects.all().delete()
     TimeZone.objects.all().delete()
 
@@ -272,3 +273,143 @@ class ExchangeEnterpriseTest(TestCase):
         EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
         self.assertEqual(1, Enterprise.objects.all().count())
         self.assertEqual(Enterprise.objects.first().name, "new_name")
+
+
+
+class ExchangeVehicleTest(TestCase):
+    def setUp(self):
+        self.time_zone = {
+            "code": "UTC",
+            "utc_offset": 0,
+        }
+
+        time_zone = TimeZone.objects.create(**self.time_zone)
+
+        self.enterprise1 = {
+            "name": "enterprise1",
+            "city": "city",
+            "time_zone": time_zone,
+        }
+
+        enterprise1 = Enterprise.objects.create(**self.enterprise1)
+
+        self.model1 = {
+            "name": "model1",
+            "type": "PCR",
+            "number_of_seats": 5,
+            "tank_capacity_l": 20,
+            "load_capacity_kg": 500,
+        }
+
+        model1 = Model.objects.create(**self.model1)
+
+        self.vehicle1 = {
+            "model": model1,
+            "number": "num1",
+            "vin": "Z948741AA12323456",
+            "year_of_manufacture": 2025,
+            "mileage": 100,
+            "enterprise": enterprise1,
+            "price": 125000,
+        }
+
+        Vehicle.objects.create(**self.vehicle1)
+
+    # def test_export_vehicle_create_uuid(self):
+    #     dataset = EnterpriseResource().export()
+
+    #     self.assertTrue("exchange_uuid" in dataset.headers)
+    #     self.assertTrue(dataset["exchange_uuid"][0] != "")
+
+    # def test_export_enterprise_create_uuid_only_once(self):
+    #     first_dataset = EnterpriseResource().export()
+    #     first_exchange_uuid = first_dataset["exchange_uuid"][0]
+
+    #     second_dataset = EnterpriseResource().export()
+    #     self.assertEqual(first_exchange_uuid, second_dataset["exchange_uuid"][0])
+
+    #     ExchangeItem.objects.all().delete()  # После удаление уникальный идентификатор пересоздастся
+    #     third_dataset = EnterpriseResource().export()
+    #     self.assertNotEqual(first_exchange_uuid, third_dataset["exchange_uuid"][0])
+
+    # def test_import_enterprise(self):
+    #     self.assertEqual(1, TimeZone.objects.all().count())
+    #     self.assertEqual(1, Enterprise.objects.all().count())
+
+    #     dataset_time_zone = TimeZoneResource().export()
+    #     dataset_enterprise = EnterpriseResource().export()
+
+    #     clear_db()
+    #     self.assertEqual(0, TimeZone.objects.all().count())
+    #     self.assertEqual(0, Enterprise.objects.all().count())
+
+    #     TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
+    #     EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+
+    #     self.assertEqual(1, TimeZone.objects.all().count())
+    #     self.assertEqual(1, Enterprise.objects.all().count())
+
+    # def test_import_enterprise_creates_exchange_item(self):
+    #     self.assertEqual(1, TimeZone.objects.all().count())
+    #     self.assertEqual(1, Enterprise.objects.all().count())
+
+    #     dataset_time_zone = TimeZoneResource().export()
+    #     dataset_enterprise = EnterpriseResource().export()
+
+    #     clear_db()
+
+    #     TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
+    #     EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+
+    #     self.assertTrue(
+    #         ExchangeItem.objects.filter(
+    #             uuid=dataset_enterprise["exchange_uuid"][0],
+    #             content_type=ContentType.objects.get_for_model(Enterprise),
+    #         ).exists()
+    #     )
+
+    # def test_import_enterprise_only_once(self):
+    #     self.assertEqual(1, TimeZone.objects.all().count())
+    #     self.assertEqual(1, Enterprise.objects.all().count())
+
+    #     dataset_time_zone = TimeZoneResource().export()
+    #     dataset_enterprise = EnterpriseResource().export()
+
+    #     clear_db()
+    #     self.assertEqual(0, TimeZone.objects.all().count())
+    #     self.assertEqual(0, Enterprise.objects.all().count())
+
+    #     TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
+    #     EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+
+    #     self.assertEqual(1, TimeZone.objects.all().count())
+    #     self.assertEqual(1, Enterprise.objects.all().count())
+
+    #     EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+    #     self.assertEqual(1, Enterprise.objects.all().count())
+
+    # def test_import_enterprise_updates_existing_object(self):
+    #     self.assertEqual(1, TimeZone.objects.all().count())
+    #     self.assertEqual(1, Enterprise.objects.all().count())
+
+    #     dataset_time_zone = TimeZoneResource().export()
+    #     dataset_enterprise = EnterpriseResource().export()
+
+    #     clear_db()
+    #     self.assertEqual(0, TimeZone.objects.all().count())
+    #     self.assertEqual(0, Enterprise.objects.all().count())
+
+    #     TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
+    #     EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+
+    #     self.assertEqual(1, TimeZone.objects.all().count())
+    #     self.assertEqual(1, Enterprise.objects.all().count())
+
+    #     self.assertEqual(Enterprise.objects.first().name, "enterprise1")
+
+    #     name, city, time_zone, exchange_uuid = dataset_enterprise[0]
+    #     dataset_enterprise[0] = ("new_name", city, time_zone, exchange_uuid)
+
+    #     EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+    #     self.assertEqual(1, Enterprise.objects.all().count())
+    #     self.assertEqual(Enterprise.objects.first().name, "new_name")
