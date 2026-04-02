@@ -19,9 +19,20 @@ from django.test import TestCase
 class ExchangeTest(TestCase):
 
     def setUp(self):
-        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
-        self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city", time_zone=self.time_zone)
+        self.time_zone = {
+            "code": "UTC",
+            "utc_offset": 0,
+        }
         
+        time_zone = TimeZone.objects.create(**self.time_zone)
+
+        self.enterprise1 = {
+            "name": "enterprise1", 
+            "city": "city", 
+            "time_zone": time_zone
+        }     
+
+        enterprise1 = Enterprise.objects.create(**self.enterprise1)
     def _clear_db(self):
         Enterprise.objects.all().delete()
         TimeZone.objects.all().delete()
