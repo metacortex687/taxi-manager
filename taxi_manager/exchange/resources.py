@@ -84,6 +84,9 @@ class EnterpriseResource(ExchangeUuidResource):
 
 class ForeignUuidKeyWidget(widgets.ForeignKeyWidget):
     def render(self, value, obj = None, **kwargs):
+        if value is None:
+            return ""
+
         exchange_item = ExchangeItem.objects.filter(content_type=self._get_content_type(), object_id=value.id).first()
         if exchange_item:
             return str(exchange_item.uuid)
@@ -94,13 +97,17 @@ class ForeignUuidKeyWidget(widgets.ForeignKeyWidget):
             f"Сначала экспортируйте {self.model.__name__}, затем повторите экспорт."
         )            
     
+    def clean(self, value, row = None, **kwargs):
+        exchange_item = ExchangeItem.objects.filter(content_type=self._get_content_type(), uuid=value).first()
+        return super().clean(exchange_item.object_id, row, **kwargs)
+
     def _get_content_type(self):
-        return ContentType.objects.get_for_model(self.model)   
+        return ExchangeItem.get_content_type_for_model(self.model)  
 
 
 class VehicleResource(ExchangeUuidResource):
 
-    model = fields.Field(attribute="time_zone", column_name="time_zone",  widget=widgets.ForeignKeyWidget(Model, "name"),) 
+    model = fields.Field(attribute="model", column_name="model",  widget=widgets.ForeignKeyWidget(Model, "name")) 
     enterprise = fields.Field(attribute="enterprise", column_name="enterprise", widget=ForeignUuidKeyWidget(Enterprise, "id"))
 
     class Meta:

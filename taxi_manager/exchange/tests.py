@@ -347,24 +347,25 @@ class ExchangeVehicleTest(TestCase):
         ):
             VehicleResource().export()
 
+    def test_import_vehicle(self):
+        self.assertEqual(1, TimeZone.objects.all().count())
+        self.assertEqual(1, Enterprise.objects.all().count())
 
+        dataset_time_zone = TimeZoneResource().export()
+        dataset_enterprise = EnterpriseResource().export()
+        dataset_model = ModelResource().export()
+        dataset_vehicle = VehicleResource().export()
 
-    # def test_import_vehicle(self):
-    #     self.assertEqual(1, TimeZone.objects.all().count())
-    #     self.assertEqual(1, Enterprise.objects.all().count())
+        clear_db()
+        self.assertEqual(0, Vehicle.objects.all().count())
 
-    #     dataset_time_zone = TimeZoneResource().export()
-    #     dataset_enterprise = EnterpriseResource().export()
+        TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
+        EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+        ModelResource().import_data(dataset_model, raise_errors=True)
+        VehicleResource().import_data(dataset_vehicle, raise_errors=True)
 
-    #     clear_db()
-    #     self.assertEqual(0, TimeZone.objects.all().count())
-    #     self.assertEqual(0, Enterprise.objects.all().count())
+        self.assertEqual(1, Vehicle.objects.all().count())
 
-    #     TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
-    #     EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
-
-    #     self.assertEqual(1, TimeZone.objects.all().count())
-    #     self.assertEqual(1, Enterprise.objects.all().count())
 
     # def test_import_enterprise_creates_exchange_item(self):
     #     self.assertEqual(1, TimeZone.objects.all().count())
