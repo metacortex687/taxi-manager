@@ -267,8 +267,8 @@ class ExchangeEnterpriseTest(TestCase):
 
         self.assertEqual(Enterprise.objects.first().name, "enterprise1")
 
-        name, city, time_zone, exchange_uuid = dataset_enterprise[0]
-        dataset_enterprise[0] = ("new_name", city, time_zone, exchange_uuid)
+        exchange_uuid, name, city, time_zone  = dataset_enterprise[0]
+        dataset_enterprise[0] = (exchange_uuid, "new_name", city, time_zone)
 
         EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
         self.assertEqual(1, Enterprise.objects.all().count())
