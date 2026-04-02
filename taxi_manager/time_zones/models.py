@@ -13,7 +13,7 @@ class TimeZone(models.Model):
     def display_name(self):
         return str(self)
 
-    
+    @staticmethod
     def UTC():
         return 1 #первая запись должна быть UTC
 
