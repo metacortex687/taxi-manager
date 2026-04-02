@@ -27,3 +27,10 @@ class ExchangeItem(models.Model):
                 name="unique_exchange_object"
             )
         ]
+
+    @staticmethod
+    def get_content_type_for_model(model):
+        return ContentType.objects.get_for_model(model)
+
+
+
