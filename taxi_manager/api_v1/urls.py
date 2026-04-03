@@ -9,6 +9,8 @@ from .views.main import (
     EnterpriseListAPIView,
     TimeZoneListAPIView,
     VehicleLocationListAPIView,
+)
+from .views.trip import (
     TripPointListAPIView,
     TripListAPIView,
 )

@@ -1,13 +1,11 @@
-from rest_framework import generics, viewsets, filters
+from rest_framework import generics, viewsets
 
 from taxi_manager.vehicle.models import Vehicle, Model, Driver, VehicleDriver
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
-from taxi_manager.geo_tracking.models import VehicleLocation, Trip
-from taxi_manager.geocoding.models import GeoAddress
+from taxi_manager.geo_tracking.models import VehicleLocation
 
-from django.contrib.gis.db.models.functions import Distance
-from django.contrib.gis.db.models import PointField, MakeLine,  GeometryField
+
 
 from ..serializers.main import (
     VehicleReadSerializer,
@@ -18,11 +16,8 @@ from ..serializers.main import (
     TimeZoneSerializer,
     VehileLocationSerializerGeoJson,
     VehileLocationSerializer,
-    TripPointSerializer,
-    TripSerializer,
-    TripPointSerializerGeoJSON,
 )
-from django.db.models import OuterRef, Subquery, F, Q, ExpressionWrapper
+from django.db.models import OuterRef, Subquery, F
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
@@ -279,171 +274,4 @@ class VehicleLocationListAPIView(generics.ListAPIView):
             return VehileLocationSerializerGeoJson
 
         return VehileLocationSerializer
-
-
-class TripPointListAPIView(generics.ListAPIView):
-    def get_serializer_class(self):
-        response_format = self.request.query_params.get("response_format")
-
-        if response_format == "geojson":
-            return TripPointSerializerGeoJSON
-
-        return TripPointSerializer
-
-
-    def get_queryset(self):
-        vehicle_id = self.kwargs.get("vehicle_id")
-        vehicle = Vehicle.objects.get(pk=vehicle_id)
-
-        filter_data_from = None
-        if self.request.query_params.get("from"):
-            filter_data_from = datetime.fromisoformat(
-                self.request.query_params.get("from").replace("Z", "+00:00")
-            )
-
-        filter_data_to = None
-        if self.request.query_params.get("to"):
-            filter_data_to = datetime.fromisoformat(
-                self.request.query_params.get("to").replace("Z", "+00:00")
-            )
-
-        trip = Trip.objects.filter(vehicle=vehicle).filter(
-                started_at__lte=OuterRef("tracked_at"),
-                ended_at__gt=OuterRef("tracked_at"),
-            )
-        
-        if filter_data_from:
-            trip = trip.filter(started_at__gte=filter_data_from)
-
-        if filter_data_to:
-            trip = trip.filter(ended_at__lte=filter_data_to)
-
-        trip = trip.values("id")[:1]
-
-        queryset = (
-            VehicleLocation.objects.filter(
-                vehicle=vehicle
-            )
-            .annotate(trip=Subquery(trip))
-            .filter(trip__isnull=False)
-        )
-
-        if filter_data_from:
-            queryset = queryset.filter(tracked_at__gte=filter_data_from)
-
-        if filter_data_to:
-            queryset = queryset.filter(tracked_at__lt=filter_data_to)   
-
-        queryset = queryset.values("trip").annotate(route=MakeLine(Cast("location", output_field=GeometryField(srid=4326))))
-       
-
-        return queryset
-
-
-class TripListAPIView(generics.ListAPIView):
-    serializer_class = TripSerializer
-
-    def get_queryset(self):
-        vehicle_id = self.kwargs.get("vehicle_id")
-
-        filter_data_from = None
-        if self.request.query_params.get("from"):
-            filter_data_from = datetime.fromisoformat(
-                self.request.query_params.get("from").replace("Z", "+00:00")
-            )
-
-        filter_data_to = None
-        if self.request.query_params.get("to"):
-            filter_data_to = datetime.fromisoformat(
-                self.request.query_params.get("to").replace("Z", "+00:00")
-            )
-
-
-        vehicle = Vehicle.objects.get(pk=vehicle_id)
-
-        queryset = vehicle.trips.all()
-
-        if filter_data_from:
-            queryset = queryset.filter(started_at__gte=filter_data_from)
-
-        if filter_data_to:
-            queryset = queryset.filter(ended_at__lte=filter_data_to)
-
-        points = (
-            VehicleLocation.objects.filter(vehicle=vehicle)
-            .filter(
-                tracked_at__gte=OuterRef("started_at"),
-                tracked_at__lt=OuterRef("ended_at"),
-            )
-            .values("location")
-        )
-
-        start_address = GeoAddress.objects.filter(
-            area__covers=OuterRef("start_point")
-        ).values("display_name")[:1]
-        end_address = GeoAddress.objects.filter(
-            area__covers=OuterRef("end_point")
-        ).values("display_name")[:1]
-
-        radius_search_m = 150
-        start_point_ref = ExpressionWrapper(
-            OuterRef("start_point"),
-            output_field=PointField(srid=4326, geography=True),
-        )
-        end_point_ref = ExpressionWrapper(
-            OuterRef("end_point"),
-            output_field=PointField(srid=4326, geography=True),
-        )
-        near_start_address = (
-            GeoAddress.objects.filter(
-                area__dwithin=(OuterRef("start_point"), radius_search_m)
-            )
-            .annotate(distance=Distance("area", start_point_ref))
-            .order_by("distance")
-        )
-        near_end_address = (
-            GeoAddress.objects.filter(
-                area__dwithin=(OuterRef("end_point"), radius_search_m)
-            )
-            .annotate(distance=Distance("area", end_point_ref))
-            .order_by("distance")
-        )
-
-        queryset = (
-            queryset.annotate(
-                start_point=Subquery(points.order_by("tracked_at")[:1]),
-                end_point=Subquery(points.order_by("-tracked_at")[:1]),
-            )
-            .annotate(
-                start_address=Subquery(start_address),
-                end_address=Subquery(end_address),
-            )
-            .annotate(
-                near_start_address=Subquery(
-                    near_start_address.values("display_name")[:1]
-                ),
-                near_end_address=Subquery(near_end_address.values("display_name")[:1]),
-                near_start_address_distance=Subquery(
-                    near_start_address.values("distance")[:1]
-                ),
-                near_end_address_distance=Subquery(
-                    near_end_address.values("distance")[:1]
-                ),
-            )
-        )
-
-        return queryset
-
-    def list(self, request, *args, **kwargs):
-        point_need_load_address = []
-        point_need_load_address.extend(
-            [v.start_point for v in self.get_queryset() if v.start_address is None]
-        )
-        point_need_load_address.extend(
-            [v.end_point for v in self.get_queryset() if v.end_address is None]
-        )
-
-        GeoAddress.load_address_for_points(point_need_load_address)
-
-        return super().list(request, *args, **kwargs)
 
