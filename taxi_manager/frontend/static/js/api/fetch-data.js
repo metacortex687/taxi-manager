@@ -5,6 +5,7 @@ const authorizationFetch = async (url, options = {}) => {
 
     return await fetch(url, {
         ...options,
+        credentials: "omit",
         headers: {
             ...(options.headers || {}),
             "Authorization": `Token ${tokenAuth}`,
