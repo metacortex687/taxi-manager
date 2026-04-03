@@ -179,3 +179,7 @@ ADDRESS_PROVIDER = {
     "DELAY_REQUEST": 0.1,
     "KEY": os.getenv("LOCATIONIQ_KEY"),
 }
+
+
+from import_export.formats import base_formats
+IMPORT_EXPORT_FORMATS = [base_formats.JSON, base_formats.CSV]
