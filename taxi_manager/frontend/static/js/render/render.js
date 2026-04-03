@@ -1,6 +1,6 @@
 import { htmlIdField } from "../pages/entity.js"
 import { fromISOtoLocaleDateTime } from "../utils/date-time.js"
-import { fetchData } from "../api/fetch-data.js" 
+import { fetchDataJSON } from "../api/fetch-data.js" 
 
 const createElementFromHTML = (html) => {
     const template = document.createElement("template")
@@ -44,7 +44,7 @@ const renderInputDateTimeField = async (field, entity, parentElement) => {
 
 const renderSelectedField = async (field, entity, parentElement) => {
     const idHtml = htmlIdField(field)
-    const items = (await fetchData(field.options.source)).results
+    const items = (await fetchDataJSON(field.options.source)).results
     const placeholderText = field.options.placeholder
 
     const displayName = (item) => field.options.display_name_fn(item)

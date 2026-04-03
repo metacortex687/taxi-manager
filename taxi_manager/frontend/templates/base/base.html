@@ -41,14 +41,14 @@
 
     {% block script %}{% endblock script %} 
     <script type="module">
-        import { fetchData } from "{% static 'js/api/fetch-data.js' %}"    
+        import { fetchDataJSON } from "{% static 'js/api/fetch-data.js' %}"    
 
         const loadUserInfo = async () => {
             const tokenAuth = localStorage.getItem("tokenAuth")
             const listEnterprises = document.getElementById("listEnterprises")
             const usernameLabel = document.getElementById("usernameLabel")
 
-            const data = await fetchData("/api/v1/auth/users/me/")
+            const data = await fetchDataJSON("/api/v1/auth/users/me/")
 
             usernameLabel.innerText = data.username
         } 

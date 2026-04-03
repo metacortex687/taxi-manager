@@ -1,6 +1,18 @@
 import { clear_massages } from "../ui/messages.js";
 
-const fetchData = async (url, method = "GET", body=undefined) => {
+const authorizationFetch = async (url, options = {}) => {
+    const tokenAuth = localStorage.getItem("tokenAuth")
+
+    return await fetch(url, {
+        ...options,
+        headers: {
+            ...(options.headers || {}),
+            "Authorization": `Token ${tokenAuth}`,
+        },
+    })
+}
+
+const fetchDataJSON = async (url, method = "GET", body=undefined) => {
     const tokenAuth = localStorage.getItem("tokenAuth")
 
     clear_massages()
@@ -27,4 +39,4 @@ const fetchData = async (url, method = "GET", body=undefined) => {
     return data
 } 
 
-export {fetchData}
+export {fetchDataJSON}

@@ -1,5 +1,5 @@
 import { createDefaultWrapper } from "../render/render.js"
-import { fetchData } from "../api/fetch-data.js" 
+import { fetchDataJSON } from "../api/fetch-data.js" 
 
 const convertSnakeToCamelCase = (str) => {
     return str
@@ -52,7 +52,7 @@ const loadEntity = async (api_path, getParams = {}) => {
 
     console.log(patch)
 
-    return await fetchData(patch)
+    return await fetchDataJSON(patch)
 }
 
 const renderFormField = async (entity, field, wrapper) => {
@@ -100,7 +100,7 @@ const renderForm = async () => {
         await renderFormField(entityField || entityForm, field, wrapper)
     }
 
-    // form_drivers_data = (await fetchData(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
+    // form_drivers_data = (await fetchDataJSON(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
     // form_fields.innerHTML += renderMultySelectedDriverField(form_drivers_data)
 }
 
@@ -108,18 +108,18 @@ const renderForm = async () => {
 
 const deleteEntity = async () => {
     const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
-    // const result = await fetchData(`/api/v1/vehicles/${pkVehicle}/`, method = "DELETE")
-    const result = await fetchData(`${form.entity}${getPk()}/`, method = "DELETE")
+    // const result = await fetchDataJSON(`/api/v1/vehicles/${pkVehicle}/`, method = "DELETE")
+    const result = await fetchDataJSON(`${form.entity}${getPk()}/`, method = "DELETE")
     window.location.href = "/enterprises/"
 }
 
 const updateEntity = async (entity) => {
-    const result = await fetchData(`${form.entity}${getPk()}/`, "PUT", JSON.stringify(entity))
+    const result = await fetchDataJSON(`${form.entity}${getPk()}/`, "PUT", JSON.stringify(entity))
 }
 
 const saveNewEntity = async (entity) => {
-    // const result = await fetchData(`/api/v1/vehicles/`, "POST", JSON.stringify(entity))
-    const result = await fetchData(`${form.entity}${getPk()}/`, "POST", JSON.stringify(entity))
+    // const result = await fetchDataJSON(`/api/v1/vehicles/`, "POST", JSON.stringify(entity))
+    const result = await fetchDataJSON(`${form.entity}${getPk()}/`, "POST", JSON.stringify(entity))
     window.location.href = `/vehicles/${result.id}/edit/`
 }
 
