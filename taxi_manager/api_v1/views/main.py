@@ -9,7 +9,7 @@ from taxi_manager.geocoding.models import GeoAddress
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.db.models import PointField, MakeLine,  GeometryField
 
-from .serializers import (
+from ..serializers.main import (
     VehicleReadSerializer,
     VehicleWriteSerializer,
     ModelSerializer,
@@ -35,7 +35,7 @@ from django.utils import timezone
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from django.db.models.deletion import RestrictedError
-from .exceptions import DeletionConflict
+from ..exceptions import DeletionConflict
 
 from datetime import datetime
 
@@ -446,3 +446,4 @@ class TripListAPIView(generics.ListAPIView):
         GeoAddress.load_address_for_points(point_need_load_address)
 
         return super().list(request, *args, **kwargs)
+
