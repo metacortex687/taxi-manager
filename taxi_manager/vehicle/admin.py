@@ -1,9 +1,13 @@
-from django.contrib import admin
+
+from taxi_manager.exchange import resources
 
 from .models import Vehicle, Model, Driver, VehicleDriver
 
+from import_export.admin import ImportExportModelAdmin
 
-class VehicleAdmin(admin.ModelAdmin):
+from django.contrib import admin
+
+class VehicleAdmin(ImportExportModelAdmin):
     list_display = (
         "id",
         "model",
@@ -29,6 +33,7 @@ class VehicleAdmin(admin.ModelAdmin):
 
     list_select_related = ["enterprise"]
     search_fields = ["=id"]
+    resource_classes = [resources.VehicleResource]
 
 
 class ModelAdmin(admin.ModelAdmin):
