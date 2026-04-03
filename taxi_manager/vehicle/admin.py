@@ -35,8 +35,7 @@ class VehicleAdmin(ImportExportModelAdmin):
     search_fields = ["=id"]
     resource_classes = [resources.VehicleResource]
 
-
-class ModelAdmin(admin.ModelAdmin):
+class ModelAdmin(ImportExportModelAdmin):
     list_display = (
         "id",
         "name",
@@ -46,6 +45,7 @@ class ModelAdmin(admin.ModelAdmin):
         "tank_capacity_l",
         "load_capacity_kg",
     )
+    resource_classes = [resources.ModelResource]
 
 
 class VehicleDriverAdmin(admin.ModelAdmin):
