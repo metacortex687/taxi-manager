@@ -1,0 +1,21 @@
+{% extends "base/entity.html" %}
+
+{% block title %}Скачивание поездок за период{% endblock title %}
+
+{% block content %}
+<h1 class="text-center">Скачать поездки за период</h1>
+
+{{ block.super }}
+{% endblock content %}
+
+{% load static %}
+
+
+
+{% block script %}
+
+<script type="module" src="{% static 'js/enterprise_download_trips.js' %}"></script>
+
+{{ block.super }}
+
+{% endblock script %}

@@ -28,7 +28,7 @@ const renderPeriodField = (field, entity, parentElement) => {
                     type="button"
                     class="btn btn-primary w-100 js-period-apply-btn"
                 >
-                    Применить
+                    ${field?.buuttonLable || "Применить"}
                 </button>
             </div>
         </div>
@@ -53,6 +53,10 @@ const renderPeriodField = (field, entity, parentElement) => {
             detail
         }))
     })
+
+    if(field?.actionButton) {
+        buttonApply.addEventListener("click",() => field?.actionButton(convert_from_locale_to_iso(inputFrom.value), convert_from_locale_to_iso(inputTo.value), entity))
+    }
 }
 
 export { renderPeriodField }

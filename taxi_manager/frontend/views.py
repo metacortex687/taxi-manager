@@ -27,4 +27,9 @@ def enterprise_edit(request, pk):
     return render(
         request, "enterprise.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "edit"}
     )
-# Create your views here.
+
+def enterprise_download_trips(request, pk):
+    return render(
+        request, "enterprise_download_trips.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "view"}
+    )
+
