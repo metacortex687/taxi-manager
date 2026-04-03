@@ -17,13 +17,16 @@ const fetchDataJSON = async (url, method = "GET", body=undefined) => {
 
     clear_massages()
 
-    const response = await fetch(url, {
+    const response = await authorizationFetch(url, {
         method: method,
-        headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": `Token ${tokenAuth}` },
-        body: body
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        },
+        body: body,
     })
 
-    const data = response.statusText === "No Content" ? {} : await response.json()
+    const data = response.status === 204 ? {} : await response.json()
 
     if (!response.ok) {
         console.log(data)
@@ -39,4 +42,23 @@ const fetchDataJSON = async (url, method = "GET", body=undefined) => {
     return data
 } 
 
-export {fetchDataJSON}
+const uploadFile = async (url, file, method = "PUT") => {
+    clear_massages()
+
+    const response = await authorizationFetch(url, {
+        method: method,
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": file.type || "application/octet-stream",
+        },
+        body: file,
+    })
+
+    if (!response.ok) {
+        allert_message(`HTTP ${response.status}`)
+    }
+
+    return response
+}
+
+export {fetchDataJSON, uploadFile}
