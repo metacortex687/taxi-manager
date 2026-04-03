@@ -1,24 +1,28 @@
-from rest_framework import generics
-
 from taxi_manager.vehicle.models import Vehicle
 from taxi_manager.geo_tracking.models import VehicleLocation, Trip
 from taxi_manager.geocoding.models import GeoAddress
-
-from django.contrib.gis.db.models.functions import Distance
-from django.contrib.gis.db.models import PointField, MakeLine,  GeometryField
 
 from ..serializers.trip import (
     TripPointSerializer,
     TripSerializer,
     TripPointSerializerGeoJSON,
 )
+
+from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.db.models import PointField, MakeLine,  GeometryField
+
+from rest_framework import generics
+
 from django.db.models import OuterRef, Subquery, F, Q, ExpressionWrapper
+from django.db.models.functions import Cast
 
+from django.http import FileResponse
 
+from zipfile import ZipFile, ZIP_DEFLATED
+import json
+import io
 
 from datetime import datetime
-
-from django.db.models.functions import Cast
 
 
 class TripPointListAPIView(generics.ListAPIView):
@@ -186,4 +190,45 @@ class TripListAPIView(generics.ListAPIView):
         GeoAddress.load_address_for_points(point_need_load_address)
 
         return super().list(request, *args, **kwargs)
+
+
+def export_enterprise_trip_archive(request,enterprise_id):
+    date_from = request.GET.get("from", None)
+    date_to = request.GET.get("to", None)
+
+    archive_meta = {
+        "from": date_from,
+        "to": date_to,
+        "enterprise": enterprise_id,
+        "describe": "Trip data for the period",
+    }
+
+    archive_meta_json = json.dumps(archive_meta, ensure_ascii = True, indent=4)
+
+    data_example = "Пример файлика с данными"
+
+    buffer = io.BytesIO()
+
+    with ZipFile(buffer, mode="w", compression=ZIP_DEFLATED) as zip_file:
+        zip_file.writestr("_meta.json", archive_meta_json)
+        zip_file.writestr("data.txt", data_example)
+
+    buffer.seek(0)
+
+    return FileResponse(buffer, filename="test_data.zip", content_type="application/zip",)
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
 
