@@ -1,0 +1,19 @@
+{% extends "base/entity.html" %}
+
+{% block title %}Загрузка поездок из архива{% endblock title %}
+
+{% block content %}
+<h1 class="text-center">Загрузка поездок из архива</h1>
+
+{{ block.super }}
+{% endblock content %}
+
+{% load static %}
+
+{% block script %}
+
+<script type="module" src="{% static 'js/pages/enterprise_import_trips.js' %}"></script>
+
+{{ block.super }}
+
+{% endblock script %}

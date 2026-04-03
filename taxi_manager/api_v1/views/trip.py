@@ -11,7 +11,7 @@ from ..serializers.trip import (
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.db.models import PointField, MakeLine,  GeometryField
 
-from rest_framework import generics
+from rest_framework import generics, parsers, views, response
 
 from django.db.models import OuterRef, Subquery, F, Q, ExpressionWrapper
 from django.db.models.functions import Cast
@@ -215,10 +215,25 @@ def export_enterprise_trip_archive(request,enterprise_id):
 
     buffer.seek(0)
 
-    return FileResponse(buffer, filename="test_data.zip", content_type="application/zip",)
+    return FileResponse(buffer, filename="test_data.zip", content_type="application/zip", as_attachment=True)
 
 
+class ImportEnterpriseTripArchiveView(views.APIView):
+    parser_classes = [parsers.FileUploadParser]
 
+    def put(self, request, enterprise_id, filename, format=None):
+        print(f"enterprise_id={enterprise_id}, filename={filename}")
+
+        file_obj = request.data["file"]
+
+        print(file_obj.name)
+        print(file_obj.size)
+        print(file_obj.content_type)
+
+        with ZipFile(file_obj) as archive:
+            print(archive.namelist())
+            
+        return response.Response(status=204)
     
 
 

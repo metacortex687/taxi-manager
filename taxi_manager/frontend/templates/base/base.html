@@ -69,11 +69,14 @@
             await window.initPage() //Определено в дочерних шаблонах
         }
 
-        logoutForm.onsubmit = (e) => {
-            e.preventDefault()
-            localStorage.removeItem("tokenAuth")
-            location.reload()
-        } 
+        const logoutForm = document.getElementById("logoutForm")
+        if (logoutForm) {
+            logoutForm.onsubmit = (e) => {
+                e.preventDefault()
+                localStorage.removeItem("tokenAuth")
+                location.reload()
+            } 
+        }
 
     </script>
 </body>

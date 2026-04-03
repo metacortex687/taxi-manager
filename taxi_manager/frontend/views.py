@@ -33,3 +33,8 @@ def enterprise_export_trips(request, pk):
         request, "enterprise_export_trips.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "view"}
     )
 
+def enterprise_import_trips(request, pk):
+    return render(
+        request, "enterprise_import_trips.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "view"}
+    )
+

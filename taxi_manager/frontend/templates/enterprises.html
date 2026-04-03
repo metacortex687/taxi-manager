@@ -19,7 +19,14 @@
 
         const data = await fetchDataJSON("/api/v1/enterprises/")
 
-        listEnterprises.innerHTML = data.results.map(enterprise => `<li><a <a href="${enterprise.id}/edit/"> ${enterprise.name}</a> <a href="${enterprise.id}/vehicles/">Авто</a></li> <a href="${enterprise.id}/export/trips/"> Скачать поездки </a></li>`).join("\n")
+        listEnterprises.innerHTML = data.results.map(enterprise => `
+            <li>
+                <a href="/enterprises/${enterprise.id}/edit/">${enterprise.name}</a>
+                <a href="/enterprises/${enterprise.id}/vehicles/">Авто</a>
+                <a href="/enterprises/${enterprise.id}/export/trips/">Скачать поездки</a>
+                <a href="/enterprises/${enterprise.id}/import/trips/">Загрузить поездки</a>
+            </li>
+        `).join("\n")
 
     }
 

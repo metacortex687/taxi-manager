@@ -10,6 +10,7 @@ urlpatterns = [
     path("enterprises/<int:pk>/vehicles/",views.vehicles, name="vehicles"),
     path("enterprises/<int:pk>/edit/",views.enterprise_edit, name="enterprise_edit"),
     path("enterprises/<int:pk>/export/trips/",views.enterprise_export_trips, name="export_trips"),
+    path("enterprises/<int:pk>/import/trips/",views.enterprise_import_trips, name="import_trips"),
     path("enterprises/",TemplateView.as_view(template_name="enterprises.html"), name="enterprises"),
     path("login/",TemplateView.as_view(template_name="login.html"), name="login_manager"),
 ]

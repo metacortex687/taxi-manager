@@ -14,6 +14,7 @@ from .views.trip import (
     TripPointListAPIView,
     TripListAPIView,
     export_enterprise_trip_archive,
+    ImportEnterpriseTripArchiveView
 )
 
 from rest_framework.routers import DefaultRouter
@@ -36,6 +37,10 @@ urlpatterns = [
     path(
         "enterprises/<int:enterprise_id>/export/trips/",
         export_enterprise_trip_archive,
+    ),
+    path(
+        "enterprises/<int:enterprise_id>/import/trips/<str:filename>/",
+        ImportEnterpriseTripArchiveView.as_view(),
     ),
     path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
     path("enterprises/", EnterpriseListAPIView.as_view()),
