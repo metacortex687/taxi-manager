@@ -28,8 +28,8 @@ def enterprise_edit(request, pk):
         request, "enterprise.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "edit"}
     )
 
-def enterprise_download_trips(request, pk):
+def enterprise_export_trips(request, pk):
     return render(
-        request, "enterprise_download_trips.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "view"}
+        request, "enterprise_export_trips.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "view"}
     )
 

@@ -34,7 +34,7 @@ urlpatterns = [
     ),
     path("enterprises/<int:enterprise_id>/drivers/", DriverListAPIView.as_view()),
     path(
-        "enterprises/<int:enterprise_id>/download/trips/",
+        "enterprises/<int:enterprise_id>/export/trips/",
         export_enterprise_trip_archive,
     ),
     path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
