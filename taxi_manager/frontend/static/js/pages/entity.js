@@ -1,14 +1,15 @@
-import { createDefaultWrapper } from "./api/render.js"
+import { createDefaultWrapper } from "../render/render.js"
+import { fetchData } from "../api/fetch-data.js" 
 
 const convertSnakeToCamelCase = (str) => {
-        return str
-            .split("_")
-            .map((word, index) => 
-                index === 0 
-                    ? word 
-                    : word.charAt(0).toUpperCase() + word.slice(1))
-            .join("")
-    }
+    return str
+        .split("_")
+        .map((word, index) =>
+            index === 0
+                ? word
+                : word.charAt(0).toUpperCase() + word.slice(1))
+        .join("")
+}
 
 export const htmlIdField = (formField) => convertSnakeToCamelCase(`${formField.type}_${formField.source_name}`)
 
@@ -20,7 +21,7 @@ const authForm = document.getElementById("authForm")
 
 
 const getAction = () => {
-    return document.getElementById("pageData").dataset.action
+    return document.getElementById("pageData")?.dataset?.action
 }
 
 const getPk = () => {
@@ -33,8 +34,8 @@ const isNew = () => {
 
 const emptyEntity = () => {
     res = {}
-    for(let field of form.fields) {
-        res[field.source_name] = field.empty_value    
+    for (let field of form.fields) {
+        res[field.source_name] = field.empty_value
     }
 
     return res
@@ -42,16 +43,16 @@ const emptyEntity = () => {
 
 const loadEntity = async (api_path, getParams = {}) => {
 
-    let patch = api_path.includes("<int:pk>") ? api_path.replace("<int:pk>",getPk()) : `${api_path}${getPk()}/`
+    let patch = api_path.includes("<int:pk>") ? api_path.replace("<int:pk>", getPk()) : `${api_path}${getPk()}/`
 
     const params = Object.entries(getParams).map(([key, value]) => `${key}=${value}`)
-    if (params.length>0) {
+    if (params.length > 0) {
         patch += (patch.includes("?") ? "&" : "?") + params.join("&")
     }
 
     console.log(patch)
-    
-    return await fetch_data(patch)
+
+    return await fetchData(patch)
 }
 
 const renderFormField = async (entity, field, wrapper) => {
@@ -88,7 +89,7 @@ const renderForm = async () => {
     const formHTMLElement = document.getElementById("form_fields")
 
     let entityForm = undefined
-    if(form.entity){
+    if (form.entity) {
         entityForm = isNew() ? emptyEntity() : await loadEntity(form.entity)
     }
 
@@ -99,7 +100,7 @@ const renderForm = async () => {
         await renderFormField(entityField || entityForm, field, wrapper)
     }
 
-    // form_drivers_data = (await fetch_data(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
+    // form_drivers_data = (await fetchData(`/api/v1/drivers/?id__in=${form_data.driver_ids.join(",")}&ordering=last_name,first_name`)).results //Водителей пока не рредактирую
     // form_fields.innerHTML += renderMultySelectedDriverField(form_drivers_data)
 }
 
@@ -107,26 +108,26 @@ const renderForm = async () => {
 
 const deleteEntity = async () => {
     const pkVehicle = document.getElementById("pageData").dataset.pkVehicle
-    // const result = await fetch_data(`/api/v1/vehicles/${pkVehicle}/`, method = "DELETE")
-    const result = await fetch_data(`${form.entity}${getPk()}/`,  method = "DELETE")
+    // const result = await fetchData(`/api/v1/vehicles/${pkVehicle}/`, method = "DELETE")
+    const result = await fetchData(`${form.entity}${getPk()}/`, method = "DELETE")
     window.location.href = "/enterprises/"
 }
 
 const updateEntity = async (entity) => {
-    const result = await fetch_data(`${form.entity}${getPk()}/`, "PUT", JSON.stringify(entity))
+    const result = await fetchData(`${form.entity}${getPk()}/`, "PUT", JSON.stringify(entity))
 }
 
 const saveNewEntity = async (entity) => {
-    // const result = await fetch_data(`/api/v1/vehicles/`, "POST", JSON.stringify(entity))
-    const result = await fetch_data(`${form.entity}${getPk()}/`, "POST", JSON.stringify(entity))
+    // const result = await fetchData(`/api/v1/vehicles/`, "POST", JSON.stringify(entity))
+    const result = await fetchData(`${form.entity}${getPk()}/`, "POST", JSON.stringify(entity))
     window.location.href = `/vehicles/${result.id}/edit/`
 }
 
 const entityFromForm = () => {
 
     let res = {}
-    for(let field of form.fields) {
-        res[field.source_name] = document.getElementById(htmlIdField(field)).value    
+    for (let field of form.fields) {
+        res[field.source_name] = document.getElementById(htmlIdField(field)).value
     }
 
     console.log(res)
@@ -136,7 +137,7 @@ const entityFromForm = () => {
 
 const presaveEntity = (entity) => {
     let res = {}
-    for(let field of form.fields){
+    for (let field of form.fields) {
         const presave_fn = field.presave_fn || (value => value)
         res[field.source_name] = presave_fn(entity[field.source_name])
     }
@@ -156,11 +157,10 @@ const saveEntity = async () => {
 
 }
 
-const initPage = async () => {
+window.initPage  = async () => {
     renderForm()
 
 }
-window.initPage = initPage
 
 
 document.addEventListener("click", (event) => {

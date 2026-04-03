@@ -1,4 +1,4 @@
-import {convert_from_locale_to_iso} from "./date-time.js"
+import { convert_from_locale_to_iso } from "../utils/date-time.js"
 
 const renderPeriodField = (field, entity, parentElement) => {
     const wrapper = parentElement
@@ -54,8 +54,8 @@ const renderPeriodField = (field, entity, parentElement) => {
         }))
     })
 
-    if(field?.actionButton) {
-        buttonApply.addEventListener("click",() => field?.actionButton(convert_from_locale_to_iso(inputFrom.value), convert_from_locale_to_iso(inputTo.value), entity))
+    if (field?.actionButton) {
+        buttonApply.addEventListener("click", () => field?.actionButton(convert_from_locale_to_iso(inputFrom.value), convert_from_locale_to_iso(inputTo.value), entity))
     }
 }
 

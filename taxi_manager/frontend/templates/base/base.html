@@ -1,5 +1,6 @@
 {% load django_bootstrap5 %}
 {% load i18n %}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -37,40 +38,17 @@
     <div class="px-3">
         {% block content %}{% endblock content %} 
     </div>   
-    <script>
-        const clear_massages = () => {
-            const elemMessages = document.getElementById("messages")
-            elemMessages.innerHTML = `
 
-            `
-
-        }
-        const allert_message = (text) => {
-            const elemMessages = document.getElementById("messages")
-            elemMessages.innerHTML = `
-            <div class="alert alert-danger" role="alert">
-                <div id="messageText"><div>
-            </div>
-            `
-
-            elemMessages.querySelector("#messageText").textContent = text
-
-        }
-
-
-
-
-    </script> 
-    <script src="/frontend/static/js/api/fetch-data.js"></script>
     {% block script %}{% endblock script %} 
-    <script>
+    <script type="module">
+        import { fetchData } from "{% static 'js/api/fetch-data.js' %}"    
 
         const loadUserInfo = async () => {
             const tokenAuth = localStorage.getItem("tokenAuth")
             const listEnterprises = document.getElementById("listEnterprises")
             const usernameLabel = document.getElementById("usernameLabel")
 
-            const data = await fetch_data("/api/v1/auth/users/me/")
+            const data = await fetchData("/api/v1/auth/users/me/")
 
             usernameLabel.innerText = data.username
         } 
@@ -88,7 +66,7 @@
             }
           
             
-            await initPage() //Определено в дочерних шаблонах
+            await window.initPage() //Определено в дочерних шаблонах
         }
 
         logoutForm.onsubmit = (e) => {

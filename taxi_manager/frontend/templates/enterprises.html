@@ -11,20 +11,20 @@
 {% endblock content %}
 
 {% block script %}
-<script>
-
+<script type="module">
+    import { fetchData } from "/frontend/static/js/api/fetch-data.js" 
     const loadEnterprises = async () => {
         
         const listEnterprises = document.getElementById("listEnterprises")
 
-        data = await fetch_data("/api/v1/enterprises/")
+        const data = await fetchData("/api/v1/enterprises/")
 
         listEnterprises.innerHTML = data.results.map(enterprise => `<li><a <a href="${enterprise.id}/edit/"> ${enterprise.name}</a> <a href="${enterprise.id}/vehicles/">Авто</a></li> <a href="${enterprise.id}/download/trips/"> Скачать поездки </a></li>`).join("\n")
 
     }
 
 
-    const initPage = async () => {
+    window.initPage = async () => {
         loadEnterprises();
     }
 

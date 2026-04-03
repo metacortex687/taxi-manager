@@ -1,4 +1,6 @@
-const fetch_data = async (url, method = "GET", body=undefined) => {
+import { clear_massages } from "../ui/messages.js";
+
+const fetchData = async (url, method = "GET", body=undefined) => {
     const tokenAuth = localStorage.getItem("tokenAuth")
 
     clear_massages()
@@ -24,3 +26,5 @@ const fetch_data = async (url, method = "GET", body=undefined) => {
     
     return data
 } 
+
+export {fetchData}
