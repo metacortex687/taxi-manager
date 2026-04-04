@@ -1,7 +1,7 @@
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 from taxi_manager.vehicle.models import Model, Vehicle
-from taxi_manager.geo_tracking.models import VehicleLocation
+from taxi_manager.geo_tracking.models import VehicleLocation, Trip
 
 from .models import ExchangeItem
 
@@ -144,8 +144,50 @@ class VehicleLocationResource(resources.ModelResource):
             self.import_data(dataset, **kwargs)
 
 
+class TripResource(ExchangeUuidResource):
+    enterprise = fields.Field(
+        attribute="enterprise",
+        column_name="enterprise",
+        widget=ForeignUuidKeyWidget(Enterprise, "id"),
+    )
+    vehicle = fields.Field(
+        attribute="vehicle",
+        column_name="vehicle",
+        widget=ForeignUuidKeyWidget(Vehicle, "id"),
+    )
+    started_at = fields.Field(
+        attribute="started_at",
+        column_name="started_at",
+        widget=widgets.DateTimeWidget(format="%Y-%m-%d %H:%M:%S %z"),
+    )
+    ended_at = fields.Field(
+        attribute="ended_at",
+        column_name="ended_at",
+        widget=widgets.DateTimeWidget(format="%Y-%m-%d %H:%M:%S %z"),
+    )
+
+    class Meta:
+        model = Trip
+        fields = ("exchange_uuid","enterprise", "vehicle", "started_at", "ended_at")
+        import_id_fields = ("exchange_uuid",)
 
 
+    def export_data_for_enterprise_and_period(self, enterprise, period_from, period_to):
+        return self.export(queryset=self.get_queryset().filter_period(period_from, period_to).filter_enterprise(enterprise))
+
+
+    def clear_and_import_data_for_enterprise_and_period(self, dataset, enterprise, period_from, period_to, **kwargs):
+        trips_to_delete = Trip.objects.filter_period(period_from, period_to).filter_enterprise(enterprise)
+
+        exchange_items_to_delete = ExchangeItem.objects.filter(object_id__in = trips_to_delete.values("id"), 
+                                                            content_type = ExchangeItem.get_content_type_for_model(Trip))
+        
+
+        exchange_items_to_delete.delete()
+        trips_to_delete.delete()
+
+
+        self.import_data(dataset, **kwargs)
 
 
 

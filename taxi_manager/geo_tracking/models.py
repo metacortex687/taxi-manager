@@ -33,6 +33,14 @@ class VehicleLocation(models.Model):
     objects = VehicleLocationQuerySet.as_manager()
 
 
+class TripQuerySet(models.QuerySet):
+    def filter_period(self, period_from, period_to):        
+        return self.filter(started_at__gte=period_from, ended_at__lt=period_to)
+    
+    def filter_enterprise(self, enterprise):
+        return self.filter(enterprise=enterprise)
+
+
 class Trip(models.Model):
     enterprise = models.ForeignKey(
         Enterprise, on_delete=models.RESTRICT, verbose_name="Предприятие", related_name="trips"
@@ -45,3 +53,5 @@ class Trip(models.Model):
     )
     started_at = models.DateTimeField()
     ended_at = models.DateTimeField()
+
+    objects = TripQuerySet.as_manager()
