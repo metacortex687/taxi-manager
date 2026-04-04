@@ -1,14 +1,18 @@
+from taxi_manager.geo_tracking.models import VehicleLocation
+from taxi_manager.vehicle.models import Vehicle, Model
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
-from taxi_manager.vehicle.models import Vehicle, Model
 
-from .resources import VehicleResource, EnterpriseResource, TimeZoneResource, ModelResource
+from .resources import VehicleLocationResource, VehicleResource, EnterpriseResource, TimeZoneResource, ModelResource
 from .models import ExchangeItem
 
 from django.db.models import QuerySet
 
 from django.contrib.contenttypes.models import ContentType
 
+from django.contrib.gis.geos import Point
+
+from datetime import datetime, UTC
 
 from import_export import resources, exceptions
 import tablib
@@ -26,6 +30,7 @@ def dataset_from_dict(data: dict) -> tuple[list, list]:
 def clear_db():
     ExchangeItem.objects.all().delete()
 
+    VehicleLocation.objects.all().delete()
     Vehicle.objects.all().delete()
     Enterprise.objects.all().delete()
     TimeZone.objects.all().delete()
@@ -435,3 +440,84 @@ class ExchangeVehicleTest(TestCase):
 
         self.assertFalse(Vehicle.objects.filter(vin=vin).exists())
         self.assertTrue(Vehicle.objects.filter(vin=new_vin).exists())
+
+
+class ExchangeVehicleLocationTest(TestCase):
+    def setUp(self):
+        self.time_zone = {
+            "code": "UTC",
+            "utc_offset": 0,
+        }
+
+        time_zone = TimeZone.objects.create(**self.time_zone)
+
+        self.enterprise1 = {
+            "name": "enterprise1",
+            "city": "city",
+            "time_zone": time_zone,
+        }
+
+        enterprise1 = Enterprise.objects.create(**self.enterprise1)
+
+        self.model1 = {
+            "name": "model1",
+            "type": "PCR",
+            "number_of_seats": 5,
+            "tank_capacity_l": 20,
+            "load_capacity_kg": 500,
+        }
+
+        model1 = Model.objects.create(**self.model1)
+
+        self.vehicle1 = {
+            "model": model1,
+            "number": "num1",
+            "vin": "Z948741AA12323456",
+            "year_of_manufacture": 2025,
+            "mileage": 100,
+            "enterprise": enterprise1,
+            "price": 125000,
+        }
+
+        vehicle1 = Vehicle.objects.create(**self.vehicle1)
+
+
+        self.vehicle_location1 = {
+            "enterprise":enterprise1,
+            "vehicle": vehicle1,
+            "location": Point(37.6173, 55.7558, srid=4326),
+            "tracked_at": datetime(2026, 3, 10, 10, 30, 0, tzinfo=UTC),
+        }
+        VehicleLocation.objects.create(**self.vehicle_location1)
+ 
+    
+    def test_export_import_vehicle_locations(self):
+        dataset_time_zone = TimeZoneResource().export()
+        dataset_enterprise = EnterpriseResource().export()
+        dataset_model = ModelResource().export()
+        dataset_vehicle = VehicleResource().export() 
+
+        dataset_vehicle_location = VehicleLocationResource().export()
+
+        self.assertEqual(1, VehicleLocation.objects.all().count())
+        self.assertEqual(1, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1["tracked_at"]).count())
+
+        clear_db()
+
+        TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
+        EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
+        ModelResource().import_data(dataset_model, raise_errors=True)
+        VehicleResource().import_data(dataset_vehicle, raise_errors=True)    
+
+        self.assertEqual(0, VehicleLocation.objects.all().count())
+        self.assertEqual(0, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1["tracked_at"]).count())
+
+        VehicleLocationResource().import_data(dataset_vehicle_location, raise_errors=True)  
+
+        self.assertEqual(1, VehicleLocation.objects.all().count())
+        self.assertEqual(1, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1["tracked_at"]).count())
+
+
+
+
+

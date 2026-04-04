@@ -1,6 +1,7 @@
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 from taxi_manager.vehicle.models import Model, Vehicle
+from taxi_manager.geo_tracking.models import VehicleLocation
 
 from .models import ExchangeItem
 
@@ -111,6 +112,7 @@ class ForeignUuidKeyWidget(widgets.ForeignKeyWidget):
         return ExchangeItem.get_content_type_for_model(self.model)  
 
 
+
 class VehicleResource(ExchangeUuidResource):
 
     model = fields.Field(attribute="model", column_name="model",  widget=widgets.ForeignKeyWidget(Model, "name")) 
@@ -120,3 +122,19 @@ class VehicleResource(ExchangeUuidResource):
         model = Vehicle
         fields = ("exchange_uuid", "price", "year_of_manufacture", "mileage", "number", "vin", "model", "enterprise") #enterprise пока нет возможности внешний ключ по uuid
         import_id_fields = ("exchange_uuid",)
+
+
+class VehicleLocationResource(resources.ModelResource):        
+        enterprise = fields.Field(attribute="enterprise", column_name="enterprise", widget=ForeignUuidKeyWidget(Enterprise, "id"))
+        vehicle = fields.Field(attribute="vehicle", column_name="vehicle", widget=ForeignUuidKeyWidget(Vehicle, "id"))
+        tracked_at = fields.Field(attribute="tracked_at", column_name="tracked_at",widget=widgets.DateTimeWidget(format="%Y-%m-%d %H:%M:%S %z"))
+
+        class Meta:
+            model = VehicleLocation
+            fields = ("enterprise", "vehicle", "location", "tracked_at")
+            import_id_fields = ("enterprise","vehicle", "tracked_at")
+
+
+
+
+
