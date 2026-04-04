@@ -36,10 +36,14 @@ class ExchangeUuidResource(resources.ModelResource):
 
         exchange_item = ExchangeItem.objects.filter(content_type=self._get_content_type(), uuid=row["exchange_uuid"]).first()
         
-        if exchange_item is not None:
-            return exchange_item.content_object
+        if exchange_item is None:
+            return None
 
-        return None
+        if exchange_item.content_object is None:
+            exchange_item.delete()
+            return None
+
+        return exchange_item.content_object
 
     def save_instance(self, instance, is_create, row, **kwargs):
         super().save_instance(instance, is_create, row, **kwargs)
@@ -179,13 +183,7 @@ class TripResource(ExchangeUuidResource):
     def clear_and_import_data_for_enterprise_and_period(self, dataset, enterprise, period_from, period_to, **kwargs):
         trips_to_delete = Trip.objects.filter_period(period_from, period_to).filter_enterprise(enterprise)
 
-        exchange_items_to_delete = ExchangeItem.objects.filter(object_id__in = trips_to_delete.values("id"), 
-                                                            content_type = ExchangeItem.get_content_type_for_model(Trip))
-        
-
-        exchange_items_to_delete.delete()
         trips_to_delete.delete()
-
 
         self.import_data(dataset, **kwargs)
 
