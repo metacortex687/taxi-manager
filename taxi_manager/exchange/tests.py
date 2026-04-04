@@ -541,6 +541,8 @@ class ExchangeVehicleLocationTest(TestCase):
             period_to,
             )
 
+        self.assertEqual(1, len(dataset_vehicle_location))
+
         self.assertEqual(2, VehicleLocation.objects.all().count())
         self.assertEqual(1, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1_data["tracked_at"]).count())
 

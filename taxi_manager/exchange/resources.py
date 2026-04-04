@@ -135,7 +135,7 @@ class VehicleLocationResource(resources.ModelResource):
             import_id_fields = ("enterprise","vehicle", "tracked_at")
 
         def export_data_for_enterprise_and_period(self, enterprise, period_from, period_to):
-            return self.export()
+            return self.export(queryset=VehicleLocation.objects.all().filter_period(period_from, period_to).filter_enterprise(enterprise))
 
 
         def clear_and_import_data_for_enterprise_and_period(self, dataset, enterprise, period_from, period_to, **kwargs):
