@@ -3,6 +3,13 @@ from django.contrib.gis.db import models
 from taxi_manager.vehicle.models import Vehicle
 from taxi_manager.enterprise.models import Enterprise
 
+class VehicleLocationQuerySet(models.QuerySet):
+    def filter_period(self, period_from, period_to):        
+        return self.filter(tracked_at__gte=period_from, tracked_at__lt=period_to)
+    
+    def filter_enterprise(self, enterprise):
+        return self.filter(enterprise=enterprise)
+
 
 class VehicleLocation(models.Model):
     enterprise = models.ForeignKey(
@@ -22,6 +29,8 @@ class VehicleLocation(models.Model):
         srid=4326, geography=True
     )  # 4326 идентификатор системы координат для GPS
     tracked_at = models.DateTimeField()
+
+    objects = VehicleLocationQuerySet.as_manager()
 
 
 class Trip(models.Model):
