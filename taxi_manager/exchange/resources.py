@@ -33,17 +33,7 @@ class ExchangeUuidResource(resources.ModelResource):
         return super().export(**kwargs)
     
     def get_instance(self, instance_loader, row):
-
-        exchange_item = ExchangeItem.objects.filter(content_type=self._get_content_type(), uuid=row["exchange_uuid"]).first()
-        
-        if exchange_item is None:
-            return None
-
-        if exchange_item.content_object is None:
-            exchange_item.delete()
-            return None
-
-        return exchange_item.content_object
+        return ExchangeItem.get_instance(row["exchange_uuid"], self._meta.model)
 
     def save_instance(self, instance, is_create, row, **kwargs):
         super().save_instance(instance, is_create, row, **kwargs)

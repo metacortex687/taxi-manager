@@ -31,6 +31,21 @@ class ExchangeItem(models.Model):
     @staticmethod
     def get_content_type_for_model(model):
         return ContentType.objects.get_for_model(model)
+    
+    @staticmethod
+    def get_instance(uuid, model):
+        exchange_item = ExchangeItem.objects.filter(
+            content_type=ExchangeItem.get_content_type(model), uuid=uuid
+        ).first()
+
+        if exchange_item is None:
+            return None
+
+        if exchange_item.content_object is None:
+            exchange_item.delete()
+            return None
+
+        return exchange_item.content_object
 
 
 
