@@ -3,8 +3,10 @@ from taxi_manager.vehicle.models import Vehicle, Model
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 
+from .services import EnterprisePeriodExchangeService
 from .resources import TripResource, VehicleLocationResource, VehicleResource, EnterpriseResource, TimeZoneResource, ModelResource
 from .models import ExchangeItem
+
 
 from django.db.models import QuerySet
 
@@ -753,3 +755,148 @@ class ExchangeTripTest(TestCase):
             1,
             Trip.objects.filter(started_at=self.trip1_data["started_at"]).count(),
         )
+
+
+class ExchangeEnterprisePeriodExchangeServiceTest(TestCase):
+    def setUp(self):
+        self.time_zone_data = {
+            "code": "UTC",
+            "utc_offset": 0,
+        }
+        time_zone = TimeZone.objects.create(**self.time_zone_data)
+
+        self.enterprise1_data = {
+            "name": "enterprise1",
+            "city": "city",
+            "time_zone": time_zone,
+        }
+        self.enterprise1 = Enterprise.objects.create(**self.enterprise1_data)
+
+        self.enterprise2_data = {
+            "name": "enterprise2",
+            "city": "city",
+            "time_zone": time_zone,
+        }
+        self.enterprise2 = Enterprise.objects.create(**self.enterprise2_data)
+
+        self.model1_data = {
+            "name": "model1",
+            "type": "PCR",
+            "number_of_seats": 5,
+            "tank_capacity_l": 20,
+            "load_capacity_kg": 500,
+        }
+        model1 = Model.objects.create(**self.model1_data)
+
+        self.model2_data = {
+            "name": "model2",
+            "type": "PCR",
+            "number_of_seats": 7,
+            "tank_capacity_l": 22,
+            "load_capacity_kg": 510,
+        }
+        model1 = Model.objects.create(**self.model2_data)
+
+        self.vehicle1_data = {
+            "model": model1,
+            "number": "num1",
+            "vin": "Z948741AA12323456",
+            "year_of_manufacture": 2025,
+            "mileage": 100,
+            "enterprise": self.enterprise1,
+            "price": 125000,
+        }
+        self.vehicle1 = Vehicle.objects.create(**self.vehicle1_data)
+
+        self.vehicle2_data = {
+            "model": model1,
+            "number": "num2",
+            "vin": "Z948741AA12312456",
+            "year_of_manufacture": 2025,
+            "mileage": 100,
+            "enterprise": self.enterprise2,
+            "price": 125000,
+        }
+        self.vehicle2 = Vehicle.objects.create(**self.vehicle2_data)
+
+        self.vehicle_location1_data = {
+            "enterprise": self.enterprise1,
+            "vehicle": self.vehicle1,
+            "location": Point(37.6173, 55.7558, srid=4326),
+            "tracked_at": datetime(2026, 3, 10, 10, 30, 0, tzinfo=UTC),
+        }
+        VehicleLocation.objects.create(**self.vehicle_location1_data)
+
+        self.vehicle_location2_data = {
+            "enterprise": self.enterprise1,
+            "vehicle": self.vehicle1,
+            "location": Point(37.6173, 55.7558, srid=4326),
+            "tracked_at": datetime(2026, 3, 12, 12, 30, 0, tzinfo=UTC),
+        }
+        VehicleLocation.objects.create(**self.vehicle_location2_data)
+
+        self.trip1_data = {
+            "enterprise": self.enterprise1,
+            "vehicle": self.vehicle1,
+            "started_at": datetime(2026, 3, 10, 10, 30, 0, tzinfo=UTC),
+            "ended_at": datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC),
+        }
+        Trip.objects.create(**self.trip1_data)
+
+        self.trip2_data = {
+            "enterprise": self.enterprise1,
+            "vehicle": self.vehicle1,
+            "started_at": datetime(2026, 3, 12, 12, 30, 0, tzinfo=UTC),
+            "ended_at": datetime(2026, 3, 12, 13, 0, 0, tzinfo=UTC),
+        }
+        Trip.objects.create(**self.trip2_data)
+
+
+    def test_export_import_period_data_with_cleanup(self):
+   
+        self.assertEqual(2, VehicleLocation.objects.count())
+        self.assertEqual(2, Trip.objects.count())
+        self.assertEqual(2, Enterprise.objects.count())
+        self.assertEqual(2, Model.objects.count())
+        self.assertEqual(1, TimeZone.objects.count())
+        self.assertEqual(2, Vehicle.objects.count())
+
+ 
+        period_from = datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC)
+        period_to = datetime(2026, 3, 10, 12, 0, 0, tzinfo=UTC)
+
+        archive = EnterprisePeriodExchangeService().export_archive(
+            enterprise=self.enterprise1,
+            period_from=period_from,
+            period_to=period_to,
+        )
+
+        clear_db()
+
+        self.assertEqual(0, VehicleLocation.objects.count())
+        self.assertEqual(0, Trip.objects.count())
+        self.assertEqual(0, Enterprise.objects.count())
+        self.assertEqual(0, Model.objects.count())
+        self.assertEqual(0, TimeZone.objects.count())
+        self.assertEqual(0, Vehicle.objects.count())
+
+        EnterprisePeriodExchangeService().import_archive(archive, raise_errors=True)        
+
+        self.assertEqual(1, TimeZone.objects.count())
+        self.assertEqual(1, Enterprise.objects.count())
+        self.assertEqual(2, Model.objects.count())
+        self.assertEqual(1, Vehicle.objects.count())
+
+        self.assertEqual(1, VehicleLocation.objects.count())
+        self.assertEqual(1, Trip.objects.count())
+
+
+
+
+
+
+
+
+
+
+    
