@@ -122,3 +122,13 @@ class EnterprisePeriodExchangeService:
         }
 
         zip_file.writestr("meta.json", json.dumps(meta, ensure_ascii=False, indent=4))
+
+
+    def get_filename(self, enterprise, period_from, period_to):
+        enterprise_name = enterprise.name.replace(" ", "_")
+
+        return (
+            f"{enterprise_name}_"
+            f"{period_from:%Y-%m-%d_%H-%M-%S}_"
+            f"{period_to:%Y-%m-%d_%H-%M-%S}.zip"
+        )
