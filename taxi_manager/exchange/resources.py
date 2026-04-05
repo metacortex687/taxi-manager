@@ -103,7 +103,7 @@ class ForeignUuidKeyWidget(widgets.ForeignKeyWidget):
         )          
 
     def _get_content_type(self):
-        return ExchangeItem.get_content_type_for_model(self.model)  
+        return ExchangeItem.get_content_type(self.model)  
 
 
 

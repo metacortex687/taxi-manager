@@ -338,7 +338,7 @@ class ExchangeVehicleTest(TestCase):
         second_dataset = VehicleResource().export()
         self.assertEqual(first_exchange_uuid, second_dataset["exchange_uuid"][0])
 
-        ExchangeItem.objects.filter(content_type = ExchangeItem.get_content_type_for_model(Vehicle)).delete()  # После удаление уникальный идентификатор пересоздастся
+        ExchangeItem.objects.filter(content_type = ExchangeItem.get_content_type(Vehicle)).delete()  # После удаление уникальный идентификатор пересоздастся
         third_dataset = VehicleResource().export()
         self.assertNotEqual(first_exchange_uuid, third_dataset["exchange_uuid"][0])
 
@@ -852,7 +852,7 @@ class ExchangeEnterprisePeriodExchangeServiceTest(TestCase):
         Trip.objects.create(**self.trip2_data)
 
 
-    def test_export_import_period_data_with_cleanup(self):
+    def test_export_import_period_data(self):
    
         self.assertEqual(2, VehicleLocation.objects.count())
         self.assertEqual(2, Trip.objects.count())
@@ -890,6 +890,44 @@ class ExchangeEnterprisePeriodExchangeServiceTest(TestCase):
         self.assertEqual(1, VehicleLocation.objects.count())
         self.assertEqual(1, Trip.objects.count())
 
+    def test_export_import_cleanup_period_data(self):
+        self.assertEqual(2, Trip.objects.count())
+        self.assertEqual(2, VehicleLocation.objects.count())
+
+ 
+        period_from = datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC)
+        period_to = datetime(2026, 3, 10, 12, 0, 0, tzinfo=UTC)
+
+        archive = EnterprisePeriodExchangeService().export_archive(
+            enterprise=self.enterprise1,
+            period_from=period_from,
+            period_to=period_to,
+        )
+        
+
+        new_vehicle_location_data = {
+            "enterprise": self.enterprise1,
+            "vehicle": self.vehicle1,
+            "location": Point(37.6173, 55.7558, srid=4326),
+            "tracked_at": datetime(2026, 3, 10, 11, 30, 0, tzinfo=UTC),
+        }
+        VehicleLocation.objects.create(**new_vehicle_location_data)
+
+        new_trip_data = {
+            "enterprise": self.enterprise1,
+            "vehicle": self.vehicle1,
+            "started_at": datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC),
+            "ended_at": datetime(2026, 3, 10, 11, 30, 0, tzinfo=UTC),
+        }
+        Trip.objects.create(**new_trip_data)
+
+        self.assertEqual(3, Trip.objects.count())
+        self.assertEqual(3, VehicleLocation.objects.count())
+
+        EnterprisePeriodExchangeService().import_archive(archive, raise_errors=True)   
+
+        self.assertEqual(2, Trip.objects.count())
+        self.assertEqual(2, VehicleLocation.objects.count())
 
 
 

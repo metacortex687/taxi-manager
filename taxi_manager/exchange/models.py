@@ -29,7 +29,7 @@ class ExchangeItem(models.Model):
         ]
 
     @staticmethod
-    def get_content_type_for_model(model):
+    def get_content_type(model):
         return ContentType.objects.get_for_model(model)
     
     @staticmethod
@@ -46,6 +46,24 @@ class ExchangeItem(models.Model):
             return None
 
         return exchange_item.content_object
+
+    @staticmethod
+    def get_uuid(item, model):
+        exchange_item = ExchangeItem.objects.filter(
+            content_type=ExchangeItem.get_content_type(model),
+            object_id=item.id,
+        ).first()
+
+        if exchange_item is None:
+            return None
+
+        return exchange_item.uuid
+
+
+        
+
+
+
 
 
 
