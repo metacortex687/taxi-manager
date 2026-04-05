@@ -218,17 +218,15 @@ class ImportEnterpriseTripArchiveView(views.APIView):
     parser_classes = [parsers.FileUploadParser]
 
     def put(self, request, enterprise_id, filename, format=None):
-        print(f"enterprise_id={enterprise_id}, filename={filename}")
+        print("начало загрузки")
+        get_object_or_404(Enterprise, pk=enterprise_id)
 
         file_obj = request.data["file"]
 
-        print(file_obj.name)
-        print(file_obj.size)
-        print(file_obj.content_type)
-
-        with ZipFile(file_obj) as archive:
-            print(archive.namelist())
+        service = EnterprisePeriodExchangeService()
+        service.import_archive(io.BytesIO(file_obj.read())) 
             
+        print("Окончание загрузки")
         return response.Response(status=204)
     
 
