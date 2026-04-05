@@ -110,6 +110,10 @@ class ExchangeModelTest(TestCase):
             "load_capacity_kg": 500,
         }
         Model.objects.create(**self.model1)
+        self.model1 = {
+           **self.model1,
+           "exchange_uuid": "388992dc-4c51-4f56-b9c3-c076a9adc8be",
+        }      
 
 
     def test_model_export_json_csv(self):
@@ -143,7 +147,7 @@ class ExchangeModelTest(TestCase):
         ModelResource().import_data(dataset_from_dict(self.model1))
         self.assertEqual(1, Model.objects.all().count())
 
-        self.model1["name"] = "new_name"
+        self.model1["exchange_uuid"] = "555992dc-4c51-4f56-b9c3-c076a9adc8be"
         ModelResource().import_data(dataset_from_dict(self.model1))
         self.assertEqual(2, Model.objects.all().count())
 
@@ -324,6 +328,7 @@ class ExchangeVehicleTest(TestCase):
         Vehicle.objects.create(**self.vehicle1)
 
     def test_export_vehicle_create_uuid(self):
+        ModelResource().export()
         EnterpriseResource().export()
         dataset = VehicleResource().export()
 
@@ -331,6 +336,7 @@ class ExchangeVehicleTest(TestCase):
         self.assertTrue(dataset["exchange_uuid"][0] != "")
 
     def test_export_vehicle_create_uuid_only_once(self):
+        ModelResource().export()
         EnterpriseResource().export()
         first_dataset = VehicleResource().export()
         first_exchange_uuid = first_dataset["exchange_uuid"][0]
@@ -344,6 +350,7 @@ class ExchangeVehicleTest(TestCase):
 
     def test_vehicle_export_uses_enterprise_exchange_uuid_for_foreign_key(self):
         dataset_enterprise = EnterpriseResource().export()
+        ModelResource().export()
         dataset_vehicle = VehicleResource().export()
 
         self.assertEqual(dataset_vehicle["enterprise"][0], dataset_enterprise["exchange_uuid"][0])

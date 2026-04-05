@@ -62,11 +62,7 @@ class TimeZoneResource(resources.ModelResource):
         fields = ("code","utc_offset",)
         import_id_fields = ("code",)
 
-class ModelResource(resources.ModelResource):
-    class Meta:
-        model = Model
-        fields = ("name","type","number_of_seats", "tank_capacity_l", "load_capacity_kg", "color")
-        import_id_fields = ("name",)
+
 
 class EnterpriseResource(ExchangeUuidResource):
     
@@ -105,11 +101,16 @@ class ForeignUuidKeyWidget(widgets.ForeignKeyWidget):
     def _get_content_type(self):
         return ExchangeItem.get_content_type(self.model)  
 
+class ModelResource(ExchangeUuidResource):
+    class Meta:
+        model = Model
+        fields = ("exchange_uuid", "name","type","number_of_seats", "tank_capacity_l", "load_capacity_kg", "color")
+        import_id_fields = ("exchange_uuid",)
 
 
 class VehicleResource(ExchangeUuidResource):
 
-    model = fields.Field(attribute="model", column_name="model",  widget=widgets.ForeignKeyWidget(Model, "name")) 
+    model = fields.Field(attribute="model", column_name="model",  widget=ForeignUuidKeyWidget(Model, "id")) 
     enterprise = fields.Field(attribute="enterprise", column_name="enterprise", widget=ForeignUuidKeyWidget(Enterprise, "id"))
 
     class Meta:
