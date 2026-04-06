@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'taxi_manager.tracking_simulator',
     'taxi_manager.geocoding',
     'taxi_manager.exchange',
+    'taxi_manager.reports',
 ]
 
 MIDDLEWARE = [
