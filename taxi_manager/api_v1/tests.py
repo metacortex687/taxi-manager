@@ -724,6 +724,13 @@ class BaseAuthTestCase(TestCase):
         return self.client.get(url,
             headers={"Authorization": f"Token {self.get_token(user)}"},
         )
+    
+    def client_post(self, url, user, data):
+        return self.client.post(
+            url,
+            data=data,
+            headers={"Authorization": f"Token {self.get_token(user)}"},
+        )
 
 
 
@@ -988,6 +995,24 @@ class ReportsTest(BaseAuthTestCase):
             username="manager1", email="manager1@mail.com", password=password
         )
 
+        self.model1 = Model.objects.create(
+            name="model1",
+            type="PCR",
+            number_of_seats=5,
+            tank_capacity_l=20,
+            load_capacity_kg=500,
+        )
+
+        self.vehicle1 = Vehicle.objects.create(
+            model=self.model1,
+            number="num1",
+            vin="Z948741AA12323456",
+            year_of_manufacture=2025,
+            mileage=100,
+            enterprise=self.enterprise1,
+            price=125000,
+        )
+
 
     def test_list_reports(self):
         response = self.client_get("/api/v1/reports/list/", self.manager1)
@@ -999,6 +1024,15 @@ class ReportsTest(BaseAuthTestCase):
         self.assertTrue("name" in data[0])
         self.assertTrue("verbose_name" in data[0])
         self.assertTrue("params" in data[0])
+
+
+    def test_post_report(self):
+        response = self.client_post("/api/v1/reports/carmileagereport/", self.manager1, data={"enterprise": self.enterprise1.id, "vehicle": self.vehicle1.id})
+
+        self.assertEqual(response.status_code, 201)
+
+        self.assertTrue("uuid" in response.data)
+
         
 
 
