@@ -57,37 +57,15 @@ class TripPointListAPIView(generics.ListAPIView):
                 self.request.query_params.get("to").replace("Z", "+00:00")
             )
 
-        trip = Trip.objects.filter(vehicle=vehicle).filter(
-                started_at__lte=OuterRef("tracked_at"),
-                ended_at__gt=OuterRef("tracked_at"),
-            )
-        
-        if filter_data_from:
-            trip = trip.filter(started_at__gte=filter_data_from)
-
-        if filter_data_to:
-            trip = trip.filter(ended_at__lte=filter_data_to)
-
-        trip = trip.values("id")[:1]
-
-        queryset = (
-            VehicleLocation.objects.filter(
-                vehicle=vehicle
-            )
-            .annotate(trip=Subquery(trip))
-            .filter(trip__isnull=False)
-        )
+        queryset = Trip.objects.filter(vehicle=vehicle)
 
         if filter_data_from:
-            queryset = queryset.filter(tracked_at__gte=filter_data_from)
+            queryset = queryset.filter(started_at__gte=filter_data_from)
 
         if filter_data_to:
-            queryset = queryset.filter(tracked_at__lt=filter_data_to)   
+            queryset = queryset.filter(ended_at__lte=filter_data_to)
 
-        queryset = queryset.values("trip").annotate(route=MakeLine(Cast("location", output_field=GeometryField(srid=4326))))
-       
-
-        return queryset
+        return queryset.annotate_path()
 
 
 class TripListAPIView(generics.ListAPIView):

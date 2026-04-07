@@ -1,4 +1,9 @@
 from django.contrib.gis.db import models
+from django.db.models import OuterRef, Subquery
+from django.db.models.functions import Cast
+
+from django.contrib.gis.db.models import GeometryField
+from django.contrib.gis.db.models.aggregates import MakeLine
 
 from taxi_manager.vehicle.models import Vehicle
 from taxi_manager.enterprise.models import Enterprise
@@ -39,6 +44,33 @@ class TripQuerySet(models.QuerySet):
     
     def filter_enterprise(self, enterprise):
         return self.filter(enterprise=enterprise)
+    
+    def filter_vehicle(self, vehicle):
+        return self.filter(vehicle=vehicle)   
+    
+    def annotate_path(self):
+        path_subquery = (
+            VehicleLocation.objects.filter(
+                vehicle=OuterRef("vehicle"),
+                tracked_at__gte=OuterRef("started_at"),
+                tracked_at__lt=OuterRef("ended_at"),
+            )
+            .order_by()
+            .values("vehicle")
+            .annotate(
+                path=MakeLine(
+                    Cast("location", output_field=GeometryField(srid=4326))
+                )
+            )
+            .values("path")[:1]
+        )
+
+        return self.annotate(
+            path=Subquery(
+                path_subquery,
+                output_field=GeometryField(srid=4326),
+            )
+        )
 
 
 class Trip(models.Model):
