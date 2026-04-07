@@ -6,7 +6,7 @@ from django.contrib.gis.geos import Point, Polygon
 
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from taxi_manager.api_v1.views import VehicleViewSet
+from taxi_manager.api_v1.views.main import VehicleViewSet
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.vehicle.models import Model, Vehicle, Driver
 from taxi_manager.geo_tracking.models import Trip, VehicleLocation
