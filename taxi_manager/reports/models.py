@@ -61,8 +61,8 @@ class ReportValue(models.Model):
         abstract = True
 
 
-class FloatReportValue(ReportValue):
-    value = models.FloatField()
+class CarMileageReportValue(ReportValue):
+    mileage = models.FloatField()
 
 
 class CarMileageReport(Report):
