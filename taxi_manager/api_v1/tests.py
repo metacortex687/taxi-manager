@@ -1045,6 +1045,26 @@ class ReportsTest(BaseAuthTestCase):
 
         self.assertEqual(1, Report.objects.count())
 
+    def test_post_get_report(self):
+        params = {"enterprise": self.enterprise1.id, 
+                  "vehicle": self.vehicle1.id,
+                  "frequency": "DAY",
+                  "period_from": datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC),
+                  "period_to": datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC),
+                  }
+
+        response = self.client_post("/api/v1/reports/carmileagereport/", self.manager1, data=params)
+        self.assertEqual(response.status_code, 201)
+
+        uuid = response.data["uuid"]
+        response = self.client_get(f"/api/v1/reports/carmileagereport/{uuid}/", self.manager1)
+
+        self.assertEqual(response.status_code, 200)
+
+        # self.assertTrue("uuid" in response.data)
+
+        # self.assertEqual(1, Report.objects.count())
+        # self.re
 
 
 

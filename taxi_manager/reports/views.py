@@ -25,3 +25,15 @@ class ReportAPIView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+    def get(self, request, report_type, uuid):
+        print("def get(self, request, report_type, uuid):","!!!!!!")
+        report_service = services.ReportService()
+
+        return Response(
+            {
+                "uuid": uuid,
+                "params": report_service.get_params_value(report_type, uuid),
+                "result": report_service.get_result(report_type, uuid),
+            },
+        )

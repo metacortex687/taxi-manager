@@ -8,21 +8,29 @@ from django.shortcuts import get_object_or_404
 
 class ReportService:
     def create_report(self, report_type, params) -> uuid.UUID:
-        report = next(
-            (x for x in models.Report.get_report_types() if x["name"] == report_type)
-        )
+        model_report = self.get_model_report_by_type(report_type)
 
         create_params = params.copy()
-        
+
         if "enterprise" in create_params:
-            create_params["enterprise" ] = get_object_or_404(Enterprise, pk=int(create_params["enterprise" ]))
+            create_params["enterprise"] = get_object_or_404(
+                Enterprise, pk=int(create_params["enterprise"])
+            )
 
         if "vehicle" in create_params:
-            create_params["vehicle" ] = get_object_or_404(Vehicle, pk=int(create_params["vehicle" ]))
+            create_params["vehicle"] = get_object_or_404(
+                Vehicle, pk=int(create_params["vehicle"])
+            )
 
-        report["report_class"].objects.create(**create_params)
+        report = model_report.objects.create(**create_params)
 
-        return uuid.uuid4()
+        return report.uuid
+
+    def get_model_report_by_type(self, report_type):
+        return next(
+            (x for x in models.Report.get_report_types() if x["name"] == report_type)
+        )["report_class"]
+
 
     def get_available_reports(self):
         return [
@@ -33,3 +41,12 @@ class ReportService:
             }
             for report_type in models.Report.get_report_types()
         ]
+
+    def get_params_value(self, report_type, uuid: uuid.UUID):
+        pass
+
+    def get_result(self, report_type, uuid):
+        print("def get_result(self, report_type, uuid):")
+        model_report = self.get_model_report_by_type(report_type)
+        report = model_report.objects.get(uuid=uuid)
+        return []

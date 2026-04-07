@@ -5,4 +5,5 @@ from . import views
 urlpatterns = [
     path("list/",views.ReportListAPIView.as_view()),
     path("<str:report_type>/",views.ReportAPIView.as_view()),
+    path("<str:report_type>/<uuid:uuid>/",views.ReportAPIView.as_view()),
 ]
