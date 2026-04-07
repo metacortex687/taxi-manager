@@ -3,6 +3,7 @@ from taxi_manager.vehicle.models import Vehicle
 
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.apps import apps
 
 import uuid
 
@@ -29,6 +30,22 @@ class Report(models.Model):
 
     def get_results(self) -> models.QuerySet:
         return self.get_result_model().objects.filter(report=self).order_by("date")
+
+    @classmethod
+    def get_report_types(cls):
+        return [
+            {
+                "name": model._meta.model_name,
+                "verbose_name": model._meta.verbose_name,
+                "report_class": model,
+            }
+            for model in filter(
+                lambda model: issubclass(model, cls) and model is not cls,
+                apps.get_models(),
+            )
+        ]
+
+
 
 
 class ReportValue(models.Model):

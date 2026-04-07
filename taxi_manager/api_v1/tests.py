@@ -974,3 +974,32 @@ class TripAPITest(BaseAuthTestCase):
         self.assertEqual(results[0]["end_point"]["lon"],self.end_point.location.x)
         self.assertEqual(results[0]["end_point"]["lat"],self.end_point.location.y)
         self.assertIsNotNone(results[0]["end_point"]["address"])
+
+
+class ReportsTest(BaseAuthTestCase):
+    def setUp(self):
+        self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
+        self.enterprise1 = Enterprise.objects.create(
+            name="enterprise1", city="city", time_zone=self.time_zone
+        )
+
+        password = "secret"
+        self.manager1 = self.create_user(
+            username="manager1", email="manager1@mail.com", password=password
+        )
+
+
+    def test_list_reports(self):
+        response = self.client_get("/api/v1/reports/list/", self.manager1)
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.data
+        self.assertTrue(len(data) > 0)
+        self.assertTrue("name" in data[0])
+        self.assertTrue("verbose_name" in data[0])
+        
+
+
+
+

@@ -48,6 +48,8 @@ urlpatterns = [
     path("vehicles/<int:vehicle_id>/locations/", VehicleLocationListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/trip-points/", TripPointListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/trips/", TripListAPIView.as_view()),
+
+    path("reports/", include("taxi_manager.reports.urls")),
     # path("logout/", SessionLogoutView.as_view()),
     path(r"auth/", include("djoser.urls")),
     re_path(r"^auth/", include("djoser.urls.authtoken")),
