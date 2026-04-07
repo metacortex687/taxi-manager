@@ -12,6 +12,7 @@ from taxi_manager.vehicle.models import Model, Vehicle, Driver
 from taxi_manager.geo_tracking.models import Trip, VehicleLocation
 from taxi_manager.time_zones.models import TimeZone
 from taxi_manager.geocoding.models import GeoAddress
+from taxi_manager.reports.models import Report
 
 from datetime import datetime, UTC
 
@@ -1027,13 +1028,22 @@ class ReportsTest(BaseAuthTestCase):
 
 
     def test_post_report(self):
-        response = self.client_post("/api/v1/reports/carmileagereport/", self.manager1, data={"enterprise": self.enterprise1.id, "vehicle": self.vehicle1.id})
+        params = {"enterprise": self.enterprise1.id, 
+                  "vehicle": self.vehicle1.id,
+                  "frequency": "DAY",
+                  "period_from": datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC),
+                  "period_to": datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC),
+                  }
+
+        self.assertEqual(0, Report.objects.count())
+
+        response = self.client_post("/api/v1/reports/carmileagereport/", self.manager1, data=params)
 
         self.assertEqual(response.status_code, 201)
 
         self.assertTrue("uuid" in response.data)
 
-        
+        self.assertEqual(1, Report.objects.count())
 
 
 
