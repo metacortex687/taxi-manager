@@ -38,12 +38,17 @@ class Report(models.Model):
                 "name": model._meta.model_name,
                 "verbose_name": model._meta.verbose_name,
                 "report_class": model,
+                "params": model.get_params()
             }
             for model in filter(
                 lambda model: issubclass(model, cls) and model is not cls,
                 apps.get_models(),
             )
         ]
+
+    @classmethod
+    def get_params(cls):
+        return ["frequency", "period_from", "period_to"]
 
 
 
@@ -63,6 +68,11 @@ class FloatReportValue(ReportValue):
 class CarMileageReport(Report):
     enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+
+    @classmethod
+    def get_params(cls):
+        return super().get_params() + ["enterprise", "vehicle"]
+
 
     def get_result_model(self):
         return FloatReportValue

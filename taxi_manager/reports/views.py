@@ -11,6 +11,7 @@ class ReportListAPIView(APIView):
                 {
                     "name": report_type["name"],
                     "verbose_name": report_type["verbose_name"],
+                    "params": report_type["params"],
                 }
                 for report_type in models.Report.get_report_types()
             ]

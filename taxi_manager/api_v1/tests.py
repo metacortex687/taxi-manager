@@ -998,6 +998,7 @@ class ReportsTest(BaseAuthTestCase):
         self.assertTrue(len(data) > 0)
         self.assertTrue("name" in data[0])
         self.assertTrue("verbose_name" in data[0])
+        self.assertTrue("params" in data[0])
         
 
 
