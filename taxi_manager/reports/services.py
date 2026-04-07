@@ -25,7 +25,7 @@ class ReportService:
         return uuid.uuid4()
 
     def get_available_reports(self):
-        [
+        return [
             {
                 "name": report_type["name"],
                 "verbose_name": report_type["verbose_name"],
