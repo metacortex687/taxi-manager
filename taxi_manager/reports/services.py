@@ -48,8 +48,15 @@ class ReportService:
             for report_type in models.Report.get_report_types()
         ]
 
-    def get_params_value(self, report_type, uuid: uuid.UUID):
-        pass
+    def get_params_value(self, report_type, user):
+        return {
+            "enterprise": None,
+            "vehicle": None,
+            "report_from": None,
+            "report_to": None,
+            "frequency": None
+        }
+
 
     def get_result(self, report_type, uuid):
         report = self.get_report_by_uuid(report_type, uuid)

@@ -26,14 +26,19 @@ class ReportAPIView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-    def get(self, request, report_type, uuid):
-
+    def get(self, request, report_type, uuid=None):
         report_service = services.ReportService()
+
+        if uuid is None:
+            return Response(
+                {
+                    "params": report_service.get_params_value(report_type, request.user),
+                }
+            )
 
         return Response(
             {
                 "uuid": str(uuid),
-                "params": report_service.get_params_value(report_type, uuid),
                 "result": report_service.get_result(report_type, uuid),
             },
         )
