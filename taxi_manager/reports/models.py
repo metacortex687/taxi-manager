@@ -21,6 +21,7 @@ class Report(models.Model):
     frequency = models.CharField(max_length=5, choices=REPORT_FREQUENCIES)
     period_from = models.DateTimeField()
     period_to = models.DateTimeField()
+    time_zone = models.ForeignKey(TimeZone, on_delete=models.RESTRICT)
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
