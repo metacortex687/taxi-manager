@@ -38,3 +38,7 @@ def enterprise_import_trips(request, pk):
         request, "enterprise_import_trips.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "view"}
     )
 
+def report(request, report_name):
+    return render(
+        request, "report.html", {"report_name": report_name}
+    )
