@@ -1,0 +1,48 @@
+{% extends "base/base.html" %}
+
+{% block title %}Предприятия менеджера{% endblock title %}
+
+{% block content %}
+
+<h5>Отчеты:</h5>
+<ul id="listEnterprises">
+</ul>
+
+{% endblock content %}
+
+{% block script %}
+<script type="module">
+    import { fetchDataJSON } from "/frontend/static/js/api/fetch-data.js" 
+    const loadReports = async () => {
+        
+        const listEnterprises = document.getElementById("listEnterprises")
+
+        const data = await fetchDataJSON("/api/v1/reports/list/")
+
+        listEnterprises.innerHTML = data.map(report => `
+            <li>
+                <a href="/reports/${report.name}/">${report.verbose_name}</a>
+            </li>
+        `).join("\n")
+
+    }
+
+
+    window.initPage = async () => {
+        loadReports();
+    }
+
+</script>
+{% endblock script %}
+
+{% block navbar_content %}
+<li class="nav-item">
+    <a href="{% url 'enterprises' %}" class="btn btn-secondary btn-lg rounded-1 btn-light border">
+        Предприятия
+    </a>
+</li>
+
+
+{{ block.super }}
+
+{% endblock navbar_content %}
