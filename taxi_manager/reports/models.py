@@ -92,6 +92,9 @@ class CarMileageReport(Report):
     enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name = "Пробег автомобиля за период"
+
     def save(self, *args, **kwargs):
         if self.time_zone_id is None:
             self.time_zone = self.enterprise.time_zone
