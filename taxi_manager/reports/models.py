@@ -1,11 +1,19 @@
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.vehicle.models import Vehicle
+from taxi_manager.geo_tracking.models import Trip
+from taxi_manager.time_zones.models import TimeZone
 
+from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
+from django.db.models import Sum
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.apps import apps
 
+from zoneinfo import ZoneInfo
+
 import uuid
+
+
 
 
 REPORT_FREQUENCIES = [
@@ -28,6 +36,10 @@ class Report(models.Model):
 
     def get_result_model(self):
         raise NotImplementedError
+    
+    def create_values(self):
+        raise NotImplementedError
+
 
     def get_results(self) -> models.QuerySet:
         return self.get_result_model().objects.filter(report=self).order_by("date")
@@ -52,6 +64,16 @@ class Report(models.Model):
         return ["frequency", "period_from", "period_to"]
 
 
+    def trunc_date(self, field_name):
+        return {
+            "DAY": TruncDay,
+            "WEEK": TruncWeek,
+            "MONTH": TruncMonth,
+            "YEAR": TruncYear,
+        }[self.frequency](field_name, tzinfo=ZoneInfo(self.time_zone.code))
+
+         
+
 
 
 class ReportValue(models.Model):
@@ -70,13 +92,45 @@ class CarMileageReport(Report):
     enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
 
+    def save(self, *args, **kwargs):
+        if self.time_zone_id is None:
+            self.time_zone = self.enterprise.time_zone
+        super().save(*args, **kwargs)
+
     @classmethod
     def get_params(cls):
         return super().get_params() + ["enterprise", "vehicle"]
 
 
     def get_result_model(self):
-        return FloatReportValue
+        return CarMileageReportValue
+    
+
+
+    def create_values(self):
+        grouped_rows = (
+            Trip.objects.filter_enterprise(self.enterprise)
+            .filter_vehicle(self.vehicle)
+            .filter_period(self.period_from, self.period_to)
+            .annotate_path()
+            .annotate_mileage()
+            .annotate(date=self.trunc_date("started_at"))
+            .values("date")
+            .annotate(mileage=Sum("mileage"))
+        )
+
+        values_to_create = [
+            CarMileageReportValue(
+                report=self,
+                date=row["date"],
+                mileage=row["mileage"].km,
+            )
+            for row in grouped_rows
+        ]
+
+        CarMileageReportValue.objects.bulk_create(values_to_create)
+
+
 
 
 class DefaultUserValues(models.Model):

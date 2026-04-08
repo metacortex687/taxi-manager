@@ -24,6 +24,8 @@ class ReportService:
 
         report = model_report.objects.create(**create_params)
 
+        report.create_values()
+
         return report.uuid
 
     def get_model_report_by_type(self, report_type):
@@ -31,6 +33,10 @@ class ReportService:
             (x for x in models.Report.get_report_types() if x["name"] == report_type)
         )["report_class"]
 
+    def get_report_by_uuid(self, report_type, report_uuid):
+        return get_object_or_404(
+            self.get_model_report_by_type(report_type), uuid=report_uuid
+        )
 
     def get_available_reports(self):
         return [
@@ -46,7 +52,15 @@ class ReportService:
         pass
 
     def get_result(self, report_type, uuid):
-        print("def get_result(self, report_type, uuid):")
-        model_report = self.get_model_report_by_type(report_type)
-        report = model_report.objects.get(uuid=uuid)
-        return []
+        report = self.get_report_by_uuid(report_type, uuid)
+        results = report.get_results()
+        
+        return [
+            {
+                **result,
+                "date": result["date"].isoformat(),
+
+            }
+            for result in results.values()  
+        ]
+

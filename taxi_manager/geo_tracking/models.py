@@ -4,6 +4,7 @@ from django.db.models.functions import Cast
 
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import MakeLine
+from django.contrib.gis.db.models.functions import Length
 
 from taxi_manager.vehicle.models import Vehicle
 from taxi_manager.enterprise.models import Enterprise
@@ -70,6 +71,11 @@ class TripQuerySet(models.QuerySet):
                 path_subquery,
                 output_field=GeometryField(srid=4326),
             )
+        )
+    
+    def annotate_mileage(self):
+        return self.annotate(
+            mileage=Length("path", spheroid=True)
         )
 
 

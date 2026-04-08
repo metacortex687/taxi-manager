@@ -1014,6 +1014,34 @@ class ReportsTest(BaseAuthTestCase):
             price=125000,
         )
 
+        self.trip1 = Trip.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            started_at=datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC),
+            ended_at=datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC),
+        )
+
+        self.point1 = VehicleLocation.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            location=Point(37.6173, 55.7558, srid=4326),
+            tracked_at=datetime(2026, 3, 10, 10, 10, 0, tzinfo=UTC),
+        )
+
+        self.point2 = VehicleLocation.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            location=Point(37.6180, 55.7560, srid=4326),
+            tracked_at=datetime(2026, 3, 10, 10, 20, 0, tzinfo=UTC),
+        )
+
+        self.point3 = VehicleLocation.objects.create(
+            enterprise=self.enterprise1,
+            vehicle=self.vehicle1,
+            location=Point(37.6200, 55.7570, srid=4326),
+            tracked_at=datetime(2026, 3, 10, 10, 30, 0, tzinfo=UTC),
+        )
+
 
     def test_list_reports(self):
         response = self.client_get("/api/v1/reports/list/", self.manager1)
@@ -1061,10 +1089,36 @@ class ReportsTest(BaseAuthTestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        # self.assertTrue("uuid" in response.data)
 
-        # self.assertEqual(1, Report.objects.count())
-        # self.re
+    def test_car_mileage_report_result(self):
+        params = {
+            "enterprise": self.enterprise1.id,
+            "vehicle": self.vehicle1.id,
+            "frequency": "DAY",
+            "period_from": datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC),
+            "period_to": datetime(2026, 3, 10, 11, 30, 0, tzinfo=UTC),
+        }
+
+        response = self.client_post(
+            "/api/v1/reports/carmileagereport/",
+            self.manager1,
+            data=params,
+        )
+        self.assertEqual(response.status_code, 201)
+
+        report_uuid = response.data["uuid"]
+        response = self.client_get(
+            f"/api/v1/reports/carmileagereport/{report_uuid}/",
+            self.manager1,
+        )
+        self.assertEqual(response.status_code, 200)
+
+        data = response.data
+
+        self.assertIn("result", data)
+        self.assertTrue(len(data["result"]) > 0)
+        self.assertAlmostEqual(0.22, data["result"][0]["mileage"], delta=0.01)
+
 
 
 
