@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 
 
 class ReportService:
-    def create_report(self, report_type, params) -> uuid.UUID:
+    def create_report(self, report_type, params, user) -> uuid.UUID:
         model_report = self.get_model_report_by_type(report_type)
 
         create_params = params.copy()
@@ -24,9 +24,12 @@ class ReportService:
 
         report = model_report.objects.create(**create_params)
 
+        self.save_default_values(user, params)
+
         report.create_values()
 
         return report.uuid
+    
 
     def get_model_report_by_type(self, report_type):
         return next(
@@ -48,14 +51,6 @@ class ReportService:
             for report_type in models.Report.get_report_types()
         ]
 
-    def get_params_value(self, report_type, user):
-        return {
-            "enterprise": None,
-            "vehicle": None,
-            "report_from": None,
-            "report_to": None,
-            "frequency": None
-        }
 
     def get_result_headers(self, report_type):
         model_report = self.get_model_report_by_type(report_type)
@@ -74,3 +69,54 @@ class ReportService:
             for result in results.values()  
         ]
 
+    def save_default_values(self, user, params):
+        default_values, _ = models.DefaultUserValues.objects.get_or_create(user=user)
+
+        if "frequency" in params:
+            default_values.frequency = params["frequency"]
+
+        if "period_from" in params:
+            default_values.period_from = params["period_from"]
+
+        if "period_to" in params:
+            default_values.period_to = params["period_to"]
+
+        if "enterprise" in params and params["enterprise"]:
+            default_values.enterprise = get_object_or_404(
+                Enterprise,
+                pk=int(params["enterprise"]),
+            )
+
+        if "vehicle" in params and params["vehicle"]:
+            default_values.vehicle = get_object_or_404(
+                Vehicle,
+                pk=int(params["vehicle"]),
+            )
+
+        default_values.save()
+
+    def get_params_value(self, report_type, user):
+        params_names = self.get_model_report_by_type(report_type).get_params()
+
+        result = {param_name: None for param_name in params_names}
+
+        default_values = models.DefaultUserValues.objects.filter(user=user).first()
+        if default_values is None:
+            return result
+
+        if "frequency" in params_names:
+            result["frequency"] = default_values.frequency
+
+        if "period_from" in params_names:
+            result["period_from"] = default_values.period_from
+
+        if "period_to" in params_names:
+            result["period_to"] = default_values.period_to
+
+        if "enterprise" in params_names and default_values.enterprise is not None:
+            result["enterprise"] = default_values.enterprise.id
+
+        if "vehicle" in params_names and default_values.vehicle is not None:
+            result["vehicle"] = default_values.vehicle.id
+
+        return result

@@ -14,7 +14,7 @@ class ReportListAPIView(APIView):
 class ReportAPIView(APIView):
     def post(self, request, report_type):
         params = dict(self.request.data)
-        uuid = services.ReportService().create_report(report_type, params)
+        uuid = services.ReportService().create_report(report_type, params, request.user)
 
         return Response(
             {

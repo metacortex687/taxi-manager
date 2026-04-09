@@ -13,6 +13,10 @@ const loadFieldData = async (fieldConfig, data = {}) => {
 const renderList = async (parentElement, fieldConfig, data = {}) => {
     const loadedData = await loadFieldData(fieldConfig, data)
 
+    if (fieldConfig.data?.set_form_state) {
+        fieldConfig.data.set_form_state(loadedData.value_data, formState)
+    }
+
     for (const field of fieldConfig.field) {
         await field.render(parentElement, field, loadedData)
     }
@@ -26,10 +30,7 @@ const renderOptionField = async (parentElement, field, data) => {
     wrapper.className = "mb-3"
 
     const fieldId = `field_${field.formStateField}`
-    const selectedValue =
-        formState[field.formStateField]
-        ?? data.value_data?.[field.formStateField]
-        ?? ""
+    const selectedValue = formState[field.formStateField] ?? ""
 
     wrapper.innerHTML = `
         <label for="${fieldId}" class="form-label">${field.label_name}</label>
@@ -88,6 +89,18 @@ const renderSearchField = async (parentElement, field, data) => {
 
     const input = wrapper.querySelector("input")
     const list = wrapper.querySelector(".list-group")
+
+    const selectedValue = formState[field.formStateField]
+
+    if (selectedValue !== null) {
+        const selectedItem = await fetchDataJSON(
+            `${field.data.list_data}${selectedValue}/`
+        )
+
+        if (selectedItem) {
+            input.value = field.titleFromItem(selectedItem)
+        }
+    }
 
     const clearList = () => {
         list.innerHTML = ""
@@ -237,10 +250,9 @@ const tableReport = async (wrapper, field, data) => {
 const formState = {
     enterprise: null,
     vehicle: null,
-    period: {
-        from: null,
-        to: null
-    }
+    frequency: null,
+    period_from: null,
+    period_to: null,
 }
 
 const form = {
@@ -250,6 +262,19 @@ const form = {
             render: renderList,
             data: {
                 value_data: "/api/v1/reports/carmileagereport/",
+                set_form_state: (valueData, formState) => {
+
+                        const values = valueData["params"] || {}
+
+                        const fields = ["enterprise", "vehicle", "frequency", "period_from", "period_to"]
+
+                        for (const fieldName of fields) {
+                            if (fieldName in values) {
+                                formState[fieldName] = values[fieldName]
+                            }
+                        }
+
+                    },
             },
             field: [
                 {
