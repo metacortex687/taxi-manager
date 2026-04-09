@@ -79,7 +79,7 @@ class Report(models.Model):
 
 class ReportValue(models.Model):
     report = models.ForeignKey(Report, on_delete=models.CASCADE)
-    date = models.DateTimeField()
+    date = models.DateTimeField(verbose_name="Дата")
 
     class Meta:
         abstract = True
@@ -103,7 +103,7 @@ class ReportValue(models.Model):
         ]
 
 class CarMileageReportValue(ReportValue):
-    mileage = models.FloatField()
+    mileage = models.FloatField(verbose_name="Пробег, км")
 
 
 class CarMileageReport(Report):
