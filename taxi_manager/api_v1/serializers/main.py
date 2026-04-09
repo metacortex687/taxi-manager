@@ -41,6 +41,7 @@ class VehileLocationSerializer(serializers.ModelSerializer):
 
 class VehicleReadSerializer(serializers.ModelSerializer):
     model_id = serializers.SerializerMethodField()
+    display_name = serializers.SerializerMethodField()
     active_driver_id = serializers.IntegerField()
     color = serializers.CharField()
     model__name = serializers.CharField(source="model.name")
@@ -50,6 +51,10 @@ class VehicleReadSerializer(serializers.ModelSerializer):
 
     def get_model_id(self, obj):
         return obj.model.id
+    
+    def get_display_name(self, obj):
+        return f"{obj.model.name} {obj.number}"    
+
 
     def get_enterprise_id(self, obj):
         if not obj.enterprise:
@@ -76,6 +81,7 @@ class VehicleReadSerializer(serializers.ModelSerializer):
         model = Vehicle
         fields = (
             "id",
+            "display_name",
             "model_id",
             "color",
             "number",
