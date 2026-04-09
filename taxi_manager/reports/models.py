@@ -155,8 +155,9 @@ class CarMileageReport(Report):
 
 
 class DefaultUserValues(models.Model):
-    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
-    period_from = models.DateTimeField()
-    period_to = models.DateTimeField()
-    enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, null=True)
+    period_from = models.DateTimeField(null=True)
+    period_to = models.DateTimeField(null=True)
+    enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE, null=True)
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True)
+    frequency = models.CharField(max_length=5,choices=REPORT_FREQUENCIES, null=True)
