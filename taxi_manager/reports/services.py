@@ -57,6 +57,9 @@ class ReportService:
             "frequency": None
         }
 
+    def get_result_headers(self, report_type):
+        model_report = self.get_model_report_by_type(report_type)
+        return model_report.get_result_model().get_table_headers()
 
     def get_result(self, report_type, uuid):
         report = self.get_report_by_uuid(report_type, uuid)

@@ -33,6 +33,7 @@ class ReportAPIView(APIView):
             return Response(
                 {
                     "params": report_service.get_params_value(report_type, request.user),
+                    "headers": report_service.get_result_headers(report_type),
                 }
             )
 

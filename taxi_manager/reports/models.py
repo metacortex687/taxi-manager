@@ -34,7 +34,8 @@ class Report(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
-    def get_result_model(self):
+    @classmethod
+    def get_result_model(cls):
         raise NotImplementedError
     
     def create_values(self):
@@ -83,6 +84,23 @@ class ReportValue(models.Model):
     class Meta:
         abstract = True
 
+    @classmethod
+    def get_table_fields(cls):
+        return [
+            field.name
+            for field in cls._meta.fields
+            if field.name not in ["id", "report"]
+        ]
+
+    @classmethod
+    def get_table_headers(cls):
+        return [
+            {
+                "name": field_name,
+                "verbose_name": cls._meta.get_field(field_name).verbose_name,
+            }
+            for field_name in cls.get_table_fields()
+        ]
 
 class CarMileageReportValue(ReportValue):
     mileage = models.FloatField()
@@ -104,8 +122,8 @@ class CarMileageReport(Report):
     def get_params(cls):
         return super().get_params() + ["enterprise", "vehicle"]
 
-
-    def get_result_model(self):
+    @classmethod
+    def get_result_model(cls):
         return CarMileageReportValue
     
 
