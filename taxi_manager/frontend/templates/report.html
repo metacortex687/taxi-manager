@@ -3,16 +3,27 @@
 {% block title %}Отчет{% endblock title %}
 
 {% block content %}
+<h1 class="text-center">Отчет {{report_name}}:</h1>
 
-Отчет {{report_name}}
+<form class="d-flex justify-content-center">
+    <div class="auth-box mb-3">
+        <div id="form_fields">
+        </div>
+    </div>
+</form>
+
+<div id="pageData" {% if entity %} data-report-name="{{report_name}}" {% endif %}></div>
 
 {% endblock content %}
 
-{% block script %}
-<script>
-    window.initPage = async () => {
+{% load static %}
 
-    }
-    
-</script>
-{% endblock script %} 
+
+
+{% block script %}
+
+<script type="module" src="{% static 'js/pages/report.js' %}"></script>
+
+{{ block.super }}
+
+{% endblock script %}
