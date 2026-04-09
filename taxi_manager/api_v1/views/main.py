@@ -5,7 +5,9 @@ from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.time_zones.models import TimeZone
 from taxi_manager.geo_tracking.models import VehicleLocation
 
-
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters as drf_filters
+from .filters import VehicleFilter
 
 from ..serializers.main import (
     VehicleReadSerializer,
@@ -43,6 +45,8 @@ class VehicleViewSet(viewsets.ModelViewSet):
     serializer_class = VehicleReadSerializer
     queryset = Vehicle.objects.all()
     # filter_backends = [filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, drf_filters.OrderingFilter]
+    filterset_class = VehicleFilter
 
     http_method_names = ["get", "put", "post", "delete"]
 
