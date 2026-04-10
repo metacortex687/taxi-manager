@@ -24,7 +24,7 @@ const renderList = async (parentElement, fieldConfig, data = {}) => {
 
 const renderOptionField = async (parentElement, field, data) => {
     const response = await fetchDataJSON(field.data.list_data)
-    const items = response.results || []
+    const items = response.results || response || []
 
     const wrapper = document.createElement("div")
     wrapper.className = "mb-3"
@@ -315,6 +315,18 @@ const form = {
                         return params.toString()
                     },
                 },
+                 {
+                    name: "frequency",
+                    label_name: "Период",
+                    placeholder: "Выберите период",
+                    data: {
+                        list_data: "/api/v1/reports/frequencies/",
+                    },
+                    render: renderOptionField,
+                    formStateField: "frequency",
+                    valueFromItem: (item) => item.id,
+                    titleFromItem: (item) => item.display_name,
+                },               
                 {
                     name: "build_report_btn",
                     label_name: "Сформировать отчет",
@@ -330,7 +342,7 @@ const form = {
                     getParams: () => ({
                         enterprise: formState.enterprise,
                         vehicle: formState.vehicle,
-                        frequency: "DAY",
+                        frequency: formState.frequency,
                         period_from: "2026-03-01T00:00:00+00:00",
                         period_to: "2026-03-31T23:59:59+00:00",
                     }),
