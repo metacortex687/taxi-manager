@@ -259,6 +259,16 @@ const tableReport = async (wrapper, field, data) => {
         return
     }
 
+    const formatCellValue = (field, header, row) => {
+        const value = row[header.name]
+        const formatter = field.formatters?.[header.name]
+
+        if (!formatter) {
+            return value ?? ""
+        }
+
+        return formatter({ value, header, row, formState }) ?? ""
+    }
 
     wrapper.innerHTML = `
         <div class="table-responsive">
@@ -271,7 +281,7 @@ const tableReport = async (wrapper, field, data) => {
                 <tbody>
                     ${rows.map(row => `
                         <tr>
-                            ${headers.map(header => `<td>${row[header.name] ?? ""}</td>`).join("")}
+                            ${headers.map(header => `<td>${formatCellValue(field, header, row)}</td>`).join("")}
                         </tr>
                     `).join("")}
                 </tbody>
@@ -440,6 +450,26 @@ const form = {
                     render: renderEventField,
                     listen_event_name: "build_report",
                     report_type: "carmileagereport",
+                    formatters: {
+                        date: ({ value, formState }) => {
+                            if (!value) {
+                                return ""
+                            }
+
+                            return new Intl.DateTimeFormat("ru-RU", {
+                                timeZone: formState.time_zone,
+                                dateStyle: "short",
+                                timeStyle: "short",
+                            }).format(new Date(value))
+                        },
+                        mileage: ({ value }) => {
+                            if (value === null || value === undefined || value === "") {
+                                return ""
+                            }
+
+                            return Number(value).toFixed(1)
+                        },
+                    },
                     getParams: () => ({
                         enterprise: formState.enterprise,
                         vehicle: formState.vehicle,
