@@ -45,6 +45,13 @@ class Report(models.Model):
     def get_results(self) -> models.QuerySet:
         return self.get_result_model().objects.filter(report=self).order_by("date")
 
+    def save(self, *args, **kwargs):
+        report_tz = ZoneInfo(self.time_zone.code)
+        self.period_from    = self.period_from.astimezone(report_tz)
+        self.period_to      = self.period_to.astimezone(report_tz)
+        super().save(*args, **kwargs)
+
+
     @classmethod
     def get_report_types(cls):
         return [
@@ -112,11 +119,6 @@ class CarMileageReport(Report):
 
     class Meta:
         verbose_name = "Пробег автомобиля за период"
-
-    def save(self, *args, **kwargs):
-        if self.time_zone_id is None:
-            self.time_zone = self.enterprise.time_zone
-        super().save(*args, **kwargs)
 
     @classmethod
     def get_params(cls):
