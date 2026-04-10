@@ -4,7 +4,7 @@ from taxi_manager.geo_tracking.models import Trip
 from taxi_manager.time_zones.models import TimeZone
 
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.apps import apps
@@ -111,6 +111,7 @@ class ReportValue(models.Model):
 
 class CarMileageReportValue(ReportValue):
     mileage = models.FloatField(verbose_name="Пробег, км")
+    count_trip = models.IntegerField(verbose_name="Поездок")
 
 
 class CarMileageReport(Report):
@@ -118,7 +119,7 @@ class CarMileageReport(Report):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = "Пробег автомобиля за период"
+        verbose_name = "Пробег автомобиля"
 
     @classmethod
     def get_params(cls):
@@ -140,6 +141,7 @@ class CarMileageReport(Report):
             .annotate(date=self.trunc_date("started_at"))
             .values("date")
             .annotate(mileage=Sum("mileage"))
+            .annotate(count_trip=Count("id"))
         )
 
         values_to_create = [
@@ -147,6 +149,7 @@ class CarMileageReport(Report):
                 report=self,
                 date=row["date"],
                 mileage=row["mileage"].km,
+                count_trip=row["count_trip"],
             )
             for row in grouped_rows
         ]
