@@ -164,7 +164,7 @@ class TrackingGenerator:
         )  # Упростил так как стандартный метод shortest_path ищет путь только между узалми
         
         attempt = 0
-        res_path = [start_point]
+        res_path = []
         print("Точки:")
         print(start_point)
         length = 0
@@ -179,7 +179,8 @@ class TrackingGenerator:
                 roads, start_point, next_point, weight="length"
             )
 
-            if not path_on_graph and attempt<5: #были две точки по которым не удалось найти кратчайший путь
+            if not path_on_graph and attempt < 5:  # были две точки по которым не удалось найти кратчайший путь
+                attempt += 1
                 print("не удалось построить маршрут")
                 continue
 
@@ -193,12 +194,16 @@ class TrackingGenerator:
                 roads, path_on_graph
             )
             path = TrackingGenerator.truncate_path_by_length(path, distance - length)
-            res_path.extend(path)
+            if not res_path:
+                res_path.extend(path)
+            else:
+                res_path.extend(path[1:])
 
             length += TrackingGenerator.path_length(path)
+            start_point = path_on_graph[-1]
             print(f"Построено маршрута {length}/{distance}")
 
-        return path
+        return res_path
 
     # def path_to_elapsed_time_points(path, speed_m_s, interval_s):
     #     result = []
