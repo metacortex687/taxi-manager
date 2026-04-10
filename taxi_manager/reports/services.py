@@ -120,3 +120,9 @@ class ReportService:
             result["vehicle"] = default_values.vehicle.id
 
         return result
+
+    def get_list_frequencies(self):
+        return [
+            {"id": code, "display_name": display_name}
+            for (code, display_name) in models.REPORT_FREQUENCIES
+        ]

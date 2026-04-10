@@ -43,3 +43,8 @@ class ReportAPIView(APIView):
                 "result": report_service.get_result(report_type, uuid),
             },
         )
+
+class FrequencyListAPIView(APIView):
+    def get(self, request):
+        return Response(services.ReportService().get_list_frequencies())
+
