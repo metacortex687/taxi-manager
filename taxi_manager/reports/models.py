@@ -12,7 +12,7 @@ from django.apps import apps
 from zoneinfo import ZoneInfo
 
 import uuid
-
+import json
 
 
 
@@ -156,7 +156,53 @@ class CarMileageReport(Report):
 
         CarMileageReportValue.objects.bulk_create(values_to_create)
 
+class CarRoutesReportValue(ReportValue):
+    path = models.JSONField(verbose_name="Маршруты")
 
+
+class CarRoutesReport(Report):
+    enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Маршруты автомобилей"
+
+    @classmethod
+    def get_params(cls):
+        return super().get_params() + ["enterprise"]
+
+    @classmethod
+    def get_result_model(cls):
+        return CarRoutesReportValue
+
+    def create_values(self):
+        grouped_rows = (
+            Trip.objects.filter_enterprise(self.enterprise)
+            .filter_period(self.period_from, self.period_to)
+            .annotate_path()
+            .annotate(date=self.trunc_date("started_at"))
+            .values("date", "path")
+            .order_by("date")
+        )
+
+        paths_by_date = {}
+
+        for row in grouped_rows:
+            if row["date"] not in paths_by_date:
+                paths_by_date[row["date"]] = []
+
+            if row["path"] is not None:
+                paths_by_date[row["date"]].append(json.loads(row["path"].geojson))
+
+        CarRoutesReportValue.objects.bulk_create(
+            [
+                CarRoutesReportValue(
+                    report=self,
+                    date=date,
+                    path=paths,
+                )
+                for date, paths in paths_by_date.items()
+            ]
+        )
 
 
 class DefaultUserValues(models.Model):

@@ -225,6 +225,29 @@ const renderEventField = async (parentElement, field, data) => {
     })
 }
 
+const renderRouteMap = (container, paths) => {
+    if (!Array.isArray(paths) || !paths.length) {
+        container.innerHTML = ""
+        return
+    }
+
+    const map = L.map(container, { attributionControl: false })
+
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map)
+
+    const geoLayer = L.geoJSON(paths).addTo(map)
+
+    const bounds = geoLayer.getBounds()
+    if (bounds.isValid()) {
+        map.fitBounds(bounds)
+        return
+    }
+
+    map.setView([61, 105], 3)
+}
+
 const tableReport = async (wrapper, field, data) => {
     const reportType = field.report_type
 
@@ -289,6 +312,18 @@ const tableReport = async (wrapper, field, data) => {
         </div>
     `
 
+    const routeMapElements = wrapper.querySelectorAll(".report-route-map")
+
+    routeMapElements.forEach((element) => {
+        const encodedPath = element.dataset.path
+
+        if (!encodedPath) {
+            return
+        }
+
+        const path = JSON.parse(decodeURIComponent(encodedPath))
+        renderRouteMap(element, path)
+    })
 }
 
 const renderPeriodField = async (parentElement, field, data) => {
@@ -350,7 +385,7 @@ const formState = {
     period_to: null,
 }
 
-const form = {
+const formCarMileageReport  = {
     render: renderList,
     field: [
         {
@@ -486,8 +521,142 @@ const form = {
     ]
 }
 
+const formCarRoutesReport = {
+    render: renderList,
+    field: [
+        {
+            render: renderList,
+            data: {
+                value_data: "/api/v1/reports/carroutesreport/",
+                set_form_state: (valueData, formState) => {
+
+                        const values = valueData["params"] || {}
+
+                        const fields = ["enterprise", "frequency", "period_from", "period_to", "time_zone"]
+
+                        for (const fieldName of fields) {
+                            if (fieldName in values) {
+                                formState[fieldName] = values[fieldName]
+                            }
+                        }
+
+                    },
+            },
+            field: [
+                 {
+                    name: "period",
+                    label_name: "Период отчета",
+                    render: renderPeriodField,
+                    formStateFieldFrom: "period_from",
+                    formStateFieldTo: "period_to",
+                },               
+                {
+                    name: "enterprise",
+                    label_name: "Предприятие",
+                    placeholder: "Выберите предприятие",
+                    data: {
+                        list_data: "/api/v1/enterprises/",
+                    },
+                    render: renderOptionField,
+                    formStateField: "enterprise",
+                    valueFromItem: (item) => item.id,
+                    titleFromItem: (item) => item.name,
+                    onSelect: ({ item }) => {
+                        formState.time_zone = item.time_zone_code
+                    },
+                    emit_on_select_event_name: "EnterpriseSelected",
+                },
+                {
+                    name: "time_zone",
+                    label_name: "Временная зона",
+                    render: renderLabel,
+                    formStateField: "time_zone",
+                    listen_event_name: "EnterpriseSelected",
+                },
+                 {
+                    name: "frequency",
+                    label_name: "Период",
+                    placeholder: "Выберите период",
+                    data: {
+                        list_data: "/api/v1/reports/frequencies/",
+                    },
+                    render: renderOptionField,
+                    formStateField: "frequency",
+                    valueFromItem: (item) => item.id,
+                    titleFromItem: (item) => item.display_name,
+                },               
+                {
+                    name: "build_report_btn",
+                    label_name: "Сформировать отчет",
+                    render: renderBtn,
+                    emit_event_name: "build_report",
+                    className: "btn btn-primary",
+                },
+                {
+                    name: "report_result",
+                    render: renderEventField,
+                    listen_event_name: "build_report",
+                    report_type: "carroutesreport",
+                    formatters: {
+                        date: ({ value, formState }) => {
+                            if (!value) {
+                                return ""
+                            }
+
+                            return new Intl.DateTimeFormat("ru-RU", {
+                                timeZone: formState.time_zone,
+                                dateStyle: "short",
+                                timeStyle: "short",
+                            }).format(new Date(value))
+                        },
+                        path: ({ value }) => {
+                        if (value === null || value === undefined || value === "") {
+                            return ""
+                        }
+
+                        return `
+                            <div
+                                class="report-route-map"
+                                data-path="${encodeURIComponent(JSON.stringify(value))}"
+                                style="width: 500px; height: 300px;"
+                            ></div>
+                        `
+                        },
+                    },
+                    getParams: () => ({
+                        enterprise: formState.enterprise,
+                        frequency: formState.frequency,
+                        period_from: addTimeZoneToLocalDateTime(formState.period_from, formState.time_zone),
+                        period_to: addTimeZoneToLocalDateTime(formState.period_to, formState.time_zone),
+                        time_zone: formState.time_zone,
+                    }),
+                    onEvent: tableReport,
+
+                },
+            ]
+        },
+    ]
+}
+
 window.initPage = async () => {
     const formHTMLElement = document.getElementById("form_fields")
+    const reportName = document.getElementById("pageData")?.dataset.reportName
+
+    let form = null
+
+    if (reportName === "carmileagereport") {
+        form = formCarMileageReport
+    }
+
+    if (reportName === "carroutesreport") {
+        form = formCarRoutesReport
+    }
+
+    if (!form) {
+        formHTMLElement.innerHTML = `<div class="alert alert-danger">Неизвестный тип отчета</div>`
+        return
+    }
+
     await form.render(formHTMLElement, form, {})
     window.formState = formState
 }
