@@ -1,4 +1,5 @@
 import { fetchDataJSON } from "../api/fetch-data.js"
+import { trimTimeZoneFromISO, addTimeZoneToLocalDateTime } from "../utils/timezone.js"
 
 const loadFieldData = async (fieldConfig, data = {}) => {
     const loadedData = { ...data }
@@ -280,6 +281,56 @@ const tableReport = async (wrapper, field, data) => {
 
 }
 
+const renderPeriodField = async (parentElement, field, data) => {
+    const wrapper = document.createElement("div")
+    wrapper.className = "mb-3"
+
+    const fieldIdFrom = `field_${field.formStateFieldFrom}`
+    const fieldIdTo = `field_${field.formStateFieldTo}`
+
+    wrapper.innerHTML = `
+        <label class="form-label">${field.label_name}</label>
+        <div class="row g-2">
+            <div class="col-md-6">
+                <label for="${fieldIdFrom}" class="form-label">Начало</label>
+                <input
+                    id="${fieldIdFrom}"
+                    type="datetime-local"
+                    class="form-control"
+                >
+            </div>
+
+            <div class="col-md-6">
+                <label for="${fieldIdTo}" class="form-label">Окончание</label>
+                <input
+                    id="${fieldIdTo}"
+                    type="datetime-local"
+                    class="form-control"
+                >
+            </div>
+        </div>
+    `
+
+    parentElement.appendChild(wrapper)
+
+    const inputFrom = wrapper.querySelector(`#${fieldIdFrom}`)
+    const inputTo = wrapper.querySelector(`#${fieldIdTo}`)
+
+    inputFrom.value = trimTimeZoneFromISO(formState[field.formStateFieldFrom])
+    inputTo.value = trimTimeZoneFromISO(formState[field.formStateFieldTo])
+
+    formState[field.formStateFieldFrom] = inputFrom.value || null
+    formState[field.formStateFieldTo] = inputTo.value || null
+
+    inputFrom.oninput = () => {
+        formState[field.formStateFieldFrom] = inputFrom.value || null
+    }
+
+    inputTo.oninput = () => {
+        formState[field.formStateFieldTo] = inputTo.value || null
+    }
+}
+
 
 const formState = {
     enterprise: null,
@@ -311,6 +362,13 @@ const form = {
                     },
             },
             field: [
+                 {
+                    name: "period",
+                    label_name: "Период отчета",
+                    render: renderPeriodField,
+                    formStateFieldFrom: "period_from",
+                    formStateFieldTo: "period_to",
+                },               
                 {
                     name: "enterprise",
                     label_name: "Предприятие",
@@ -386,8 +444,8 @@ const form = {
                         enterprise: formState.enterprise,
                         vehicle: formState.vehicle,
                         frequency: formState.frequency,
-                        period_from: "2026-03-01T00:00:00+00:00",
-                        period_to: "2026-03-31T23:59:59+00:00",
+                        period_from: addTimeZoneToLocalDateTime(formState.period_from, formState.time_zone),
+                        period_to: addTimeZoneToLocalDateTime(formState.period_to, formState.time_zone),
                         time_zone: formState.time_zone,
                     }),
                     onEvent: tableReport,

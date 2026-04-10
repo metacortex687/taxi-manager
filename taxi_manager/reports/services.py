@@ -2,8 +2,10 @@ import uuid
 from . import models
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.vehicle.models import Vehicle
+from taxi_manager.time_zones.models import TimeZone
 
 from django.shortcuts import get_object_or_404
+from django.utils.dateparse import parse_datetime
 
 
 class ReportService:
@@ -21,6 +23,17 @@ class ReportService:
             create_params["vehicle"] = get_object_or_404(
                 Vehicle, pk=int(create_params["vehicle"])
             )
+
+        if "time_zone" in create_params and create_params["time_zone"]:
+            create_params["time_zone"] = get_object_or_404(
+               TimeZone,
+                code=create_params["time_zone"],
+            )
+
+        if "period_from" in create_params:
+           create_params["period_from"] = parse_datetime(create_params["period_from"])
+        if "period_to" in create_params:
+           create_params["period_to"] = parse_datetime(create_params["period_to"])
 
         report = model_report.objects.create(**create_params)
 
