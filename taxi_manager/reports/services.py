@@ -9,6 +9,11 @@ from django.utils.dateparse import parse_datetime
 
 
 class ReportService:
+    def verbouse_name(self, report_type):
+        return next(
+            (x for x in models.Report.get_report_types() if x["name"] == report_type)
+        )["verbose_name"]
+    
     def create_report(self, report_type, params, user) -> uuid.UUID:
         model_report = self.get_model_report_by_type(report_type)
 

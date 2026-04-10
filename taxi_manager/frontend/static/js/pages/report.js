@@ -34,7 +34,7 @@ const renderOptionField = async (parentElement, field, data) => {
     const selectedValue = formState[field.formStateField] ?? ""
 
     wrapper.innerHTML = `
-        <label for="${fieldId}" class="form-label">${field.label_name}</label>
+        <label for="${fieldId}" class="form-label">${field.label_name}:</label>
         <select id="${fieldId}" class="form-select">
             <option value="">${field.placeholder || "Выберите значение"}</option>
             ${items.map(item => `
@@ -79,7 +79,7 @@ const renderSearchField = async (parentElement, field, data) => {
     const fieldId = `field_${field.formStateField}`
 
     wrapper.innerHTML = `
-        <label for="${fieldId}" class="form-label">${field.label_name}</label>
+        <label for="${fieldId}" class="form-label">${field.label_name}:</label>
         <input
             id="${fieldId}"
             type="text"
@@ -187,7 +187,7 @@ const renderLabel = async (parentElement, field, data) => {
     const fieldId = `field_${field.formStateField}`
 
     wrapper.innerHTML = `
-        <label for="${fieldId}" class="form-label">${field.label_name}</label>
+        <label for="${fieldId}" class="form-label">${field.label_name}:</label>
         <div id="${fieldId}" class="form-control-plaintext"></div>
     `
 
@@ -299,7 +299,7 @@ const renderPeriodField = async (parentElement, field, data) => {
     const fieldIdTo = `field_${field.formStateFieldTo}`
 
     wrapper.innerHTML = `
-        <label class="form-label">${field.label_name}</label>
+        <label class="form-label">${field.label_name}:</label>
         <div class="row g-2">
             <div class="col-md-6">
                 <label for="${fieldIdFrom}" class="form-label">Начало</label>

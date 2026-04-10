@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.vehicle.models import Vehicle
+from taxi_manager.reports.services import ReportService
 
 
 def vehicles(request, pk):
@@ -40,5 +41,5 @@ def enterprise_import_trips(request, pk):
 
 def report(request, report_name):
     return render(
-        request, "report.html", {"report_name": report_name}
+        request, "report.html", {"report_name": report_name, "report_verbouse_name": ReportService().verbouse_name(report_name)}
     )
