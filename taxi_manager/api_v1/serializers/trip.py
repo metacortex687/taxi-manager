@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from zoneinfo import ZoneInfo
 from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometrySerializerMethodField
-from taxi_manager.geo_tracking.models import VehicleLocation
+from taxi_manager.geo_tracking.models import VehicleLocation, Trip
 
 class TripPointSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
@@ -16,11 +16,11 @@ class TripPointSerializer(serializers.Serializer):
         return super().to_representation(instance)
 
 class TripPointSerializerGeoJSON(GeoFeatureModelSerializer):
-    trip = serializers.IntegerField(read_only=True)
+    trip = serializers.IntegerField(source="id", read_only=True)
     route = GeometrySerializerMethodField()
 
     def get_route(self, obj):
-        return obj["route"]
+        return obj.path
     
     # def to_representation(self, instance):
     #     self.fields["tracked_at"] = serializers.DateTimeField(
@@ -29,7 +29,7 @@ class TripPointSerializerGeoJSON(GeoFeatureModelSerializer):
     #     return super().to_representation(instance)
     
     class Meta:
-        model = VehicleLocation
+        model = Trip
         geo_field = "route"
         fields = (
             "trip",
