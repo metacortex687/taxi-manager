@@ -463,7 +463,7 @@ const formCarMileageReport  = {
                 },
                  {
                     name: "frequency",
-                    label_name: "Период",
+                    label_name: "Периодичность",
                     placeholder: "Выберите период",
                     data: {
                         list_data: "/api/v1/reports/frequencies/",
@@ -575,7 +575,7 @@ const formCarRoutesReport = {
                 },
                  {
                     name: "frequency",
-                    label_name: "Период",
+                    label_name: "Периодичность",
                     placeholder: "Выберите период",
                     data: {
                         list_data: "/api/v1/reports/frequencies/",
