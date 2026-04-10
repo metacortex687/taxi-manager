@@ -494,7 +494,7 @@ const formCarMileageReport  = {
                             return new Intl.DateTimeFormat("ru-RU", {
                                 timeZone: formState.time_zone,
                                 dateStyle: "short",
-                                timeStyle: "short",
+                                // timeStyle: "short",
                             }).format(new Date(value))
                         },
                         mileage: ({ value }) => {
@@ -606,7 +606,7 @@ const formCarRoutesReport = {
                             return new Intl.DateTimeFormat("ru-RU", {
                                 timeZone: formState.time_zone,
                                 dateStyle: "short",
-                                timeStyle: "short",
+                                // timeStyle: "short",
                             }).format(new Date(value))
                         },
                         path: ({ value }) => {
