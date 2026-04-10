@@ -6,7 +6,7 @@ from django.contrib.gis.geos import Point
 from datetime import timedelta
 
 from taxi_manager.tracking_simulator.tracking_generator import TrackingGenerator
-from taxi_manager.geo_tracking.models import VehicleLocation
+from taxi_manager.geo_tracking.models import VehicleLocation, Trip
 from taxi_manager.vehicle.models import Vehicle
 
 class Command(BaseCommand):
@@ -76,6 +76,9 @@ class Command(BaseCommand):
     def save_data(self, enterprise, vehicle, points):
         start_time = timezone.now()
 
+        if not points:
+            self.stdout.write("Точки не сгенерированы.")
+            return
 
         locations = []
         for lon, lat, seconds_from_start in points:
@@ -92,5 +95,13 @@ class Command(BaseCommand):
 
         _, _, seconds_from_start = points[-1]
         end_time = start_time + timedelta(seconds=seconds_from_start)
+
+        trip = Trip.objects.create(
+            enterprise=enterprise,
+            vehicle=vehicle,
+            started_at=start_time,
+            ended_at=end_time,
+        )
         self.stdout.write(f"Сгенерированы точки за период {start_time}-{end_time}")
+        self.stdout.write(f"Создана поездка id={trip.id}")
 
