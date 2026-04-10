@@ -148,16 +148,12 @@ class ModelSerializer(serializers.ModelSerializer):
 
 
 class EnterpriseSerializer(serializers.ModelSerializer):
-    # def to_representation(self, instance):
-    #     representation = super().to_representation(instance)
-    #     representation["vehicle_ids"] = representation.pop("vehicles")
-    #     representation["driver_ids"] = representation.pop("drivers")
-    #     return representation
+    time_zone_code = serializers.CharField(source="time_zone.code", read_only=True)
 
     class Meta:
         model = Enterprise
 
-        fields = ("id", "name", "city", "time_zone")
+        fields = ("id", "name", "city", "time_zone", "time_zone_code")
 
 
 class DriverSerializer(serializers.ModelSerializer):

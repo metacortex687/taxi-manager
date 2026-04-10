@@ -165,7 +165,7 @@ class EnterpriseListAPIView(generics.ListAPIView):
         if user.is_anonymous:
             raise NotAuthenticated("Авторизуйтесь")
 
-        return user.managed_enterprises.all()
+        return user.managed_enterprises.select_related("time_zone").all()
 
 
 class EnterpriseDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
