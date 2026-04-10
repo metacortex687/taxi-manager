@@ -64,6 +64,10 @@ const renderOptionField = async (parentElement, field, data) => {
         if (field.onSelect) {
             field.onSelect({ item: selectedItem, field, data })
         }
+
+        if (field.emit_on_select_event_name) {
+            document.dispatchEvent(new CustomEvent(field.emit_on_select_event_name))
+        }
     }
 }
 
@@ -175,6 +179,36 @@ const renderBtn = async (parentElement, field, data) => {
     parentElement.appendChild(wrapper)
 }
 
+const renderLabel = async (parentElement, field, data) => {
+    const wrapper = document.createElement("div")
+    wrapper.className = "mb-3"
+
+    const fieldId = `field_${field.formStateField}`
+
+    wrapper.innerHTML = `
+        <label for="${fieldId}" class="form-label">${field.label_name}</label>
+        <div id="${fieldId}" class="form-control-plaintext"></div>
+    `
+
+    parentElement.appendChild(wrapper)
+
+    const valueElement = wrapper.querySelector(`#${fieldId}`)
+
+    const renderValue = () => {
+        const value = field.getValue
+            ? field.getValue({ field, data, formState })
+            : formState[field.formStateField]
+
+        valueElement.textContent = value || ""
+    }
+
+    renderValue()
+
+    if (field.listen_event_name) {
+        document.addEventListener(field.listen_event_name, renderValue)
+    }
+}
+
 const renderEventField = async (parentElement, field, data) => {
     const wrapper = document.createElement("div")
     wrapper.className = "mb-3"
@@ -266,7 +300,7 @@ const form = {
 
                         const values = valueData["params"] || {}
 
-                        const fields = ["enterprise", "vehicle", "frequency", "period_from", "period_to"]
+                        const fields = ["enterprise", "vehicle", "frequency", "period_from", "period_to", "time_zone"]
 
                         for (const fieldName of fields) {
                             if (fieldName in values) {
@@ -288,9 +322,18 @@ const form = {
                     formStateField: "enterprise",
                     valueFromItem: (item) => item.id,
                     titleFromItem: (item) => item.name,
-                    onSelect: () => {
+                    onSelect: ({ item }) => {
                         formState.vehicle = null
+                        formState.time_zone = item.time_zone_code
                     },
+                    emit_on_select_event_name: "EnterpriseSelected",
+                },
+                {
+                    name: "time_zone",
+                    label_name: "Временная зона",
+                    render: renderLabel,
+                    formStateField: "time_zone",
+                    listen_event_name: "EnterpriseSelected",
                 },
                 {
                     name: "vehicle",
@@ -345,6 +388,7 @@ const form = {
                         frequency: formState.frequency,
                         period_from: "2026-03-01T00:00:00+00:00",
                         period_to: "2026-03-31T23:59:59+00:00",
+                        time_zone: formState.time_zone,
                     }),
                     onEvent: tableReport,
 

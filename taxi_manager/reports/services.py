@@ -115,6 +115,7 @@ class ReportService:
 
         if "enterprise" in params_names and default_values.enterprise is not None:
             result["enterprise"] = default_values.enterprise.id
+            result["time_zone"] = default_values.enterprise.time_zone.code
 
         if "vehicle" in params_names and default_values.vehicle is not None:
             result["vehicle"] = default_values.vehicle.id
