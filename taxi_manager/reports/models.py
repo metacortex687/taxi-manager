@@ -56,6 +56,12 @@ class Report(models.Model):
     def get_pdf(self):
         return pdf.renderReportToPDF(self)
 
+    def get_period_dates_in_report_time_zone(self):
+        report_tz = ZoneInfo(self.time_zone.code)
+        period_from = self.period_from.astimezone(report_tz).date().isoformat()
+        period_to = self.period_to.astimezone(report_tz).date().isoformat()
+        return period_from, period_to
+    
     @classmethod
     def get_report_types(cls):
         return [
