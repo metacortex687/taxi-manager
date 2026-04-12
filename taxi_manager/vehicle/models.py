@@ -48,6 +48,10 @@ class Vehicle(models.Model):
         related_name="vehicles",
     )
 
+    @property
+    def display_name(self):
+        return f"{self.model} {self.number}" #todo N+1 если не добавить предзагрузки
+    
     class Meta:
         verbose_name = "Транспортное средство"
         verbose_name_plural = "Транспортные средства"
