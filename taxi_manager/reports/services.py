@@ -150,3 +150,7 @@ class ReportService:
             {"id": code, "display_name": display_name}
             for (code, display_name) in models.REPORT_FREQUENCIES
         ]
+
+    def get_file_name_pdf_by_uuid(self, report_type, uuid):
+        report = self.get_report_by_uuid(report_type, uuid)
+        return f"{report.name}.pdf"

@@ -51,10 +51,11 @@ class FrequencyListAPIView(APIView):
 
 
 def export_pdf(request, report_type, uuid):
-    print(report_type, uuid, "!!!!!!!!")
+    report_service = services.ReportService()
+
     return FileResponse(
-        services.ReportService().get_pdf_by_uuid(report_type, uuid),
+        report_service.get_pdf_by_uuid(report_type, uuid),
         as_attachment=True,
-        filename="hello_world.pdf",
+        filename=report_service.get_file_name_pdf_by_uuid(report_type, uuid),
         content_type="application/pdf",
     )
