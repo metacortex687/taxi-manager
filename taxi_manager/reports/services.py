@@ -7,6 +7,7 @@ from taxi_manager.time_zones.models import TimeZone
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
 
+from io import BytesIO
 
 class ReportService:
     def verbouse_name(self, report_type):
@@ -86,6 +87,10 @@ class ReportService:
             }
             for result in results.values()  
         ]
+
+    def get_pdf_by_uuid(self, report_type, uuid) -> BytesIO:
+        report = self.get_report_by_uuid(report_type, uuid)
+        return BytesIO(report.get_pdf())
 
     def save_default_values(self, user, params):
         default_values, _ = models.DefaultUserValues.objects.get_or_create(user=user)

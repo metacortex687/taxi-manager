@@ -225,6 +225,26 @@ const renderEventField = async (parentElement, field, data) => {
     })
 }
 
+const renderLink = async (parentElement, field, data) => {
+    const a = document.createElement('a'); // generate node
+
+    a.setAttribute('href', field.href(data))
+    a.textContent = field.textContent(data)
+
+    for(const class_html in field.classList){
+        a.classList.add("d-none")
+    }    
+
+    parentElement.appendChild(a);      
+
+    for(const key in field.onEvent) {
+        document.addEventListener(key, async () =>  {
+            field.onEvent[key](field, data, a) 
+        })
+    }
+}
+
+
 const renderRouteMap = (container, paths) => {
     if (!Array.isArray(paths) || !paths.length) {
         container.innerHTML = ""
@@ -263,6 +283,8 @@ const tableReport = async (wrapper, field, data) => {
         wrapper.innerHTML = ""
         return
     }
+
+    formState.uuid = createdReport.uuid
 
     const reportResponse = await fetchDataJSON(
         `/api/v1/reports/${reportType}/${createdReport.uuid}/`
@@ -324,6 +346,11 @@ const tableReport = async (wrapper, field, data) => {
         const path = JSON.parse(decodeURIComponent(encodedPath))
         renderRouteMap(element, path)
     })
+
+    if(field.emit_on_end_render)
+    {
+        document.dispatchEvent(new CustomEvent(field.emit_on_end_render))
+    }
 }
 
 const renderPeriodField = async (parentElement, field, data) => {
@@ -383,6 +410,7 @@ const formState = {
     frequency: null,
     period_from: null,
     period_to: null,
+    uuid: null
 }
 
 const formCarMileageReport  = {
@@ -481,6 +509,19 @@ const formCarMileageReport  = {
                     className: "btn btn-primary",
                 },
                 {
+                    name: "link_download_pdf",
+                    render: renderLink,
+                    href: () => "#",
+                    textContent: () => "pdf",
+                    classList: ["d-none"],
+                    onEvent: {
+                        TableCreate: (field, data, element) => {
+                            element.classList.remove("d-none")
+                            element.href = `/api/v1/reports/carmileagereport/${formState.uuid}/pdf`
+                        }
+                    }
+                },
+                {
                     name: "report_result",
                     render: renderEventField,
                     listen_event_name: "build_report",
@@ -514,6 +555,7 @@ const formCarMileageReport  = {
                         time_zone: formState.time_zone,
                     }),
                     onEvent: tableReport,
+                    emit_on_end_render: "TableCreate",
 
                 },
             ]
@@ -631,7 +673,6 @@ const formCarRoutesReport = {
                         time_zone: formState.time_zone,
                     }),
                     onEvent: tableReport,
-
                 },
             ]
         },

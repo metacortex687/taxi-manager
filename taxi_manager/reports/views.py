@@ -1,9 +1,10 @@
+from . import services
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-
-from . import services
+from django.http import FileResponse
 
 
 class ReportListAPIView(APIView):
@@ -48,3 +49,12 @@ class FrequencyListAPIView(APIView):
     def get(self, request):
         return Response(services.ReportService().get_list_frequencies())
 
+
+def export_pdf(request, report_type, uuid):
+    print(report_type, uuid, "!!!!!!!!")
+    return FileResponse(
+        services.ReportService().get_pdf_by_uuid(report_type, uuid),
+        as_attachment=True,
+        filename="hello_world.pdf",
+        content_type="application/pdf",
+    )

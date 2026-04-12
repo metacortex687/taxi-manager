@@ -3,6 +3,8 @@ from taxi_manager.vehicle.models import Vehicle
 from taxi_manager.geo_tracking.models import Trip
 from taxi_manager.time_zones.models import TimeZone
 
+from . import pdf
+
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
 from django.db.models import Sum, Count
 from django.contrib.auth import get_user_model
@@ -51,6 +53,8 @@ class Report(models.Model):
         self.period_to      = self.period_to.astimezone(report_tz)
         super().save(*args, **kwargs)
 
+    def get_pdf(self):
+        return pdf.renderReportToPDF(self)
 
     @classmethod
     def get_report_types(cls):
@@ -129,6 +133,8 @@ class CarMileageReport(Report):
     def get_result_model(cls):
         return CarMileageReportValue
     
+    def get_pdf(self):
+        return pdf.renderReportToPDF(self)
 
 
     def create_values(self):
