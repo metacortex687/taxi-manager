@@ -22,7 +22,7 @@ class ReportAPIView(APIView):
             {
                 "uuid": str(uuid),
                 "type": report_type,
-                "status": "done",
+                "status": report_service.get_status(report_type, uuid),
                 "params": params,
                 "can_render_pdf": report_service.can_render_pdf(report_type)
             },
@@ -43,7 +43,8 @@ class ReportAPIView(APIView):
         return Response(
             {
                 "uuid": str(uuid),
-                "result": report_service.get_result(report_type, uuid),
+                "status": report_service.get_status(report_type, uuid),
+                "result": report_service.get_result(report_type, uuid),                
             },
         )
 

@@ -1,13 +1,17 @@
-import uuid
+
 from . import models
+from . import tasks
+
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.vehicle.models import Vehicle
 from taxi_manager.time_zones.models import TimeZone
 
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
+from django.db import transaction
 
 from io import BytesIO
+import uuid
 
 class ReportService:
     def verbouse_name(self, report_type):
@@ -41,11 +45,13 @@ class ReportService:
         if "period_to" in create_params:
            create_params["period_to"] = parse_datetime(create_params["period_to"])
 
-        report = model_report.objects.create(**create_params)
-
         self.save_default_values(user, params)
 
-        report.create_values()
+        report = model_report.objects.create(status="PENDING", **create_params)
+
+        transaction.on_commit(
+            lambda: tasks.build_report.enqueue(report_type, str(report.uuid))
+        ) 
 
         return report.uuid
     
@@ -59,6 +65,9 @@ class ReportService:
         return get_object_or_404(
             self.get_model_report_by_type(report_type), uuid=report_uuid
         )
+    
+    def get_status(self, report_type, uuid):
+        return self.get_report_by_uuid(report_type, uuid).status
 
     def get_available_reports(self):
         return [
@@ -77,13 +86,17 @@ class ReportService:
 
     def get_result(self, report_type, uuid):
         report = self.get_report_by_uuid(report_type, uuid)
-        results = report.get_results()
+
+
+        if(report.status != "DONE"):
+            return []            
         
+        results = report.get_results()
+
         return [
             {
                 **result,
                 "date": result["date"].isoformat(),
-
             }
             for result in results.values()  
         ]

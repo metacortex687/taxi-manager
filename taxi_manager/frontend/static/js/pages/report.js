@@ -270,8 +270,62 @@ const renderRouteMap = (container, paths) => {
 
 const tableReport = async (wrapper, field, data) => {
     const reportType = field.report_type
-
     const params = field.getParams()
+    const headers = data.value_data?.headers || []
+    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+    if (!headers.length) {
+        wrapper.innerHTML = `<div class="alert alert-danger">Не удалось получить заголовки отчета</div>`
+        return
+    }
+
+    const formatCellValue = (field, header, row) => {
+        const value = row[header.name]
+        const formatter = field.formatters?.[header.name]
+
+        if (!formatter) {
+            return value ?? ""
+        }
+
+        return formatter({ value, header, row, formState }) ?? ""
+    }
+
+    const renderTable = async (tbodyHTML) => {
+        wrapper.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            ${headers.map(header => `<th>${header.verbose_name}</th>`).join("")}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tbodyHTML}
+                    </tbody>
+                </table>
+            </div>
+        `
+    }
+
+    const renderStatusRow = (text) => `
+        <tr>
+            <td colspan="${headers.length}">${text}</td>
+        </tr>
+    `
+
+    let lastShownStatus = null
+
+    const showStatus = async (status, text) => {
+        renderTable(renderStatusRow(text))
+
+        if (lastShownStatus !== status) {
+            lastShownStatus = status
+            await new Promise(requestAnimationFrame)
+            await wait(1500)
+        }
+    }
+
+    await showStatus("PENDING", "В очереди")
 
     const createdReport = await fetchDataJSON(
         `/api/v1/reports/${reportType}/`,
@@ -287,70 +341,60 @@ const tableReport = async (wrapper, field, data) => {
     formState.uuid = createdReport.uuid
     formState.can_render_pdf = createdReport.can_render_pdf
 
-    const reportResponse = await fetchDataJSON(
-        `/api/v1/reports/${reportType}/${createdReport.uuid}/`
-    )
+    while (true) {
+        await wait(300)
 
-    const rows = reportResponse.result || []
-    const headers = data.value_data?.headers || []
+        const reportResponse = await fetchDataJSON(
+            `/api/v1/reports/${reportType}/${createdReport.uuid}/`
+        )
+        const rows = reportResponse.result || []
 
-    if (!headers.length) {
-        wrapper.innerHTML = `<div class="alert alert-danger">Не удалось получить заголовки отчета</div>`
-        return
-    }
-
-
-    if (!rows.length) {
-        wrapper.innerHTML = `<div class="alert alert-info">Нет данных для отображения</div>`
-        return
-    }
-
-    const formatCellValue = (field, header, row) => {
-        const value = row[header.name]
-        const formatter = field.formatters?.[header.name]
-
-        if (!formatter) {
-            return value ?? ""
+        if (reportResponse.status === "PENDING") {
+            await showStatus("PENDING", "В очереди")
+            continue
         }
 
-        return formatter({ value, header, row, formState }) ?? ""
-    }
-
-    wrapper.innerHTML = `
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        ${headers.map(header => `<th>${header.verbose_name}</th>`).join("")}
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rows.map(row => `
-                        <tr>
-                            ${headers.map(header => `<td>${formatCellValue(field, header, row)}</td>`).join("")}
-                        </tr>
-                    `).join("")}
-                </tbody>
-            </table>
-        </div>
-    `
-
-    const routeMapElements = wrapper.querySelectorAll(".report-route-map")
-
-    routeMapElements.forEach((element) => {
-        const encodedPath = element.dataset.path
-
-        if (!encodedPath) {
-            return
+        if (reportResponse.status === "PROCESSING") {
+            await showStatus("PROCESSING", "Формируется")
+            continue
         }
 
-        const path = JSON.parse(decodeURIComponent(encodedPath))
-        renderRouteMap(element, path)
-    })
+        if (reportResponse.status !== "DONE") {
+            renderTable(renderStatusRow("Не известный статус задачи"))
+            break
+        }
 
-    if(field.emit_on_end_render)
-    {
-        document.dispatchEvent(new CustomEvent(field.emit_on_end_render))
+        if (!rows.length) {
+            renderTable(renderStatusRow("Нет данных для отображения"))
+            break
+        }
+
+        renderTable(
+            rows.map(row => `
+                <tr>
+                    ${headers.map(header => `<td>${formatCellValue(field, header, row)}</td>`).join("")}
+                </tr>
+            `).join("")
+        )
+
+        const routeMapElements = wrapper.querySelectorAll(".report-route-map")
+
+        routeMapElements.forEach((element) => {
+            const encodedPath = element.dataset.path
+
+            if (!encodedPath) {
+                return
+            }
+
+            const path = JSON.parse(decodeURIComponent(encodedPath))
+            renderRouteMap(element, path)
+        })
+
+        if (field.emit_on_end_render) {
+            document.dispatchEvent(new CustomEvent(field.emit_on_end_render))
+        }
+
+        break
     }
 }
 
