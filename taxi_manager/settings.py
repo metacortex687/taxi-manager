@@ -184,3 +184,11 @@ ADDRESS_PROVIDER = {
 
 from import_export.formats import base_formats
 IMPORT_EXPORT_FORMATS = [base_formats.JSON, base_formats.CSV]
+
+TASKS = {
+    "default": {
+        # "BACKEND": "django.tasks.backends.immediate.ImmediateBackend",
+        "BACKEND": "taxi_manager.reports.task_backends.ThreadQueueBackend",
+         "QUEUES": ["default", "reports"],
+    }
+}
