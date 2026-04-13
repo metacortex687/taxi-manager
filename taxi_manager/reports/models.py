@@ -15,7 +15,7 @@ from zoneinfo import ZoneInfo
 
 import uuid
 import json
-
+import time
 
 
 REPORT_FREQUENCIES = [
@@ -165,6 +165,7 @@ class CarMileageReport(Report):
 
 
     def create_values(self):
+        #time.sleep(10) #Правильная имитация задержки
         grouped_rows = (
             Trip.objects.filter_enterprise(self.enterprise)
             .filter_vehicle(self.vehicle)
