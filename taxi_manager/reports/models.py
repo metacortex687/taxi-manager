@@ -25,8 +25,16 @@ REPORT_FREQUENCIES = [
     ("YEAR", "Год"),
 ]
 
+REPORT_STATUSES = [
+    ("PENDING", "Ожидает формирования"),
+    ("PROCESSING", "Формируется"),
+    ("DONE", "Готов"),
+    ("ERROR", "Ошибка"),
+]
+
 
 class Report(models.Model):
+    status = models.CharField(max_length=10, choices=REPORT_STATUSES)
     name = models.CharField(max_length=500)
     frequency = models.CharField(max_length=5, choices=REPORT_FREQUENCIES)
     period_from = models.DateTimeField()
