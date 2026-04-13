@@ -90,7 +90,12 @@ class ReportService:
 
     def get_pdf_by_uuid(self, report_type, uuid) -> BytesIO:
         report = self.get_report_by_uuid(report_type, uuid)
-        return BytesIO(report.get_pdf())
+        pdf_render = self.get_model_report_by_type(report_type).get_pdf_render()
+        return BytesIO(pdf_render(report))
+    
+    def can_render_pdf(self, report_type) -> bool:
+        return self.get_model_report_by_type(report_type).get_pdf_render() is not None
+
 
     def save_default_values(self, user, params):
         default_values, _ = models.DefaultUserValues.objects.get_or_create(user=user)

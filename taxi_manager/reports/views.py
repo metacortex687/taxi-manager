@@ -15,7 +15,8 @@ class ReportListAPIView(APIView):
 class ReportAPIView(APIView):
     def post(self, request, report_type):
         params = dict(self.request.data)
-        uuid = services.ReportService().create_report(report_type, params, request.user)
+        report_service = services.ReportService()
+        uuid = report_service.create_report(report_type, params, request.user)
 
         return Response(
             {
@@ -23,6 +24,7 @@ class ReportAPIView(APIView):
                 "type": report_type,
                 "status": "done",
                 "params": params,
+                "can_render_pdf": report_service.can_render_pdf(report_type)
             },
             status=status.HTTP_201_CREATED,
         )

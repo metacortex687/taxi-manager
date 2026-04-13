@@ -56,8 +56,10 @@ class Report(models.Model):
 
         super().save(*args, **kwargs)
 
-    def get_pdf(self):
-        return pdf.renderReportToPDF(self)
+    @classmethod
+    def get_pdf_render(cls):
+        return None
+        
 
     def get_period_dates_in_report_time_zone(self):
         report_tz = ZoneInfo(self.time_zone.code)
@@ -149,8 +151,9 @@ class CarMileageReport(Report):
     def get_result_model(cls):
         return CarMileageReportValue
     
-    def get_pdf(self):
-        return pdf.renderReportToPDF(self)
+    @classmethod
+    def get_pdf_render(cls):
+        return pdf.renderReportToPDF
 
 
     def create_values(self):

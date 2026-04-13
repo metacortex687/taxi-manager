@@ -285,6 +285,7 @@ const tableReport = async (wrapper, field, data) => {
     }
 
     formState.uuid = createdReport.uuid
+    formState.can_render_pdf = createdReport.can_render_pdf
 
     const reportResponse = await fetchDataJSON(
         `/api/v1/reports/${reportType}/${createdReport.uuid}/`
@@ -410,7 +411,8 @@ const formState = {
     frequency: null,
     period_from: null,
     period_to: null,
-    uuid: null
+    uuid: null,
+    can_render_pdf: null
 }
 
 const formCarMileageReport  = {
@@ -516,6 +518,9 @@ const formCarMileageReport  = {
                     classList: ["d-none"],
                     onEvent: {
                         TableCreate: (field, data, element) => {
+                            if(!formState.can_render_pdf) {
+                                return
+                            }
                             element.classList.remove("d-none")
                             element.href = `/api/v1/reports/carmileagereport/${formState.uuid}/pdf`
                         }
