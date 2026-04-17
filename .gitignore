@@ -20,3 +20,4 @@ pytest.ini
 
 # Node / Babel
 taxi_manager/react_frontend/node_modules/
+taxi_manager/react_frontend/babel.log
