@@ -27,7 +27,7 @@ const renderMapField = (field, entity, parentElement, eventData = { id: undefine
     // Отрисовка стартовых точек маршрута
     // {
     const grayIconEnd = L.icon({
-        iconUrl: "/frontend/static/img/marker-gray-start.png",
+        iconUrl: "/vanilla_frontend/static/img/marker-gray-start.png",
         shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
         iconSize: [25, 41],
         iconAnchor: [12, 41],
@@ -37,7 +37,7 @@ const renderMapField = (field, entity, parentElement, eventData = { id: undefine
     })
 
     const greenIconEnd = L.icon({
-        iconUrl: "/frontend/static/img/marker-green-start.png",
+        iconUrl: "/vanilla_frontend/static/img/marker-green-start.png",
         shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
         iconSize: [25, 41],
         iconAnchor: [12, 41],
@@ -91,7 +91,7 @@ const renderMapField = (field, entity, parentElement, eventData = { id: undefine
     // Отрисовка конечных точек маршрута
     // {
     const grayIconStart = L.icon({
-        iconUrl: "/frontend/static/img/marker-gray-end.png",
+        iconUrl: "/vanilla_frontend/static/img/marker-gray-end.png",
         shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
         iconSize: [25, 41],
         iconAnchor: [12, 41],
@@ -101,7 +101,7 @@ const renderMapField = (field, entity, parentElement, eventData = { id: undefine
     })
 
     const greenIconStart = L.icon({
-        iconUrl: "/frontend/static/img/marker-green-end.png",
+        iconUrl: "/vanilla_frontend/static/img/marker-green-end.png",
         shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
         iconSize: [25, 41],
         iconAnchor: [12, 41],

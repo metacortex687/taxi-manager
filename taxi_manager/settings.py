@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'taxi_manager.enterprise',
     'taxi_manager.api_v1',
     'taxi_manager.simply_site',
-    'taxi_manager.frontend',
+    'taxi_manager.vanilla_frontend',
     'taxi_manager.time_zones',
     'taxi_manager.geo_tracking',
     'taxi_manager.tracking_simulator',
@@ -153,7 +153,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'frontend/static/'
+STATIC_URL = 'vanilla_frontend/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
