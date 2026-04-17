@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include("taxi_manager.api_v1.urls")),
     path('site/', include("taxi_manager.simply_site.urls")),
+    path('react/', include("taxi_manager.react_frontend.urls")),
 ]

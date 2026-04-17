@@ -17,3 +17,6 @@ db.sqlite3
 pytest.ini
 
 .cache
+
+# Node / Babel
+taxi_manager/react_frontend/node_modules/
