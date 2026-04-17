@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'taxi_manager.geocoding',
     'taxi_manager.exchange',
     'taxi_manager.reports',
+    'taxi_manager.react_frontend',
 ]
 
 MIDDLEWARE = [
