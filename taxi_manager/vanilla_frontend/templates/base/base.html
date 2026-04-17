@@ -46,7 +46,7 @@
 
     {% block script %}{% endblock script %} 
     <script type="module">
-        import { fetchDataJSON } from "{% static 'js/api/fetch-data.js' %}"    
+        import { fetchDataJSON } from "{% static 'vanilla_frontend/js/api/fetch-data.js' %}"    
 
         const loadUserInfo = async () => {
             const tokenAuth = localStorage.getItem("tokenAuth")
