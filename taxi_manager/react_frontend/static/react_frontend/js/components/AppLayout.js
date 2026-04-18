@@ -3,7 +3,7 @@ class AppLayout extends React.Component {
     const {
       children
     } = this.props;
-    return /*#__PURE__*/React.createElement("body", {
+    return /*#__PURE__*/React.createElement("div", {
       className: "d-flex flex-column min-vh-100"
     }, children);
   }
