@@ -1,28 +1,25 @@
-import {loadUserInfo} from "../api/users.js"
+import {loadUserInfo, logout} from "../api/users.js"
+import AuthContext from "../auth/AuthContest.js"
 
-class TopNavbar extends React.Component {
-    constructor(props) {
-        super(props)
-
-        this.state = {
-            userInfo: null,
-        }
-    }
+class TopNavbar extends React.Component {    
+    static contextType = AuthContext
 
     async componentDidMount() {
         const userInfo = await loadUserInfo()
         this.setState({ userInfo })
     }
 
+    handleSubmitLogout = (e) => {
+        e.preventDefault()
+        this.context.logout()
+    }
+
 
 
     render() {
-        const {userInfo} = this.state
+        const {isAuthenticated, userInfo} = this.context
 
         const nameUser =  userInfo?.username || "Не авторизован"
-
-        console.log(userInfo) 
-
 
         return (
             <nav className="navbar navbar-expand-lg navbar-light bg-light px-3" >
@@ -33,10 +30,10 @@ class TopNavbar extends React.Component {
                         </a>
                     </li>
                     <li className="nav-item ms-auto">
-                        <form id="logoutForm">
+                        <form id="logoutForm" onSubmit={this.handleSubmitLogout}>
                             <label htmlFor="usernameLabel">Пользователь:</label>
                             <label id="usernameLabel">{nameUser}</label>
-                            <button type="submit" >Выйти</button>    
+                            {isAuthenticated ?  <button type="submit" >Выйти</button> : null}    
                         </form>                        
                     </li>                    
                 </ul>
