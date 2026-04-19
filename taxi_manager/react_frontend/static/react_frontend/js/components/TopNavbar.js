@@ -1,23 +1,23 @@
-import { loadUserInfo } from "../api/users.js";
+import { loadUserInfo, logout } from "../api/users.js";
+import AuthContext from "../auth/AuthContest.js";
 class TopNavbar extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      userInfo: null
-    };
-  }
+  static contextType = AuthContext;
   async componentDidMount() {
     const userInfo = await loadUserInfo();
     this.setState({
       userInfo
     });
   }
+  handleSubmitLogout = e => {
+    e.preventDefault();
+    this.context.logout();
+  };
   render() {
     const {
+      isAuthenticated,
       userInfo
-    } = this.state;
+    } = this.context;
     const nameUser = userInfo?.username || "Не авторизован";
-    console.log(userInfo);
     return /*#__PURE__*/React.createElement("nav", {
       className: "navbar navbar-expand-lg navbar-light bg-light px-3"
     }, /*#__PURE__*/React.createElement("ul", {
@@ -30,14 +30,15 @@ class TopNavbar extends React.Component {
     }, "\u041E\u0442\u0447\u0435\u0442\u044B")), /*#__PURE__*/React.createElement("li", {
       className: "nav-item ms-auto"
     }, /*#__PURE__*/React.createElement("form", {
-      id: "logoutForm"
+      id: "logoutForm",
+      onSubmit: this.handleSubmitLogout
     }, /*#__PURE__*/React.createElement("label", {
       htmlFor: "usernameLabel"
     }, "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C:"), /*#__PURE__*/React.createElement("label", {
       id: "usernameLabel"
-    }, nameUser), /*#__PURE__*/React.createElement("button", {
+    }, nameUser), isAuthenticated ? /*#__PURE__*/React.createElement("button", {
       type: "submit"
-    }, "\u0412\u044B\u0439\u0442\u0438")))));
+    }, "\u0412\u044B\u0439\u0442\u0438") : null))));
   }
 }
 export default TopNavbar;
