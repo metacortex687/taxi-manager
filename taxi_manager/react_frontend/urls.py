@@ -1,7 +1,7 @@
-from django.urls import path
+from django.urls import re_path
 from django.views.generic import TemplateView, RedirectView
 from . import views
 
 urlpatterns = [
-    path("",views.hello, name="hello_word"),
+    re_path(r"^(?P<subpath>.*)$", views.index, name="index_react"),
 ]
