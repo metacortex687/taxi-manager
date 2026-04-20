@@ -3,8 +3,10 @@ import AppLayout from "./components/AppLayout"
 import AuthProvider from "./auth/AuthProvider"
 import LoginPage from "./pages/LoginPage"
 import HelloWorldPage from "./pages/HelloWorldPage"
+import RequireAuth from "./auth/RequireAuth"
 
 import { BrowserRouter, Routes, Route } from "react-router-dom"
+
 
 function App() {
   return (
@@ -14,7 +16,9 @@ function App() {
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<HelloWorldPage />} />
+            <Route element={<RequireAuth/>}>
+              <Route path="/" element={<HelloWorldPage />} />            
+            </Route>            
           </Route>
         </Routes>
       </AuthProvider>
