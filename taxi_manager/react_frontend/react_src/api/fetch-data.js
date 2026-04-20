@@ -13,12 +13,11 @@ const authorizationFetch = async (url, options = {}) => {
     })
 }
 
-const fetchDataJSON = async (url, method = "GET", body=undefined) => {
-    const tokenAuth = localStorage.getItem("tokenAuth")
-
+const fetchDataJSON = async (url, method = "GET", body=undefined, publicData=false) => {
+    const requestMethod = publicData ? fetch : authorizationFetch
     // clear_massages()
 
-    const response = await authorizationFetch(url, {
+    const response = await requestMethod(url, {
         method: method,
         headers: {
             "Accept": "application/json",

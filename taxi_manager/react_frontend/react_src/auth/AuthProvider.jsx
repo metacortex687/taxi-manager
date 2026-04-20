@@ -1,4 +1,4 @@
-import {loadUserInfo, logout} from "../api/users.js"
+import {loadUserInfo, logout, loginUser} from "../api/users.js"
 import AuthContext from "./AuthContest";
 
 import React from "react"
@@ -41,6 +41,11 @@ class AuthProvider extends React.Component {
         )        
     }
 
+    loginUser = async (username, password) => {
+        await loginUser(username, password)
+        this.login()
+    }   
+
     logout = () => {
         logout()
         this.setState({
@@ -55,6 +60,7 @@ class AuthProvider extends React.Component {
             userInfo: this.state.userInfo,
             // login: this.login,
             logout: this.logout,
+            loginUser: this.loginUser
         } 
 
         return (

@@ -1,3 +1,4 @@
+import { data } from "react-router-dom"
 import { fetchDataJSON } from "./fetch-data.js"    
 
 const loadUserInfo = async () => {
@@ -8,4 +9,18 @@ const logout = () => {
     localStorage.removeItem("tokenAuth")
 }
 
-export {loadUserInfo, logout}
+const loginUser = async (username, password) => {
+    const data = await fetchDataJSON(
+        "/api/v1/auth/token/login/",
+        "POST",
+        JSON.stringify({
+            username: username,
+            password: password,
+        }),
+        true
+    )
+
+    localStorage.setItem("tokenAuth", data.auth_token)     
+}
+
+export {loadUserInfo, logout, loginUser}
