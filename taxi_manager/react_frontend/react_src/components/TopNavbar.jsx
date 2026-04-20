@@ -1,5 +1,7 @@
 import {loadUserInfo, logout} from "../api/users.js"
-import AuthContext from "../auth/AuthContest.js"
+import AuthContext from "../auth/AuthContest"
+
+import React from "react"
 
 class TopNavbar extends React.Component {    
     static contextType = AuthContext

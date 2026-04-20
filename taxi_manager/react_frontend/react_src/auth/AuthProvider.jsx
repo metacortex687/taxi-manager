@@ -1,5 +1,7 @@
 import {loadUserInfo, logout} from "../api/users.js"
-import AuthContext from "./AuthContest.js";
+import AuthContext from "./AuthContest";
+
+import React from "react"
 
 class AuthProvider extends React.Component {
     constructor(props) {

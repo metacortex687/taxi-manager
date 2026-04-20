@@ -1,17 +1,25 @@
-import TopNavbar from "./components/TopNavbar.js"
-import AppLayout from "./components/AppLayout.js"
-import AuthProvider from "./auth/AuthProvider.js"
+import TopNavbar from "./components/TopNavbar"
+import AppLayout from "./components/AppLayout"
+import AuthProvider from "./auth/AuthProvider"
+import LoginPage from "./pages/LoginPage"
+import HelloWorldPage from "./pages/HelloWorldPage"
 
-function App() {  
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+
+function App() {
   return (
-    <AuthProvider>
-      <AppLayout>
+    <BrowserRouter basename="/react">
+      <AuthProvider>
         <TopNavbar />
-        <h1>Hello world !!!</h1>
-      </AppLayout> 
-    </AuthProvider>
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<HelloWorldPage />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   )
-
 }
 
 export default App

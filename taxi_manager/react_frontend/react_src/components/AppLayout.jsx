@@ -1,12 +1,14 @@
+import React from "react"
+import { Outlet } from "react-router-dom"
+
 class AppLayout extends React.Component {
-    render() {
-        const { children } = this.props
-        return (
-            <div className="d-flex flex-column min-vh-100">
-                {children}
-            </div>
-        )
-    }
+  render() {
+    return (
+      <div className="d-flex flex-column min-vh-100">
+        <Outlet />
+      </div>
+    )
+  }
 }
 
-export default AppLayout 
+export default AppLayout

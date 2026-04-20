@@ -2,10 +2,15 @@
 {% bootstrap_css %}
 {% bootstrap_javascript %}
 
-<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-
 <div id="react-root"></div>
 
-{% load static %}
-<script type="module" src="{% static 'react_frontend/js/index.js' %}"></script>
+<script type="module">
+  import RefreshRuntime from "http://172.27.79.57:5173/@react-refresh"
+  RefreshRuntime.injectIntoGlobalHook(window)
+  window.$RefreshReg$ = () => {}
+  window.$RefreshSig$ = () => (type) => type
+  window.__vite_plugin_react_preamble_installed__ = true
+</script>
+
+<script type="module" src="http://172.27.79.57:5173/@vite/client"></script>
+<script type="module" src="http://172.27.79.57:5173/react_src/index.jsx"></script>
