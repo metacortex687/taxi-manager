@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import AuthContext from "../auth/AuthContest"
 
 import React from "react"
@@ -18,6 +19,9 @@ class TopNavbar extends React.Component {
         return (
             <nav className="navbar navbar-expand-lg navbar-light bg-light px-3" >
                 <ul className="navbar-nav d-flex flex-row align-items-center w-100">
+                    <li className="nav-item">
+                        <Link to="/enterprises" className="btn btn-secondary btn-lg rounded-1 btn-light border">Предприятия</Link>
+                    </li>
                     <li className="nav-item">
                         <a href="#" className="btn btn-secondary btn-lg rounded-1 btn-light border">
                             Отчеты
