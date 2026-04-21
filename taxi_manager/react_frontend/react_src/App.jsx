@@ -17,7 +17,7 @@ function App() {
           <Route element={<AppLayout />}>
             <Route path="/login" element={<LoginPage />} />
             <Route element={<RequireAuth/>}>
-              <Route path="/" element={<HelloWorldPage />} />            
+              <Route index element={<HelloWorldPage />} /> 
             </Route>            
           </Route>
         </Routes>
