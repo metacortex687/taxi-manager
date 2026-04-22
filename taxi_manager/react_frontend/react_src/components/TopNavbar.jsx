@@ -20,6 +20,9 @@ class TopNavbar extends React.Component {
             <nav className="navbar navbar-expand-lg navbar-light bg-light px-3" >
                 <ul className="navbar-nav d-flex flex-row align-items-center w-100">
                     <li className="nav-item">
+                        <Link to="/" className="btn btn-secondary btn-lg rounded-1 btn-light border  d-inline-flex align-items-center" style={{ height: "48px" }}><i className="fa fa-home icon-border"></i></Link>
+                    </li>
+                    <li className="nav-item">
                         <Link to="/enterprises" className="btn btn-secondary btn-lg rounded-1 btn-light border">Предприятия</Link>
                     </li>
                     <li className="nav-item">
