@@ -6,6 +6,8 @@ import HelloWorldPage from "./pages/HelloWorldPage"
 import EnterprisesPage from "./pages/EnterprisesPage"
 import RequireAuth from "./auth/RequireAuth"
 
+import urls from "./urls"
+
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -27,10 +29,10 @@ function App() {
           <TopNavbar />
           <Routes>
             <Route element={<AppLayout />}>
-              <Route path="/login" element={<LoginPage />} />
+              <Route path={urls.login()} element={<LoginPage />} />
               <Route element={<RequireAuth/>}>
                 <Route index element={<HelloWorldPage />} /> 
-                <Route path="enterprises" element={<EnterprisesPage/>} />             
+                <Route path={urls.enterprises()} element={<EnterprisesPage/>} />             
               </Route>            
             </Route>
           </Routes>
