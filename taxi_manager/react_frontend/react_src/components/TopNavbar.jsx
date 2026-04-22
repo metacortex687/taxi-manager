@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import AuthContext from "../auth/AuthContest"
 
-import urls from "../urls"
+import routes from "../routes"
 
 import React from "react"
 
@@ -22,10 +22,10 @@ class TopNavbar extends React.Component {
             <nav className="navbar navbar-expand-lg navbar-light bg-light px-3" >
                 <ul className="navbar-nav d-flex flex-row align-items-center w-100">
                     <li className="nav-item">
-                        <Link to={urls.index()} className="btn btn-secondary btn-lg rounded-1 btn-light border  d-inline-flex align-items-center" style={{ height: "48px" }}><i className="fa fa-home icon-border"></i></Link>
+                        <Link to={routes.index.url()} className="btn btn-secondary btn-lg rounded-1 btn-light border  d-inline-flex align-items-center" style={{ height: "48px" }}><i className="fa fa-home icon-border"></i></Link>
                     </li>
                     <li className="nav-item">
-                        <Link to={urls.enterprises()} className="btn btn-secondary btn-lg rounded-1 btn-light border">Предприятия</Link>
+                        <Link to={routes.enterprises.url()} className="btn btn-secondary btn-lg rounded-1 btn-light border">Предприятия</Link>
                     </li>
                     <li className="nav-item">
                         <a href="#" className="btn btn-secondary btn-lg rounded-1 btn-light border">

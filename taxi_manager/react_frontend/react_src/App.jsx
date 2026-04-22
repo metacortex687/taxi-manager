@@ -6,7 +6,8 @@ import HelloWorldPage from "./pages/HelloWorldPage"
 import EnterprisesPage from "./pages/EnterprisesPage"
 import RequireAuth from "./auth/RequireAuth"
 
-import urls from "./urls"
+
+import routes from "./routes"
 
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 
@@ -29,10 +30,10 @@ function App() {
           <TopNavbar />
           <Routes>
             <Route element={<AppLayout />}>
-              <Route path={urls.login()} element={<LoginPage />} />
+              <Route path={routes.login.path} element={<LoginPage />} />
               <Route element={<RequireAuth/>}>
                 <Route index element={<HelloWorldPage />} /> 
-                <Route path={urls.enterprises()} element={<EnterprisesPage/>} />             
+                <Route path={routes.enterprises.path} element={<EnterprisesPage/>} /> 
               </Route>            
             </Route>
           </Routes>

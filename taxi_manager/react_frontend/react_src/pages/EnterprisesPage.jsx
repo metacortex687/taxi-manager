@@ -1,10 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
 import { fetchDataJSON } from "../api/fetch-data"
+import { Link } from "react-router-dom"
+
+import routes from "../routes"
 
 function EnterprisesPage() {
     const enterprisesQuery = useQuery({
         queryKey: ["enterprises"],
-        queryFn: async () => (await fetchDataJSON("/api/v1/enterprises/")).results
+        queryFn: async () => (await fetchDataJSON(routes.enterprises.api())).results
     }
     )
 
@@ -22,7 +25,7 @@ function EnterprisesPage() {
             {enterprisesQuery.data.map((enterprise) => (
                 <li key={enterprise.id}>
                     <a href="/enterprises/${enterprise.id}/edit/"> {enterprise.name} </a>
-                    <a href="/enterprises/${enterprise.id}/vehicles/"> Авто </a>
+                    <Link to={routes.vehicles.url(enterprise.id)}> Авто </Link>
                     <a href="/enterprises/${enterprise.id}/export/trips/"> Скачать поездки </a>
                     <a href="/enterprises/${enterprise.id}/import/trips/"> Загрузить поездки </a>
                 </li>
