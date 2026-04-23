@@ -1,3 +1,8 @@
+import dayjs from "dayjs"
+
+const convertDate = (value, addDays = 0) =>
+    dayjs(value).startOf('day').add(addDays, 'day').format('YYYY-MM-DDTHH:mm:ssZ')
+
 const routes = {
     index: {
         path: "/",
@@ -16,6 +21,19 @@ const routes = {
         path: "/enterprises/:enterprise_id/vehicles/",
         url: (enterprise_id) => `/enterprises/${enterprise_id}/vehicles/`,
         api: (enterprise_id) => `/api/v1/enterprises/${enterprise_id}/vehicles/`,
+    },
+    trips: {
+        export:{
+            path: "/enterprises/:enterprise_id/export/trips/",
+            url: (enterprise_id) => `/enterprises/${enterprise_id}/export/trips/`,
+            api: (enterprise_id, dateFrom, dateTo) => {
+                const params = new URLSearchParams({
+                    from: convertDate(dateFrom),
+                    to: convertDate(dateTo,1),
+                })
+                return `/api/v1/enterprises/${enterprise_id}/export/trips/?${params.toString()}`
+            },
+        }
     }
 }
 

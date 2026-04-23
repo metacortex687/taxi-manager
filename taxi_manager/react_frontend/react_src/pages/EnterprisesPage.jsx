@@ -26,7 +26,7 @@ function EnterprisesPage() {
                 <li key={enterprise.id}>
                     <a href="/enterprises/${enterprise.id}/edit/"> {enterprise.name} </a>
                     <Link to={routes.vehicles.url(enterprise.id)}> Авто </Link>
-                    <a href="/enterprises/${enterprise.id}/export/trips/"> Скачать поездки </a>
+                    <Link to={routes.trips.export.url(enterprise.id)}> Скачать поездки  </Link>
                     <a href="/enterprises/${enterprise.id}/import/trips/"> Загрузить поездки </a>
                 </li>
             ))}
