@@ -7,6 +7,7 @@ import HelloWorldPage from "./pages/HelloWorldPage"
 import EnterprisesPage from "./pages/EnterprisesPage"
 import VehiclesPage from "./pages/VehiclesPage"
 import TripsExportPage from "./pages/TripsExportPage"
+import TripsImportPage from "./pages/TripsImportPage"
 
 import RequireAuth from "./auth/RequireAuth"
 
@@ -55,7 +56,8 @@ function App() {
                     <Route index element={<HelloWorldPage />} /> 
                     <Route path={routes.enterprises.path} element={<EnterprisesPage/>} /> 
                     <Route path={routes.vehicles.path} element={<VehiclesPage/>} /> 
-                    <Route path={routes.trips.export.path} element={<TripsExportPage/>} />             
+                    <Route path={routes.trips.export.path} element={<TripsExportPage/>} />
+                    <Route path={routes.trips.import.path} element={<TripsImportPage />} />             
                   </Route>            
                 </Route>
               </Routes>
