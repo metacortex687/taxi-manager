@@ -10,6 +10,7 @@ import toast from "react-hot-toast"
 function TripsImportPage() {
     const { enterprise_id } = useParams()
     const [file, setFile] = useState(null)
+    const [isUploaded, setIsUploaded] = useState(false)
 
     const handleImport = async () => {
         if (!file) {
@@ -26,9 +27,15 @@ function TripsImportPage() {
             )
 
             toast.success(`Файл "${file.name}" успешно загружен`)
+            setIsUploaded(true)
+            
         } catch (error) {
             toast.error("Не удалось загрузить файл")
         }
+    }
+
+    if (isUploaded) {
+        return <p>Файл загружен</p>
     }
 
     return (
