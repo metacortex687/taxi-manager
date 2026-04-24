@@ -5,6 +5,7 @@ import AuthProvider from "./auth/AuthProvider"
 import LoginPage from "./pages/LoginPage"
 import HelloWorldPage from "./pages/HelloWorldPage"
 import EnterprisesPage from "./pages/EnterprisesPage"
+import EnterpriseEditPage from "./pages/EnterpriseEditPage"
 import VehiclesPage from "./pages/VehiclesPage"
 import TripsExportPage from "./pages/TripsExportPage"
 import TripsImportPage from "./pages/TripsImportPage"
@@ -54,7 +55,8 @@ function App() {
                   <Route path={routes.login.path} element={<LoginPage />} />
                   <Route element={<RequireAuth/>}>
                     <Route index element={<HelloWorldPage />} /> 
-                    <Route path={routes.enterprises.path} element={<EnterprisesPage/>} /> 
+                    <Route path={routes.enterprises.path} element={<EnterprisesPage/>} />
+                    <Route path={routes.enterpriseEdit.path} element={<EnterpriseEditPage />} /> 
                     <Route path={routes.vehicles.path} element={<VehiclesPage/>} /> 
                     <Route path={routes.trips.export.path} element={<TripsExportPage/>} />
                     <Route path={routes.trips.import.path} element={<TripsImportPage />} />             

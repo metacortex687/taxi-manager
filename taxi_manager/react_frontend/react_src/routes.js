@@ -17,6 +17,11 @@ const routes = {
         url: () => "/enterprises",
         api: () => `/api/v1/enterprises/`,        
     },
+    enterpriseEdit: {
+        path: "/enterprises/:enterprise_id/edit/",
+        url: (enterprise_id) => `/enterprises/${enterprise_id}/edit/`,
+        api: (enterprise_id) => `/api/v1/enterprises/${enterprise_id}/`,
+    },
     vehicles: {
         path: "/enterprises/:enterprise_id/vehicles/",
         url: (enterprise_id) => `/enterprises/${enterprise_id}/vehicles/`,
