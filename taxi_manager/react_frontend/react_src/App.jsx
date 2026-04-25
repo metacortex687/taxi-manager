@@ -10,6 +10,7 @@ import VehiclesPage from "./pages/VehiclesPage"
 import VehicleEditPage from "./pages/VehicleEditPage"
 import TripsExportPage from "./pages/TripsExportPage"
 import TripsImportPage from "./pages/TripsImportPage"
+import TripsPage from "./pages/TripsPage"
 
 import RequireAuth from "./auth/RequireAuth"
 
@@ -61,7 +62,8 @@ function App() {
                     <Route path={routes.vehicles.path} element={<VehiclesPage/>} /> 
                     <Route path={routes.vehicleEdit.path} element={<VehicleEditPage/>} />                     
                     <Route path={routes.trips.export.path} element={<TripsExportPage/>} />
-                    <Route path={routes.trips.import.path} element={<TripsImportPage />} />             
+                    <Route path={routes.trips.import.path} element={<TripsImportPage />} /> 
+                    <Route path={routes.trips.path} element={<TripsPage />} />     
                   </Route>            
                 </Route>
               </Routes>

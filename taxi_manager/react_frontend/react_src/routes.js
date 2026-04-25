@@ -33,6 +33,39 @@ const routes = {
         api: (vehicle_id) => `/api/v1/vehicles/${vehicle_id}/`,
     },
     trips: {
+        link_name: "Маршруты",
+        path: "/vehicles/:vehicle_id/trips/",
+        url: (vehicle_id) => `/vehicles/${vehicle_id}/trips/`,
+        api: {
+            list: (vehicle_id, dateFrom, dateTo) => {
+                const params = new URLSearchParams()
+
+                if (dateFrom) {
+                    params.set("from", convertDate(dateFrom))
+                }
+
+                if (dateTo) {
+                    params.set("to", convertDate(dateTo, 1))
+                }
+
+                return `/api/v1/vehicles/${vehicle_id}/trips/?${params.toString()}`
+            },
+            points: (vehicle_id, dateFrom, dateTo) => {
+                const params = new URLSearchParams({
+                    response_format: "geojson",
+                })
+
+                if (dateFrom) {
+                    params.set("from", convertDate(dateFrom))
+                }
+
+                if (dateTo) {
+                    params.set("to", convertDate(dateTo, 1))
+                }
+
+                return `/api/v1/vehicles/${vehicle_id}/trip-points/?${params.toString()}`
+        },
+    },
         export:{
             path: "/enterprises/:enterprise_id/export/trips/",
             url: (enterprise_id) => `/enterprises/${enterprise_id}/export/trips/`,

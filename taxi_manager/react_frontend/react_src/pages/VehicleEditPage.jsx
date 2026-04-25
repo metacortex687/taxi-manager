@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { fetchDataJSON } from "../api/fetch-data"
@@ -155,6 +155,8 @@ function VehicleEditPage() {
     return (
         <form onSubmit={handleSubmit}>
             <h1>Редактирование автомобиля</h1>
+
+            <Link to={routes.trips.url(vehicle_id)}>{routes.trips.link_name}</Link>
 
             <FormSelect
                 id="vehicle_enterprise"
