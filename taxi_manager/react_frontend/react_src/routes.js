@@ -17,6 +17,15 @@ const routes = {
         url: () => "/enterprises",
         api: () => `/api/v1/enterprises/`,        
     },
+    reports: {
+        path: "/reports",
+        url: () => "/reports",
+        api: () => `/api/v1/reports/list/`,
+    },
+    report: {
+        path: "/reports/:report_type/",
+        url: (report_type) => `/reports/${report_type}/`,
+    },
     enterpriseEdit: {
         path: "/enterprises/:enterprise_id/edit/",
         url: (enterprise_id) => `/enterprises/${enterprise_id}/edit/`,

@@ -28,9 +28,7 @@ class TopNavbar extends React.Component {
                         <Link to={routes.enterprises.url()} className="btn btn-secondary btn-lg rounded-1 btn-light border">Предприятия</Link>
                     </li>
                     <li className="nav-item">
-                        <a href="#" className="btn btn-secondary btn-lg rounded-1 btn-light border">
-                            Отчеты
-                        </a>
+                        <Link to={routes.reports.url()} className="btn btn-secondary btn-lg rounded-1 btn-light border">Отчеты</Link>
                     </li>
                     <li className="nav-item ms-auto">
                         <form id="logoutForm" onSubmit={this.handleSubmitLogout}>

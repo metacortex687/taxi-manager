@@ -11,6 +11,7 @@ import VehicleEditPage from "./pages/VehicleEditPage"
 import TripsExportPage from "./pages/TripsExportPage"
 import TripsImportPage from "./pages/TripsImportPage"
 import TripsPage from "./pages/TripsPage"
+import ReportsPage from "./pages/ReportsPage"
 
 import RequireAuth from "./auth/RequireAuth"
 
@@ -58,6 +59,7 @@ function App() {
                   <Route element={<RequireAuth/>}>
                     <Route index element={<HelloWorldPage />} /> 
                     <Route path={routes.enterprises.path} element={<EnterprisesPage/>} />
+                    <Route path={routes.reports.path} element={<ReportsPage />} />
                     <Route path={routes.enterpriseEdit.path} element={<EnterpriseEditPage />} /> 
                     <Route path={routes.vehicles.path} element={<VehiclesPage/>} /> 
                     <Route path={routes.vehicleEdit.path} element={<VehicleEditPage/>} />                     
