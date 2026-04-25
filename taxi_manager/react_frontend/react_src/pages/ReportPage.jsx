@@ -10,7 +10,13 @@ import routes from "../routes"
 import FormSelect from "../components/FormSelect"
 import VehicleSearchInput from "../components/VehicleSearchInput"
 
+import CarMileageReportRow from "../components/CarMileageReportRow"
+
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+const REPORT_ROW_COMPONENTS = {
+    carmileagereport: CarMileageReportRow,
+}
 
 const getDateFromISO = (value) => {
     const datePart = value.slice(0, 10)
@@ -69,6 +75,7 @@ const addTimeZoneToDate = (value, timeZone, addDays = 0) => {
 
 function ReportPage() {
     const { report_type } = useParams()
+    const ReportRowComponent = REPORT_ROW_COMPONENTS[report_type]
 
     const [formData, setFormData] = useState({
         enterprise: null,
@@ -87,13 +94,13 @@ function ReportPage() {
     const reportQuery = useQuery({
         queryKey: ["report-config", report_type],
         queryFn: () => fetchDataJSON(routes.report.api(report_type)),
-        enabled: report_type === "carmileagereport",
+        enabled: Boolean(ReportRowComponent),
     })
 
     const enterprisesQuery = useQuery({
         queryKey: ["enterprises"],
         queryFn: async () => (await fetchDataJSON(routes.enterprises.api())).results,
-        enabled: report_type === "carmileagereport",
+        enabled: Boolean(ReportRowComponent),
     })
 
     const frequenciesQuery = useQuery({
@@ -102,7 +109,7 @@ function ReportPage() {
             const data = await fetchDataJSON(routes.reportFrequencies.api())
             return data.results || data
         },
-        enabled: report_type === "carmileagereport",
+        enabled: Boolean(ReportRowComponent),
     })
 
     useEffect(() => {
@@ -125,7 +132,7 @@ function ReportPage() {
         ])
     }, [reportQuery.data])
 
-    if (report_type !== "carmileagereport") {
+    if (!ReportRowComponent) {
         return <div className="alert alert-danger">Неизвестный тип отчета</div>
     }
 
@@ -169,23 +176,6 @@ function ReportPage() {
             vehicle: null,
             time_zone: enterprise.time_zone_code,
         })
-    }
-
-    const formatCellValue = (header, row) => {
-        const value = row[header.name]
-
-        if (header.name === "date" && value) {
-            return new Intl.DateTimeFormat("ru-RU", {
-                timeZone: formData.time_zone,
-                dateStyle: "short",
-            }).format(new Date(value))
-        }
-
-        if (header.name === "mileage" && value !== null && value !== undefined && value !== "") {
-            return Number(value).toFixed(1)
-        }
-
-        return value ?? ""
     }
 
     const handleBuildReport = async (event) => {
@@ -357,13 +347,12 @@ function ReportPage() {
                         </thead>
                         <tbody>
                             {rows.map((row, rowIndex) => (
-                                <tr key={rowIndex}>
-                                    {headers.map((header) => (
-                                        <td key={header.name}>
-                                            {formatCellValue(header, row)}
-                                        </td>
-                                    ))}
-                                </tr>
+                                <ReportRowComponent
+                                    key={rowIndex}
+                                    row={row}
+                                    headers={headers}
+                                    timeZone={formData.time_zone}
+                                />
                             ))}
                         </tbody>
                     </Table>
