@@ -9,7 +9,7 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     cors: {
-      origin: "http://172.27.79.57:8000",
+      origin: "http://localhost:8000",
     },
   },
   build: {
