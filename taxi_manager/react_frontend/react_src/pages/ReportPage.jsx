@@ -11,11 +11,32 @@ import FormSelect from "../components/FormSelect"
 import VehicleSearchInput from "../components/VehicleSearchInput"
 
 import CarMileageReportRow from "../components/CarMileageReportRow"
+import CarRoutesReportRow from "../components/CarRoutesReportRow"
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
-const REPORT_ROW_COMPONENTS = {
-    carmileagereport: CarMileageReportRow,
+const REPORT_CONFIGS = {
+    carmileagereport: {
+        RowComponent: CarMileageReportRow,
+        paramsFields: [
+            "enterprise",
+            "vehicle",
+            "frequency",
+            "period_from",
+            "period_to",
+            "time_zone",
+        ],
+    },
+    carroutesreport: {
+        RowComponent: CarRoutesReportRow,
+        paramsFields: [
+            "enterprise",
+            "frequency",
+            "period_from",
+            "period_to",
+            "time_zone",
+        ],
+    },
 }
 
 const getDateFromISO = (value) => {
@@ -75,7 +96,9 @@ const addTimeZoneToDate = (value, timeZone, addDays = 0) => {
 
 function ReportPage() {
     const { report_type } = useParams()
-    const ReportRowComponent = REPORT_ROW_COMPONENTS[report_type]
+    const reportConfig = REPORT_CONFIGS[report_type]
+    const ReportRowComponent = reportConfig?.RowComponent
+    const hasVehicle = reportConfig?.paramsFields.includes("vehicle") ?? false
 
     const [formData, setFormData] = useState({
         enterprise: null,
@@ -121,7 +144,7 @@ function ReportPage() {
 
         setFormData({
             enterprise: params.enterprise,
-            vehicle: params.vehicle,
+            vehicle: hasVehicle ? params.vehicle : null,
             frequency: params.frequency,
             time_zone: params.time_zone,
         })
@@ -130,7 +153,7 @@ function ReportPage() {
             params.period_from ? getDateFromISO(params.period_from) : null,
             params.period_to ? getDateFromISO(params.period_to) : null,
         ])
-    }, [reportQuery.data])
+    }, [reportQuery.data, hasVehicle])
 
     if (!ReportRowComponent) {
         return <div className="alert alert-danger">Неизвестный тип отчета</div>
@@ -190,13 +213,20 @@ function ReportPage() {
 
         const [periodFrom, periodTo] = period
 
-        const params = {
-            enterprise: formData.enterprise,
-            vehicle: formData.vehicle,
-            frequency: formData.frequency,
-            period_from: addTimeZoneToDate(periodFrom, formData.time_zone),
-            period_to: addTimeZoneToDate(periodTo, formData.time_zone, 1),
-            time_zone: formData.time_zone,
+        const params = {}
+
+        for (const fieldName of reportConfig.paramsFields) {
+            if (fieldName === "period_from") {
+                params.period_from = addTimeZoneToDate(periodFrom, formData.time_zone)
+                continue
+            }
+
+            if (fieldName === "period_to") {
+                params.period_to = addTimeZoneToDate(periodTo, formData.time_zone, 1)
+                continue
+            }
+
+            params[fieldName] = formData[fieldName]
         }
 
         try {
@@ -279,16 +309,18 @@ function ReportPage() {
                     </div>
                 </div>
 
-                <VehicleSearchInput
-                    enterpriseId={formData.enterprise}
-                    vehicleId={formData.vehicle}
-                    onChange={(vehicleId) =>
-                        setFormData({
-                            ...formData,
-                            vehicle: vehicleId,
-                        })
-                    }
-                />
+                {hasVehicle && (
+                    <VehicleSearchInput
+                        enterpriseId={formData.enterprise}
+                        vehicleId={formData.vehicle}
+                        onChange={(vehicleId) =>
+                            setFormData({
+                                ...formData,
+                                vehicle: vehicleId,
+                            })
+                        }
+                    />
+                )}
 
                 <FormSelect
                     id="frequency"
