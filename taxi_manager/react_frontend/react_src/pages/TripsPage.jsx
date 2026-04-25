@@ -2,7 +2,7 @@ import dayjs from "dayjs"
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
-import { Table } from "react-bootstrap"
+import { Button, Table } from "react-bootstrap"
 import { DatePickerInput } from "@mantine/dates"
 
 import { fetchDataJSON } from "../api/fetch-data"
@@ -17,9 +17,10 @@ const EMPTY_FEATURE_COLLECTION = {
 function TripsPage() {
     const { vehicle_id } = useParams()
     const [period, setPeriod] = useState([null, null])
+    const [appliedPeriod, setAppliedPeriod] = useState([null, null])
     const [selectedTripId, setSelectedTripId] = useState()
 
-    const [dateFrom, dateTo] = period
+    const [dateFrom, dateTo] = appliedPeriod
 
     const tripPointsQuery = useQuery({
         queryKey: ["vehicle-trip-points", vehicle_id, dateFrom, dateTo],
@@ -34,8 +35,12 @@ function TripsPage() {
     })
 
     const handlePeriodChange = (value) => {
-        setSelectedTripId()
         setPeriod(value)
+    }
+
+    const handlePeriodApply = () => {
+        setSelectedTripId()
+        setAppliedPeriod(period)
     }
 
     if (tripPointsQuery.isPending || tripsQuery.isPending) {
@@ -72,6 +77,12 @@ function TripsPage() {
                     clearable
                     popoverProps={{ zIndex: 3000 }}
                 />
+            </div>
+
+            <div className="mb-3">
+                <Button type="button" onClick={handlePeriodApply}>
+                    Применить
+                </Button>
             </div>
 
             <Table hover className="mt-3">
