@@ -21,11 +21,17 @@ const routes = {
         path: "/reports",
         url: () => "/reports",
         api: () => `/api/v1/reports/list/`,
-    },
-    report: {
+     },
+     report: {
         path: "/reports/:report_type/",
         url: (report_type) => `/reports/${report_type}/`,
-    },
+        api: (report_type) => `/api/v1/reports/${report_type}/`,
+        resultApi: (report_type, uuid) => `/api/v1/reports/${report_type}/${uuid}/`,
+        pdfApi: (report_type, uuid) => `/api/v1/reports/${report_type}/${uuid}/pdf`,
+     },
+     reportFrequencies: {
+         api: () => `/api/v1/reports/frequencies/`,
+     },
     enterpriseEdit: {
         path: "/enterprises/:enterprise_id/edit/",
         url: (enterprise_id) => `/enterprises/${enterprise_id}/edit/`,
@@ -35,6 +41,17 @@ const routes = {
         path: "/enterprises/:enterprise_id/vehicles/",
         url: (enterprise_id) => `/enterprises/${enterprise_id}/vehicles/`,
         api: (enterprise_id) => `/api/v1/enterprises/${enterprise_id}/vehicles/`,
+        searchApi: (enterprise_id, searchValue) => {
+            const params = new URLSearchParams()
+
+            params.set("enterprise", enterprise_id)
+
+            if (searchValue) {
+                params.set("q", searchValue)
+            }
+
+            return `/api/v1/vehicles/?${params.toString()}`
+        },
     },
     vehicleEdit: {
         path: "/vehicles/:vehicle_id/edit/",

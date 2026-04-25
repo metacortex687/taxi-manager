@@ -5,6 +5,9 @@ function FormInput({
     value,
     onChange,
     type = "text",
+    placeholder = "",
+    disabled = false,
+    autoComplete,
 }) {
     return (
         <div className="mb-3">
@@ -18,6 +21,9 @@ function FormInput({
                 className="form-control"
                 value={value}
                 onChange={onChange}
+                placeholder={placeholder}
+                disabled={disabled}
+                autoComplete={autoComplete}
             />
         </div>
     )
