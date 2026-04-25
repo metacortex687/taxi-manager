@@ -7,6 +7,7 @@ import HelloWorldPage from "./pages/HelloWorldPage"
 import EnterprisesPage from "./pages/EnterprisesPage"
 import EnterpriseEditPage from "./pages/EnterpriseEditPage"
 import VehiclesPage from "./pages/VehiclesPage"
+import VehicleEditPage from "./pages/VehicleEditPage"
 import TripsExportPage from "./pages/TripsExportPage"
 import TripsImportPage from "./pages/TripsImportPage"
 
@@ -58,6 +59,7 @@ function App() {
                     <Route path={routes.enterprises.path} element={<EnterprisesPage/>} />
                     <Route path={routes.enterpriseEdit.path} element={<EnterpriseEditPage />} /> 
                     <Route path={routes.vehicles.path} element={<VehiclesPage/>} /> 
+                    <Route path={routes.vehicleEdit.path} element={<VehicleEditPage/>} />                     
                     <Route path={routes.trips.export.path} element={<TripsExportPage/>} />
                     <Route path={routes.trips.import.path} element={<TripsImportPage />} />             
                   </Route>            

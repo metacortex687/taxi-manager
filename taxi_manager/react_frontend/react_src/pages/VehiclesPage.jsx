@@ -48,7 +48,7 @@ function VehiclesPage() {
                         <td>{vehicle.price}</td>
                         <td>{vehicle.number}</td>
                         <td>{vehicle.vin}</td>
-                        <td><a href="/vehicles/${record.id}/edit/">Редактировать</a></td>
+                        <td><Link to={routes.vehicleEdit.url(vehicle.id)}> Редактировать </Link></td>
                     </tr>
                 ))}
 

@@ -27,6 +27,11 @@ const routes = {
         url: (enterprise_id) => `/enterprises/${enterprise_id}/vehicles/`,
         api: (enterprise_id) => `/api/v1/enterprises/${enterprise_id}/vehicles/`,
     },
+    vehicleEdit: {
+        path: "/vehicles/:vehicle_id/edit/",
+        url: (vehicle_id) => `/vehicles/${vehicle_id}/edit/`,
+        api: (vehicle_id) => `/api/v1/vehicles/${vehicle_id}/`,
+    },
     trips: {
         export:{
             path: "/enterprises/:enterprise_id/export/trips/",
