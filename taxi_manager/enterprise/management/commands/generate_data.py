@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from ...models import Enterprise
 from taxi_manager.vehicle.models import Driver, Model, Vehicle, VehicleDriver
+from taxi_manager.time_zones.models import TimeZone
 
 from faker import Faker
 import random
@@ -63,8 +64,13 @@ class Command(BaseCommand):
         
 
     def _generate_data_for_enterprise(self, enterprise_name:str, count_drivers, count_vehicles, fake: Faker, models):
-        enterprise = Enterprise.objects.create(name=enterprise_name, city="City")
-        self.stdout.write(f"Создано предприятие {len(enterprise_name)} предприятий")
+        
+        time_zone = TimeZone.objects.filter(code="UTC").first()
+        if time_zone is None:
+            time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
+
+        enterprise = Enterprise.objects.create(name=enterprise_name, city="City", time_zone=time_zone)
+        self.stdout.write(f"Создано предприятие {enterprise_name}")
         drivers = self._generate_drivers(count_drivers, enterprise, fake)
         vehicles = self._generate_vehicles(count_vehicles, enterprise, fake, models)
 
