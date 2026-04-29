@@ -16,6 +16,7 @@ dependencies = [
     "faker>=40.4.0",
     "fpdf2>=2.8.7",
     "geopy>=2.4.1",
+    "gunicorn>=25.3.0",
     "load-dotenv>=0.1.0",
     "networkx>=3.6.1",
     "osmnx>=2.1.0",
