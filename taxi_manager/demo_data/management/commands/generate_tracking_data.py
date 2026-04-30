@@ -1,17 +1,14 @@
-from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
-from django.utils import timezone
-from django.contrib.gis.geos import Point
+from django.core.management.base import BaseCommand
 
-from datetime import timedelta
-
-from taxi_manager.demo_data.tracking_generator import TrackingGenerator
-from taxi_manager.geo_tracking.models import VehicleLocation, Trip
+from taxi_manager.demo_data.services import DemoDataGenerator
 from taxi_manager.vehicle.models import Vehicle
 
+
 class Command(BaseCommand):
-    help = ("Добавление в базу сгенерированных данных трекинга по автомобилю.\n" 
-    "generate_tracking_data -v_id 117 -l 'Moscow'  -ds 5 -s 40 -dt 10")
+    help = (
+        "Добавление в базу сгенерированных данных трекинга по автомобилю.\n"
+        "generate_tracking_data -v_id 117 -l 'Moscow' -ds 5 -s 40 -dt 10"
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -26,14 +23,14 @@ class Command(BaseCommand):
             "--location",
             type=str,
             required=True,
-            help="Населенный пункт: 'Moscow",
+            help="Населенный пункт: 'Moscow'",
         )
         parser.add_argument(
             "-ds",
             "--distance_km",
             type=float,
             required=True,
-            help="Длинна генерируемого пути (км)",
+            help="Длина генерируемого пути (км)",
         )
         parser.add_argument(
             "-s",
@@ -50,58 +47,18 @@ class Command(BaseCommand):
             help="Интервал между точками трекинга (сек)",
         )
 
-
-    @transaction.atomic
-    def handle(self, *args, **options):  
+    def handle(self, *args, **options):
         self.stdout.write("Начало генерации данных...")
-        location = options["location"]
-        distance_km = options["distance_km"]
-        speed_km_h = options["speed_km_h"]
-        delta_time_s = options["delta_time_s"]
-
-
-        self.stdout.write("Построение маршрута...")
-        points = TrackingGenerator.generate_tracking_points_for_location(location, distance_km, speed_km_h, delta_time_s)
-        self.stdout.write(f"Маршрут построен, {len(points)} точек.")
-        
-        self.stdout.write("Сохранение данных...")
 
         vehicle = Vehicle.objects.get(id=options["vehicle_id"])
-        enterprise=vehicle.enterprise
-        self.save_data(enterprise, vehicle, points)
-        
-        self.stdout.write("Генерация данных завершена.")
 
-
-    def save_data(self, enterprise, vehicle, points):
-        start_time = timezone.now()
-
-        if not points:
-            self.stdout.write("Точки не сгенерированы.")
-            return
-
-        locations = []
-        for lon, lat, seconds_from_start in points:
-            locations.append(
-                VehicleLocation(
-                    enterprise=enterprise,
-                    vehicle=vehicle,
-                    location=Point(lon, lat, srid=4326),
-                    tracked_at=start_time + timedelta(seconds=seconds_from_start),
-                )
-            )
-
-        VehicleLocation.objects.bulk_create(locations)
-
-        _, _, seconds_from_start = points[-1]
-        end_time = start_time + timedelta(seconds=seconds_from_start)
-
-        trip = Trip.objects.create(
-            enterprise=enterprise,
+        generator = DemoDataGenerator(stdout=self.stdout)
+        generator.generate_trip(
             vehicle=vehicle,
-            started_at=start_time,
-            ended_at=end_time,
+            location=options["location"],
+            distance_km=options["distance_km"],
+            speed_km_h=options["speed_km_h"],
+            delta_time_s=options["delta_time_s"],
         )
-        self.stdout.write(f"Сгенерированы точки за период {start_time}-{end_time}")
-        self.stdout.write(f"Создана поездка id={trip.id}")
 
+        self.stdout.write("Генерация данных завершена.")

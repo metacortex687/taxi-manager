@@ -5,11 +5,18 @@ import random
 from django.db import transaction
 from django.db.models import Q
 from faker import Faker
+from datetime import timedelta
+
+from django.contrib.gis.geos import Point
+from django.utils import timezone
+
 
 from taxi_manager.enterprise.models import Enterprise
 from taxi_manager.vehicle.models import Driver, Model, Vehicle, VehicleDriver
 from taxi_manager.time_zones.models import TimeZone
 
+from taxi_manager.demo_data.tracking_generator import TrackingGenerator
+from taxi_manager.geo_tracking.models import Trip, VehicleLocation
 
 class DemoDataGenerator:
     def __init__(self, stdout=None):
@@ -217,3 +224,64 @@ class DemoDataGenerator:
         self.write(f"Нанято на работу {len(drivers)} водителей")
 
         return drivers
+    
+
+    @transaction.atomic
+    def generate_trip(
+        self,
+        vehicle,
+        location,
+        distance_km,
+        speed_km_h,
+        delta_time_s,
+        start_time=None,
+    ):
+        self.write("Построение маршрута...")
+
+        tracking_generator = TrackingGenerator()
+        points = tracking_generator.generate_tracking_points_for_location(
+            location,
+            distance_km,
+            speed_km_h,
+            delta_time_s,
+        )
+
+        self.write(f"Маршрут построен, {len(points)} точек.")
+
+        if not points:
+            self.write("Точки не сгенерированы.")
+            return None
+
+        if start_time is None:
+            start_time = timezone.now()
+
+        enterprise = vehicle.enterprise
+
+        locations = []
+
+        for lon, lat, seconds_from_start in points:
+            locations.append(
+                VehicleLocation(
+                    enterprise=enterprise,
+                    vehicle=vehicle,
+                    location=Point(lon, lat, srid=4326),
+                    tracked_at=start_time + timedelta(seconds=seconds_from_start),
+                )
+            )
+
+        VehicleLocation.objects.bulk_create(locations)
+
+        _, _, seconds_from_start = points[-1]
+        end_time = start_time + timedelta(seconds=seconds_from_start)
+
+        trip = Trip.objects.create(
+            enterprise=enterprise,
+            vehicle=vehicle,
+            started_at=start_time,
+            ended_at=end_time,
+        )
+
+        self.write(f"Сгенерированы точки за период {start_time}-{end_time}")
+        self.write(f"Создана поездка id={trip.id}")
+
+        return trip
