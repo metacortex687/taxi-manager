@@ -9,31 +9,35 @@ from django.conf import settings
 
 
 class TrackingGenerator:
-    def generate_tracking_points_for_location(
+    def __init__(self, seed=0):
+        self.seed = seed
+        self.random = random.Random(seed)
+        
+    def generate_tracking_points_for_location(self,
         location, distance_km, speed_km_h, delta_time_s
     ):
         if location != "Moscow":
             raise ValueError("Пока поддерживается только location='Moscow'")
 
-        roads = TrackingGenerator.load_roads("moscow_roads.graphml")
+        roads = self.load_roads("moscow_roads.graphml")
 
-        path = TrackingGenerator.generate_random_path(distance_km * 1000, roads)
+        path = self.generate_random_path(distance_km * 1000, roads)
 
-        return TrackingGenerator.generate_tracking_points(
+        return self.generate_tracking_points(
             path, speed_km_h, delta_time_s
         )
 
-    def load_roads(file_name: str):
+    def load_roads(self, file_name: str):
         data_path = (
             Path(settings.BASE_DIR)
             / "taxi_manager"
-            / "tracking_simulator"
+            / "demo_data"
             / "geo_data"
             / f"{file_name}"
         )
         return ox.load_graphml(data_path)
 
-    def generate_tracking_points(path, speed_km_h, delta_time_s):
+    def generate_tracking_points(self, path, speed_km_h, delta_time_s):
         if not path:
             return []
 
@@ -53,7 +57,7 @@ class TrackingGenerator:
 
         used_parts = 0
 
-        total_distance = TrackingGenerator.path_length(path)
+        total_distance = self.path_length(path)
         total_parts = max(1, int(total_distance / step_distance))
 
         for end_lon, end_lat, distance in path[1:-1]:
@@ -61,7 +65,7 @@ class TrackingGenerator:
             used_parts += count_part
 
             _result.extend(
-                TrackingGenerator.split_segment_by_parts(
+                self.split_segment_by_parts(
                     start_lon, start_lat, end_lon, end_lat, count_part
                 )[1:]
             )
@@ -71,7 +75,7 @@ class TrackingGenerator:
         end_lon, end_lat, distance = path[-1]
         count_part = max(1, total_parts - used_parts)
         _result.extend(
-                TrackingGenerator.split_segment_by_parts(
+                self.split_segment_by_parts(
                     start_lon, start_lat, end_lon, end_lat, count_part
                 )[1:]
             )       
@@ -84,8 +88,7 @@ class TrackingGenerator:
 
         return result
 
-    @staticmethod
-    def split_segment_by_parts(start_lon, start_lat, end_lon, end_lat, parts):
+    def split_segment_by_parts(self, start_lon, start_lat, end_lon, end_lat, parts):
         if parts <= 0:
             return []
 
@@ -99,7 +102,7 @@ class TrackingGenerator:
 
         return result
 
-    def truncate_path_by_length(path, target_length):
+    def truncate_path_by_length(self, path, target_length):
         result = [path[0]]
 
         current_length = 0
@@ -123,7 +126,7 @@ class TrackingGenerator:
 
         return result
 
-    def path_to_geo_points_with_distances(roads, path):
+    def path_to_geo_points_with_distances(self, roads, path):
         result = []
 
         first_node = path[0]
@@ -140,10 +143,10 @@ class TrackingGenerator:
 
         return result
 
-    def path_length(path):
+    def path_length(self, path):
         return sum(distance_from_prev for _, _, distance_from_prev in path)
 
-    def path_geodesic_length(path):
+    def path_geodesic_length(self, path):
         current_point = path[0]
         path_length = 0
 
@@ -157,9 +160,9 @@ class TrackingGenerator:
 
         return path_length
 
-    def generate_random_path(distance, roads):
+    def generate_random_path(self, distance, roads):
         # start_poin = TrackingGenerator.random_point(roads)
-        start_point = TrackingGenerator.random_node(
+        start_point = self.random_node(
             roads
         )  # Упростил так как стандартный метод shortest_path ищет путь только между узалми
         
@@ -170,7 +173,7 @@ class TrackingGenerator:
         length = 0
         while length < distance:
             # next_point = TrackingGenerator.random_point(roads)
-            next_point = TrackingGenerator.random_node(
+            next_point = self.random_node(
                 roads
             )  # Упростил так как стандартный метод ищет путь только между узалми
 
@@ -190,16 +193,16 @@ class TrackingGenerator:
             attempt = 0
 
 
-            path = TrackingGenerator.path_to_geo_points_with_distances(
+            path = self.path_to_geo_points_with_distances(
                 roads, path_on_graph
             )
-            path = TrackingGenerator.truncate_path_by_length(path, distance - length)
+            path = self.truncate_path_by_length(path, distance - length)
             if not res_path:
                 res_path.extend(path)
             else:
                 res_path.extend(path[1:])
 
-            length += TrackingGenerator.path_length(path)
+            length += self.path_length(path)
             start_point = path_on_graph[-1]
             print(f"Построено маршрута {length}/{distance}")
 
@@ -217,10 +220,9 @@ class TrackingGenerator:
 
     #     return result
 
-    @staticmethod
-    def random_node(roads):
-        return random.choice(list(roads.nodes))
+    def random_node(self, roads):
+        return self.random.choice(list(roads.nodes))
 
-    def random_point(roads: nx.MultiGraph):
+    def random_point(self, roads: nx.MultiGraph):
         underected_graph = ox.convert.to_undirected(roads)
         return next(iter(ox.utils_geo.sample_points(underected_graph, 1)))
