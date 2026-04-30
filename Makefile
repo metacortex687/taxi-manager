@@ -30,3 +30,6 @@ run-gunicorn:
 
 ensure-superuser:
 	uv run manage.py ensure_superuser
+
+drop_db:
+	docker compose down -v
