@@ -235,10 +235,11 @@ class DemoDataGenerator:
         speed_km_h,
         delta_time_s,
         start_time=None,
+        seed=0
     ):
         self.write("Построение маршрута...")
 
-        tracking_generator = TrackingGenerator()
+        tracking_generator = TrackingGenerator(seed=seed)
         points = tracking_generator.generate_tracking_points_for_location(
             location,
             distance_km,
