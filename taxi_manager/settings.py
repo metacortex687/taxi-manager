@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'rest_framework_gis',
     'import_export',
     # 'dj_rest_auth',
+    'taxi_manager.users',
     'taxi_manager.vehicle',
     'taxi_manager.enterprise',
     'taxi_manager.api_v1',
