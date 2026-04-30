@@ -5,7 +5,7 @@ from django.contrib.gis.geos import Point
 
 from datetime import timedelta
 
-from taxi_manager.tracking_simulator.tracking_generator import TrackingGenerator
+from taxi_manager.demo_data.tracking_generator import TrackingGenerator
 from taxi_manager.geo_tracking.models import VehicleLocation, Trip
 from taxi_manager.vehicle.models import Vehicle
 

@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     'taxi_manager.vanilla_frontend',
     'taxi_manager.time_zones',
     'taxi_manager.geo_tracking',
-    'taxi_manager.tracking_simulator',
+    'taxi_manager.demo_data',
     'taxi_manager.geocoding',
     'taxi_manager.exchange',
     'taxi_manager.reports',
