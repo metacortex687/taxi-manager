@@ -31,6 +31,9 @@ run-gunicorn:
 ensure-superuser:
 	uv run manage.py ensure_superuser
 
+ensure-demo-data:
+	uv run manage.py ensure_demo_data
+
 demo-up:
 	docker compose -f docker-compose.demo.yaml up --build
 
