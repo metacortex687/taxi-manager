@@ -27,3 +27,6 @@ run-gunicorn-dev:
 
 run-gunicorn:
 	uv run gunicorn taxi_manager.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-class gthread --threads 4 --timeout 120 --access-logfile -
+
+ensure-superuser:
+	uv run manage.py ensure_superuser
