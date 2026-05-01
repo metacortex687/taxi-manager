@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import random
 
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
@@ -13,6 +14,25 @@ DEMO_ENTERPRISE_NAMES = [
     "ПредприятиеКирилица",
     "Enterprise 1",
     "Enterprise 2",
+]
+
+DEMO_MANAGER_ACCOUNTS = [
+    {
+        "username": "manager1",
+        "password": "manager1",
+        "enterprise_names": [
+            "ПредприятиеКирилица",
+            "Enterprise 1",
+        ],
+    },
+    {
+        "username": "manager2",
+        "password": "manager2",
+        "enterprise_names": [
+            "Enterprise 1",
+            "Enterprise 2",
+        ],
+    },
 ]
 
 VEHICLES_PER_ENTERPRISE = 10
@@ -43,9 +63,56 @@ class Command(BaseCommand):
             seed=0,
         )
 
+        self._create_managers()
         self._generate_trips(generator)
 
         self.stdout.write(self.style.SUCCESS("Демо данные успешно созданы"))
+
+    def _create_managers(self):
+        enterprises_by_name = {
+            enterprise.name: enterprise
+            for enterprise in Enterprise.objects.filter(name__in=DEMO_ENTERPRISE_NAMES)
+        }
+
+        missing_enterprise_names = [
+            enterprise_name
+            for enterprise_name in DEMO_ENTERPRISE_NAMES
+            if enterprise_name not in enterprises_by_name
+        ]
+
+        if missing_enterprise_names:
+            raise CommandError(
+                "Не найдены демо предприятия для назначения менеджеров: "
+                + ", ".join(missing_enterprise_names)
+            )
+
+        User = get_user_model()
+
+        for account in DEMO_MANAGER_ACCOUNTS:
+            username = account["username"]
+            password = account["password"]
+            enterprise_names = account["enterprise_names"]
+
+            manager, created = User.objects.get_or_create(
+                username=username,
+                defaults={
+                    "email": f"{username}@demo.local",
+                },
+            )
+
+            manager.email = f"{username}@demo.local"
+            manager.set_password(password)
+            manager.save()
+
+            manager.managed_enterprises.set(
+                enterprises_by_name[enterprise_name]
+                for enterprise_name in enterprise_names
+            )
+
+            if created:
+                self.stdout.write(f"Создан демо менеджер: {username}")
+            else:
+                self.stdout.write(f"Обновлен демо менеджер: {username}")
 
     def _generate_trips(self, generator):
         vehicles = list(
