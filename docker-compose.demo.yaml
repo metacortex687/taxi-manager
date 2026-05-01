@@ -1,6 +1,6 @@
 services:
   taxi-manager:
-    build: .
+    # build: .
     image: metacortex687/taxi-manager
     restart: always
     ports:
