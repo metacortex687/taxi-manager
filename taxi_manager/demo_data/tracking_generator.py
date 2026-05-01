@@ -9,6 +9,8 @@ from django.conf import settings
 
 
 class TrackingGenerator:
+    _roads_cache = {}
+
     def __init__(self, random_generator):
         self.random = random_generator
         
@@ -27,6 +29,9 @@ class TrackingGenerator:
         )
 
     def load_roads(self, file_name: str):
+        if file_name in self._roads_cache:
+            return self._roads_cache[file_name]
+        
         data_path = (
             Path(settings.BASE_DIR)
             / "taxi_manager"
@@ -34,7 +39,12 @@ class TrackingGenerator:
             / "geo_data"
             / f"{file_name}"
         )
-        return ox.load_graphml(data_path)
+
+        roads = ox.load_graphml(data_path)
+
+        self._roads_cache[file_name] = roads
+
+        return roads 
 
     def generate_tracking_points(self, path, speed_km_h, delta_time_s):
         if not path:
