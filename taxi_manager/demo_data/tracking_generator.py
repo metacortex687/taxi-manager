@@ -42,49 +42,53 @@ class TrackingGenerator:
             return []
 
         if len(path) == 1:
-            return path
+            lon, lat, _ = path[0]
+            return [(lon, lat, 0)]
 
-        _result = []
-        current_lon, current_lat, _ = path[0]
+        if speed_km_h <= 0:
+            raise ValueError("speed_km_h must be greater than 0")
+
+        if delta_time_s <= 0:
+            raise ValueError("delta_time_s must be greater than 0")
 
         speed_m_s = speed_km_h * 1000 / 3600
         step_distance = speed_m_s * delta_time_s
 
+        result = []
+
         start_lon, start_lat, _ = path[0]
+        result.append((start_lon, start_lat, 0))
 
-        lon, lan, _ = path[0]
-        _result = [(lon, lan)]
+        distance_from_start = 0
+        next_tracking_distance = step_distance
 
-        used_parts = 0
+        for end_lon, end_lat, segment_distance in path[1:]:
+            if segment_distance <= 0:
+                continue
 
-        total_distance = self.path_length(path)
-        total_parts = max(1, int(total_distance / step_distance))
+            segment_start_distance = distance_from_start
+            segment_end_distance = distance_from_start + segment_distance
 
-        for end_lon, end_lat, distance in path[1:-1]:
-            count_part = int(total_parts * distance / total_distance)
-            used_parts += count_part
+            while next_tracking_distance < segment_end_distance:
+                ratio = (
+                    (next_tracking_distance - segment_start_distance)
+                    / segment_distance
+                )
 
-            _result.extend(
-                self.split_segment_by_parts(
-                    start_lon, start_lat, end_lon, end_lat, count_part
-                )[1:]
-            )
+                lon = start_lon + (end_lon - start_lon) * ratio
+                lat = start_lat + (end_lat - start_lat) * ratio
+                time_in_path = next_tracking_distance / speed_m_s
+
+                result.append((lon, lat, round(time_in_path, 3)))
+                next_tracking_distance += step_distance
+
+            distance_from_start = segment_end_distance
+            time_in_path = distance_from_start / speed_m_s
+
+            if result[-1][0] != end_lon or result[-1][1] != end_lat:
+                result.append((end_lon, end_lat, round(time_in_path, 3)))
 
             start_lon, start_lat = end_lon, end_lat
-
-        end_lon, end_lat, distance = path[-1]
-        count_part = max(1, total_parts - used_parts)
-        _result.extend(
-                self.split_segment_by_parts(
-                    start_lon, start_lat, end_lon, end_lat, count_part
-                )[1:]
-            )       
-
-        result = []
-        time_in_path = 0
-        for lon, lat in _result:
-            result.append((lon, lat, time_in_path))
-            time_in_path += delta_time_s
 
         return result
 
@@ -136,10 +140,26 @@ class TrackingGenerator:
         result.append((first_lon, first_lat, 0))
 
         for u, v in zip(path, path[1:]):
-            edge_length = roads[u][v][0]["length"]
-            lon = roads.nodes[v]["x"]
-            lat = roads.nodes[v]["y"]
-            result.append((lon, lat, edge_length))
+            edge_data = min(
+                roads[u][v].values(),
+                key=lambda data: data.get("length", 0),
+            )
+
+            geometry = edge_data.get("geometry")
+
+            if geometry is None:
+                edge_length = edge_data["length"]
+                lon = roads.nodes[v]["x"]
+                lat = roads.nodes[v]["y"]
+                result.append((lon, lat, edge_length))
+                continue
+
+            coords = list(geometry.coords)
+
+            for lon, lat in coords[1:]:
+                prev_lon, prev_lat, _ = result[-1]
+                distance_from_prev = geodesic((prev_lat, prev_lon), (lat, lon)).meters
+                result.append((lon, lat, distance_from_prev))
 
         return result
 
@@ -182,7 +202,7 @@ class TrackingGenerator:
                 roads, start_point, next_point, weight="length"
             )
 
-            if not path_on_graph and attempt < 5:  # были две точки по которым не удалось найти кратчайший путь
+            if not path_on_graph and attempt < 50:  # были две точки по которым не удалось найти кратчайший путь
                 attempt += 1
                 print("не удалось построить маршрут")
                 continue
