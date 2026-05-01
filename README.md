@@ -108,16 +108,8 @@ DJANGO_SUPERUSER_EMAIL=admin@example.com
 
 ## Повторный запуск
 
-### 1. Запуск без пересборки
-
 ```bash
 docker compose -f docker-compose.demo.yaml up
-```
-
-### 2. Запуск с пересборкой образа
-
-```bash
-docker compose -f docker-compose.demo.yaml up --build
 ```
 
 ---
