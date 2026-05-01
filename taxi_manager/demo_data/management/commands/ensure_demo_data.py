@@ -78,7 +78,7 @@ class Command(BaseCommand):
                 generator.generate_trip(
                     vehicle=vehicle,
                     location="Moscow",
-                    distance_km=rng.uniform(2, 8),
+                    distance_km=rng.uniform(2, 50),
                     speed_km_h=rng.uniform(30, 60),
                     delta_time_s=60,
                     start_time=start_time,
