@@ -9,9 +9,8 @@ from django.conf import settings
 
 
 class TrackingGenerator:
-    def __init__(self, seed=0):
-        self.seed = seed
-        self.random = random.Random(seed)
+    def __init__(self, random_generator):
+        self.random = random_generator
         
     def generate_tracking_points_for_location(self,
         location, distance_km, speed_km_h, delta_time_s
@@ -204,6 +203,9 @@ class TrackingGenerator:
 
             if not path_on_graph and attempt < 50:  # были две точки по которым не удалось найти кратчайший путь
                 attempt += 1
+                start_point = self.random_node(
+                    roads
+                )
                 print("не удалось построить маршрут")
                 continue
 

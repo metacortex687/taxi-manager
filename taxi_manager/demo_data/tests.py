@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 import networkx as nx
+import random
 
 from shapely.geometry import LineString
 from .tracking_generator import TrackingGenerator
@@ -12,7 +13,7 @@ from .tracking_generator import TrackingGenerator
 # Create your tests here.
 class TrackingGeneratorTest(TestCase):
     def setUp(self):
-        self.tracking_generator = TrackingGenerator()
+        self.tracking_generator = TrackingGenerator(random.Random(0))
     #     ox.settings.use_cache = True
     #     ox.settings.cache_folder = "/home/taxi-manager/.cache/osmnx"
     #     ox.settings.requests_timeout = 1800
@@ -119,7 +120,28 @@ class TrackingGeneratorTest(TestCase):
 
         self.assertAlmostEqual(5./40.*3600./20., len(result), delta=1)
 
+    def test_generate_tracking_points_for_location_seed_3(self):
+        random_generator = random.Random(3)
+        generator = TrackingGenerator(random_generator)
 
+        points = generator.generate_tracking_points_for_location(
+            location="Moscow",
+            distance_km=6.702791534208636,
+            speed_km_h=39.09938178236782,
+            delta_time_s=60,
+        )
 
+        self.assertGreater(len(points), 1)
+
+        first_lon, first_lat, first_time = points[0]
+        last_lon, last_lat, last_time = points[-1]
+
+        self.assertIsInstance(first_lon, float)
+        self.assertIsInstance(first_lat, float)
+        self.assertEqual(first_time, 0)
+
+        self.assertIsInstance(last_lon, float)
+        self.assertIsInstance(last_lat, float)
+        self.assertGreater(last_time, first_time)
         
 
