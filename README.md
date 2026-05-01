@@ -102,3 +102,36 @@ DJANGO_SUPERUSER_EMAIL=admin@example.com
 | `DJANGO_SUPERUSER_NAME` | Логин администратора Django. По умолчанию `admin`. |
 | `DJANGO_SUPERUSER_PASSWORD` | Пароль администратора Django. По умолчанию `admin`. Для публичного сервера лучше заменить. |
 | `DJANGO_SUPERUSER_EMAIL` | Email администратора Django. Можно оставить `admin@example.com` или указать свой email. |
+
+
+---
+
+## Повторный запуск
+
+### 1. Запуск без пересборки
+
+```bash
+docker compose -f docker-compose.demo.yaml up
+```
+
+### 2. Запуск с пересборкой образа
+
+```bash
+docker compose -f docker-compose.demo.yaml up --build
+```
+
+---
+
+## Остановка проекта
+
+### 1. Остановить контейнеры
+
+```bash
+docker compose -f docker-compose.demo.yaml down
+```
+
+### 2. Остановить контейнеры и удалить базу данных
+
+```bash
+docker compose -f docker-compose.demo.yaml down -v
+```
