@@ -13,7 +13,8 @@ services:
       - PYTHONUNBUFFERED=1
     command: sh -c "make migrate && make ensure-superuser  && make ensure-demo-data && make run-gunicorn"
     depends_on:
-      - db   
+      db:
+        condition: service_healthy   
   db:
     image: postgis/postgis:16-3.5
     restart: always
