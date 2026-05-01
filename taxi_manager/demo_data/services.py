@@ -239,7 +239,7 @@ class DemoDataGenerator:
     ):
         self.write("Построение маршрута...")
 
-        tracking_generator = TrackingGenerator(seed=seed)
+        tracking_generator = TrackingGenerator(random.Random(seed))
         points = tracking_generator.generate_tracking_points_for_location(
             location,
             distance_km,
