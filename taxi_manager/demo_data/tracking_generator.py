@@ -197,8 +197,7 @@ class TrackingGenerator:
         
         attempt = 0
         res_path = []
-        print("Точки:")
-        print(start_point)
+
         length = 0
         while length < distance:
             # next_point = TrackingGenerator.random_point(roads)
@@ -206,7 +205,6 @@ class TrackingGenerator:
                 roads
             )  # Упростил так как стандартный метод ищет путь только между узалми
 
-            print(next_point)
             path_on_graph = ox.routing.shortest_path(
                 roads, start_point, next_point, weight="length"
             )
@@ -216,7 +214,6 @@ class TrackingGenerator:
                 start_point = self.random_node(
                     roads
                 )
-                print("не удалось построить маршрут")
                 continue
 
             if not path_on_graph:
@@ -236,7 +233,6 @@ class TrackingGenerator:
 
             length += self.path_length(path)
             start_point = path_on_graph[-1]
-            print(f"Построено маршрута {length}/{distance}")
 
         return res_path
 
