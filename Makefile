@@ -42,3 +42,6 @@ demo-down:
 
 demo-drop-db:
 	docker compose -f docker-compose.demo.yaml down -v
+
+run-uwsgi:
+	uv run uwsgi --ini /app/uwsgi.ini

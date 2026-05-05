@@ -12,7 +12,7 @@ services:
       - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - PYTHONUNBUFFERED=1
-    command: sh -c "make migrate && make ensure-superuser  && make ensure-demo-data && make run-gunicorn"
+    command: sh -c "make migrate && make ensure-superuser  && make ensure-demo-data && make run-uwsgi"
     depends_on:
       db:
         condition: service_healthy   
