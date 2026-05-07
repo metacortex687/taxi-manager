@@ -45,3 +45,13 @@ demo-drop-db:
 
 run-uwsgi:
 	uv run uwsgi --ini /app/uwsgi.ini
+
+install-geo-deps:
+	apt-get update
+	apt-get install -y --no-install-recommends \
+		binutils \
+		gdal-bin \
+		libgdal-dev \
+		libgeos-dev \
+		libproj-dev
+	rm -rf /var/lib/apt/lists/*

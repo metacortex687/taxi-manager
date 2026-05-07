@@ -7,12 +7,10 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
         python3-dev \
-        binutils \
-        gdal-bin \
-        libgdal-dev \
-        libgeos-dev \
-        libproj-dev \
+        make \
     && rm -rf /var/lib/apt/lists/*
+
+    RUN make install-geo-deps
 
 WORKDIR /app
 
@@ -30,12 +28,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         make \
-        binutils \
-        gdal-bin \
-        libgdal-dev \
-        libgeos-dev \
-        libproj-dev \
     && rm -rf /var/lib/apt/lists/*
+
+    RUN make install-geo-deps
 
 WORKDIR /app
 
