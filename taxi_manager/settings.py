@@ -119,7 +119,9 @@ DATABASES["default"].update(
     db_from_env
 )  # update from DATABASE_URL in .env if defined
 DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
-
+DATABASES["default"]["TEST"]  = {
+    'NAME': 'mytestdatabase',    
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
