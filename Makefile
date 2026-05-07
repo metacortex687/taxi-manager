@@ -56,3 +56,13 @@ install-geo-deps:
 		libgeos-dev \
 		libproj-dev
 	rm -rf /var/lib/apt/lists/*
+
+install-geo-deps-ci:
+	sudo apt-get update
+	sudo apt-get install -y --no-install-recommends \
+		binutils \
+		gdal-bin \
+		libgdal-dev \
+		libgeos-dev \
+		libproj-dev
+	sudo rm -rf /var/lib/apt/lists/*
