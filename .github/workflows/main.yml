@@ -11,6 +11,9 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Install GeoDjango System Dependencies
+        run: make install-geo-deps
+
       - name: Install the project
         run: uv sync --locked --all-extras --dev
 

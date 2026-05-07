@@ -46,6 +46,7 @@ demo-drop-db:
 run-uwsgi:
 	uv run uwsgi --ini /app/uwsgi.ini
 
+#Системные зависимости для GeoDjango
 install-geo-deps:
 	apt-get update
 	apt-get install -y --no-install-recommends \
