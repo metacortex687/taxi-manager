@@ -29,12 +29,13 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         make \
     && rm -rf /var/lib/apt/lists/*
-
-    RUN make install-geo-deps
+  
 
 WORKDIR /app
 
 COPY --from=builder /app /app
+
+RUN make install-geo-deps
 
 RUN make collectstatic
 
