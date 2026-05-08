@@ -19,6 +19,7 @@ jobs:
       SECRET_KEY: change-me
       PYTHONUNBUFFERED: 1
       DATABASE_URL: postgis://postgres:postgres@localhost:5432/taxi_manager  
+      LOCATIONIQ_KEY: ${{ secrets.LOCATIONIQ_KEY }}
 
     steps:
       - uses: actions/checkout@v4
