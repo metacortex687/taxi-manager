@@ -63,6 +63,24 @@ jobs:
               passphrase: ${{ secrets.DEV_SSH_PASSPHRASE }}
               script: |
                 whoami
-                ls -al     
+                ls -al
+                mkdir -p taxi-manager
+                cd taxi-manager
+                curl -L -o docker-compose.demo.yaml https://raw.githubusercontent.com/metacortex687/taxi-manager/main/docker-compose.dev.yaml
+
+                export POSTGRES_USER="${{ secrets.DEV_POSTGRES_USER }}"
+                export POSTGRES_PASSWORD="${{ secrets.DEV_POSTGRES_PASSWORD }}"
+                export POSTGRES_DB="${{ secrets.DEV_POSTGRES_DB }}"
+                export DJANGO_SUPERUSER_NAME="${{ secrets.DEV_DJANGO_SUPERUSER_NAME }}"
+                export DJANGO_SUPERUSER_EMAIL="${{ secrets.DEV_DJANGO_SUPERUSER_EMAIL }}"
+                export DJANGO_SUPERUSER_PASSWORD="${{ secrets.DEV_DJANGO_SUPERUSER_PASSWORD }}"
+                export DJANGO_SECRET_KEY="${{ secrets.DEV_DJANGO_SECRET_KEY }}"
+                export LOCATIONIQ_KEY="${{ secrets.LOCATIONIQ_KEY }}"
+                
+                docker compose -f docker-compose.demo.yaml up -d
+
+
+
+
 
       
