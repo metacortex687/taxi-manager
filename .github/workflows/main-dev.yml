@@ -53,4 +53,15 @@ jobs:
           push: true
           tags: metacortex687/taxi-manager-dev:latest
 
+      - name: Deploy using an SSH key
+        uses: appleboy/ssh-action@v1
+        with:
+              host: ${{ secrets.DEV_HOST_IP }}
+              username: ${{ secrets.DEV_HOST_USER }}
+              key: ${{ secrets.DEV_HOST_SSH_PRIVATE_KEY }}
+              port: ${{ secrets.DEV_HOST_PORT }}
+              script: |
+                whoami
+                ls -al     
+
       
