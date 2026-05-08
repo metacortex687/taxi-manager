@@ -10,7 +10,7 @@ RUN apt-get update \
         make \
     && rm -rf /var/lib/apt/lists/*
 
-    RUN make install-geo-deps
+
 
 WORKDIR /app
 
@@ -18,6 +18,9 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project
 
 COPY . .
+
+RUN make install-geo-deps
+
 RUN uv sync --frozen --no-editable
 
 # Runtime stage
