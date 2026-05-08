@@ -40,7 +40,7 @@ COPY --from=builder /app /app
 
 RUN make install-geo-deps
 
-RUN make collectstatic
+# RUN make collectstatic
 
 # EXPOSE 8000
 
