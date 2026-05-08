@@ -67,6 +67,7 @@ jobs:
                 mkdir -p taxi-manager
                 cd taxi-manager
                 curl -L -o docker-compose.demo.yaml https://raw.githubusercontent.com/metacortex687/taxi-manager/main/docker-compose.dev.yaml
+                curl -fsSL -o nginx.conf https://raw.githubusercontent.com/metacortex687/taxi-manager/main/nginx.conf
 
                 export POSTGRES_USER="${{ secrets.DEV_POSTGRES_USER }}"
                 export POSTGRES_PASSWORD="${{ secrets.DEV_POSTGRES_PASSWORD }}"
@@ -76,7 +77,7 @@ jobs:
                 export DJANGO_SUPERUSER_PASSWORD="${{ secrets.DEV_DJANGO_SUPERUSER_PASSWORD }}"
                 export DJANGO_SECRET_KEY="${{ secrets.DEV_DJANGO_SECRET_KEY }}"
                 export LOCATIONIQ_KEY="${{ secrets.LOCATIONIQ_KEY }}"
-                
+
                 docker compose -f docker-compose.demo.yaml up -d
 
 
