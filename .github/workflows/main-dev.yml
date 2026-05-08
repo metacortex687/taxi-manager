@@ -64,7 +64,8 @@ jobs:
               script: |
                 whoami
                 ls -al
-                mkdir -p taxi-manager
+                rm -rf taxi-manager
+                mkdir taxi-manager
                 cd taxi-manager
                 curl -L -o docker-compose.demo.yaml https://raw.githubusercontent.com/metacortex687/taxi-manager/main/docker-compose.dev.yaml
                 curl -fsSL -o nginx.conf https://raw.githubusercontent.com/metacortex687/taxi-manager/main/nginx.conf
