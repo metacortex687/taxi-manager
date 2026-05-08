@@ -40,7 +40,7 @@ services:
       - static_volume:/static
       - uwsgi_socket:/run/uwsgi
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - taxi-manager
 volumes:
