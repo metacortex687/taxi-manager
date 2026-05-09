@@ -78,8 +78,7 @@ jobs:
                 export DJANGO_SUPERUSER_PASSWORD="${{ secrets.DEV_DJANGO_SUPERUSER_PASSWORD }}"
                 export DJANGO_SECRET_KEY="${{ secrets.DEV_DJANGO_SECRET_KEY }}"
                 export LOCATIONIQ_KEY="${{ secrets.LOCATIONIQ_KEY }}"
-
-                docker compose -f docker-compose.demo.yaml up -d --force-recreate
+                docker compose -f docker-compose.dev.yaml up -d --force-recreate
 
 
 
