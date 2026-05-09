@@ -45,7 +45,7 @@ function App() {
     <MantineProvider>
       <DatesProvider settings={{ locale: 'ru' }}>
         <QueryClientProvider client={queryClient}>
-          <BrowserRouter basename="/react">
+          <BrowserRouter>
             <AuthProvider>
               <TopNavbar />
               <Toaster

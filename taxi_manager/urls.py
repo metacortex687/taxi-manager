@@ -18,9 +18,9 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include("taxi_manager.vanilla_frontend.urls")),
     path('admin/', admin.site.urls),
+    path('vjs/', include("taxi_manager.vanilla_frontend.urls")),
     path('api/v1/', include("taxi_manager.api_v1.urls")),
     path('site/', include("taxi_manager.simply_site.urls")),
-    path('react/', include("taxi_manager.react_frontend.urls")),
+    path('', include("taxi_manager.react_frontend.urls")),
 ]
