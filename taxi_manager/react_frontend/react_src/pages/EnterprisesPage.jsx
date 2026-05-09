@@ -7,9 +7,8 @@ import routes from "../routes"
 function EnterprisesPage() {
     const enterprisesQuery = useQuery({
         queryKey: ["enterprises"],
-        queryFn: async () => (await fetchDataJSON(routes.enterprises.api())).results
-    }
-    )
+        queryFn: async () => (await fetchDataJSON(routes.enterprises.api())).results,
+    })
 
     if (enterprisesQuery.isPending) {
         return <p>Загрузка...</p>
@@ -19,20 +18,51 @@ function EnterprisesPage() {
         return <p>Ошибка: {enterprisesQuery.error.message}</p>
     }
 
-    console.log(enterprisesQuery.data)
     return (
-        <ul>
-            {enterprisesQuery.data.map((enterprise) => (
-                <li key={enterprise.id}>
-                    <Link to={routes.enterpriseEdit.url(enterprise.id)}> {enterprise.name} </Link>
-                    <Link to={routes.vehicles.url(enterprise.id)}> Авто </Link>
-                    <Link to={routes.trips.export.url(enterprise.id)}> Скачать поездки  </Link>
-                    <Link to={routes.trips.import.url(enterprise.id)}> Загрузить поездки </Link>
-                </li>
-            ))}
-        </ul>
+        <div className="table-responsive">
+            <table className="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Предприятие</th>
+                        <th>Автомобили</th>
+                        <th>Экспорт поездок</th>
+                        <th>Импорт поездок</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {enterprisesQuery.data.map((enterprise) => (
+                        <tr key={enterprise.id}>
+                            <td>
+                                <Link to={routes.enterpriseEdit.url(enterprise.id)}>
+                                    {enterprise.name}
+                                </Link>
+                            </td>
+
+                            <td>
+                                <Link to={routes.vehicles.url(enterprise.id)}>
+                                    Список
+                                </Link>
+                            </td>
+
+                            <td>
+                                <Link to={routes.trips.export.url(enterprise.id)}>
+                                    Скачать поездки
+                                </Link>
+                            </td>
+
+                            <td>
+                                <Link to={routes.trips.import.url(enterprise.id)}>
+                                    Загрузить поездки
+                                </Link>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+
     )
 }
-
 
 export default EnterprisesPage
