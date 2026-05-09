@@ -47,13 +47,13 @@ function EnterprisesPage() {
 
                             <td>
                                 <Link to={routes.trips.export.url(enterprise.id)}>
-                                    Скачать поездки
+                                    Скачать
                                 </Link>
                             </td>
 
                             <td>
                                 <Link to={routes.trips.import.url(enterprise.id)}>
-                                    Загрузить поездки
+                                    Загрузить
                                 </Link>
                             </td>
                         </tr>
