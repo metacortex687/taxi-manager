@@ -179,3 +179,6 @@ TASKS = {
          "QUEUES": ["default", "reports"],
     }
 }
+
+
+USE_VITE_DEV_SERVER = os.getenv("USE_VITE_DEV_SERVER", default=False)

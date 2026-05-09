@@ -13,11 +13,16 @@ export default defineConfig({
     },
   },
   build: {
-    manifest: true,
+    // manifest: true,
     outDir: path.resolve(__dirname, "static/react_frontend/dist"),
     emptyOutDir: true,
     rollupOptions: {
       input: path.resolve(__dirname, "react_src/index.jsx"),
+      output: {
+        entryFileNames: "assets/index.js",
+        chunkFileNames: "assets/[name].js",
+        assetFileNames: "assets/[name][extname]",
+      },
     },
   },
 })

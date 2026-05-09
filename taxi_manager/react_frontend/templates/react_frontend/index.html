@@ -1,11 +1,14 @@
 {% load django_bootstrap5 %}
 {% bootstrap_css %}
 {% bootstrap_javascript %}
+{% load static %}
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
 <div id="react-root"></div>
 
+
+{% if USE_VITE_DEV_SERVER %}
 <script type="module">
   import RefreshRuntime from "http://localhost:5173/@react-refresh"
   RefreshRuntime.injectIntoGlobalHook(window)
@@ -13,6 +16,10 @@
   window.$RefreshSig$ = () => (type) => type
   window.__vite_plugin_react_preamble_installed__ = true
 </script>
-
 <script type="module" src="http://localhost:5173/@vite/client"></script>
 <script type="module" src="http://localhost:5173/react_src/index.jsx"></script>
+{% else %}
+  <link rel="stylesheet" href="{% static 'react_frontend/dist/assets/index.css' %}">
+  <script type="module" src="{% static 'react_frontend/dist/assets/index.js' %}"></script>
+{% endif %}
+
