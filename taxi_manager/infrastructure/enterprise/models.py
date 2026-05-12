@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from taxi_manager.time_zones.models import TimeZone
+from taxi_manager.infrastructure.time_zones.models import TimeZone
 
 User = get_user_model()
 
@@ -8,7 +8,9 @@ User = get_user_model()
 class Enterprise(models.Model):
     name = models.CharField(max_length=35, verbose_name="Наименование", unique=True)
     city = models.CharField(max_length=25, verbose_name="Город")
-    time_zone = models.ForeignKey(TimeZone, default=TimeZone.UTC, on_delete=models.RESTRICT)
+    time_zone = models.ForeignKey(
+        TimeZone, default=TimeZone.UTC, on_delete=models.RESTRICT
+    )
 
     manager_users = models.ManyToManyField(
         User,
@@ -32,7 +34,6 @@ class Manager(models.Model):
     enterprise = models.ForeignKey(
         Enterprise, on_delete=models.RESTRICT, verbose_name="Предприятие"
     )
-    
 
     class Meta:
         verbose_name = "Менеджер"

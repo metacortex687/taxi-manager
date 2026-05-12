@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class GeocodingConfig(AppConfig):
-    name = 'taxi_manager.geocoding'
+    name = "taxi_manager.infrastructure.geocoding"

@@ -19,7 +19,7 @@ pytest.ini
 .cache
 
 # Node / Babel
-taxi_manager/react_frontend/node_modules/
-taxi_manager/react_frontend/babel.log
+taxi_manager/infrastructure/react_frontend/node_modules/
+taxi_manager/infrastructure/react_frontend/babel.log
 
 staticfiles/

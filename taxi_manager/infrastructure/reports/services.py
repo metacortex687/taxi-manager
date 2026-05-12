@@ -1,10 +1,9 @@
-
 from . import models
 from . import tasks
 
-from taxi_manager.enterprise.models import Enterprise
-from taxi_manager.vehicle.models import Vehicle
-from taxi_manager.time_zones.models import TimeZone
+from taxi_manager.infrastructure.enterprise.models import Enterprise
+from taxi_manager.infrastructure.vehicle.models import Vehicle
+from taxi_manager.infrastructure.time_zones.models import TimeZone
 
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
@@ -13,12 +12,13 @@ from django.db import transaction
 from io import BytesIO
 import uuid
 
+
 class ReportService:
     def verbouse_name(self, report_type):
         return next(
             (x for x in models.Report.get_report_types() if x["name"] == report_type)
         )["verbose_name"]
-    
+
     def create_report(self, report_type, params, user) -> uuid.UUID:
         model_report = self.get_model_report_by_type(report_type)
 
@@ -36,14 +36,14 @@ class ReportService:
 
         if "time_zone" in create_params and create_params["time_zone"]:
             create_params["time_zone"] = get_object_or_404(
-               TimeZone,
+                TimeZone,
                 code=create_params["time_zone"],
             )
 
         if "period_from" in create_params:
-           create_params["period_from"] = parse_datetime(create_params["period_from"])
+            create_params["period_from"] = parse_datetime(create_params["period_from"])
         if "period_to" in create_params:
-           create_params["period_to"] = parse_datetime(create_params["period_to"])
+            create_params["period_to"] = parse_datetime(create_params["period_to"])
 
         self.save_default_values(user, params)
 
@@ -51,10 +51,9 @@ class ReportService:
 
         transaction.on_commit(
             lambda: tasks.build_report.enqueue(report_type, str(report.uuid))
-        ) 
+        )
 
         return report.uuid
-    
 
     def get_model_report_by_type(self, report_type):
         return next(
@@ -65,7 +64,7 @@ class ReportService:
         return get_object_or_404(
             self.get_model_report_by_type(report_type), uuid=report_uuid
         )
-    
+
     def get_status(self, report_type, uuid):
         return self.get_report_by_uuid(report_type, uuid).status
 
@@ -79,7 +78,6 @@ class ReportService:
             for report_type in models.Report.get_report_types()
         ]
 
-
     def get_result_headers(self, report_type):
         model_report = self.get_model_report_by_type(report_type)
         return model_report.get_result_model().get_table_headers()
@@ -87,10 +85,9 @@ class ReportService:
     def get_result(self, report_type, uuid):
         report = self.get_report_by_uuid(report_type, uuid)
 
+        if report.status != "DONE":
+            return []
 
-        if(report.status != "DONE"):
-            return []            
-        
         results = report.get_results()
 
         return [
@@ -98,17 +95,16 @@ class ReportService:
                 **result,
                 "date": result["date"].isoformat(),
             }
-            for result in results.values()  
+            for result in results.values()
         ]
 
     def get_pdf_by_uuid(self, report_type, uuid) -> BytesIO:
         report = self.get_report_by_uuid(report_type, uuid)
         pdf_render = self.get_model_report_by_type(report_type).get_pdf_render()
         return BytesIO(pdf_render(report))
-    
+
     def can_render_pdf(self, report_type) -> bool:
         return self.get_model_report_by_type(report_type).get_pdf_render() is not None
-
 
     def save_default_values(self, user, params):
         default_values, _ = models.DefaultUserValues.objects.get_or_create(user=user)

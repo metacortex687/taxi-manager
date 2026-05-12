@@ -4,7 +4,7 @@ import uuid
 
 @task(queue_name="reports")
 def build_report(report_type, report_uuid: str):
-    from taxi_manager.reports import services
+    from taxi_manager.infrastructure.reports import services
 
     report_service = services.ReportService()
 

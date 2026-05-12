@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from taxi_manager.demo_data.services import DemoDataGenerator
+from taxi_manager.infrastructure.demo_data.services import DemoDataGenerator
 
 
 class Command(BaseCommand):

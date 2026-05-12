@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from taxi_manager.vehicle.models import Vehicle, Model, Driver
-from taxi_manager.enterprise.models import Enterprise
-from taxi_manager.time_zones.models import TimeZone
+from taxi_manager.infrastructure.vehicle.models import Vehicle, Model, Driver
+from taxi_manager.infrastructure.enterprise.models import Enterprise
+from taxi_manager.infrastructure.time_zones.models import TimeZone
 from zoneinfo import ZoneInfo
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
-from taxi_manager.geo_tracking.models import VehicleLocation
+from taxi_manager.infrastructure.geo_tracking.models import VehicleLocation
 
 
 class VehileLocationSerializerGeoJson(GeoFeatureModelSerializer):
@@ -51,10 +51,9 @@ class VehicleReadSerializer(serializers.ModelSerializer):
 
     def get_model_id(self, obj):
         return obj.model.id
-    
-    def get_display_name(self, obj):
-        return f"{obj.model.name} {obj.number}"    
 
+    def get_display_name(self, obj):
+        return f"{obj.model.name} {obj.number}"
 
     def get_enterprise_id(self, obj):
         if not obj.enterprise:
@@ -189,9 +188,3 @@ class TimeZoneSerializer(serializers.ModelSerializer):
             "utc_offset",
             "display_name",
         )
-
-
-
-    
-
-

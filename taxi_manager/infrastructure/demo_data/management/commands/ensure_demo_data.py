@@ -5,9 +5,9 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
-from taxi_manager.demo_data.services import DemoDataGenerator
-from taxi_manager.enterprise.models import Enterprise
-from taxi_manager.vehicle.models import Vehicle
+from taxi_manager.infrastructure.demo_data.services import DemoDataGenerator
+from taxi_manager.infrastructure.enterprise.models import Enterprise
+from taxi_manager.infrastructure.vehicle.models import Vehicle
 
 
 DEMO_ENTERPRISE_NAMES = [
@@ -50,7 +50,9 @@ class Command(BaseCommand):
             return
 
         if TOTAL_DRIVERS % len(DEMO_ENTERPRISE_NAMES) != 0:
-            raise CommandError("TOTAL_DRIVERS должен делиться на количество предприятий")
+            raise CommandError(
+                "TOTAL_DRIVERS должен делиться на количество предприятий"
+            )
 
         drivers_per_enterprise = TOTAL_DRIVERS // len(DEMO_ENTERPRISE_NAMES)
 

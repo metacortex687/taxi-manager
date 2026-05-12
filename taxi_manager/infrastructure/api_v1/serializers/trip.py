@@ -1,7 +1,11 @@
 from rest_framework import serializers
 from zoneinfo import ZoneInfo
-from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometrySerializerMethodField
-from taxi_manager.geo_tracking.models import VehicleLocation, Trip
+from rest_framework_gis.serializers import (
+    GeoFeatureModelSerializer,
+    GeometrySerializerMethodField,
+)
+from taxi_manager.infrastructure.geo_tracking.models import VehicleLocation, Trip
+
 
 class TripPointSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
@@ -15,31 +19,29 @@ class TripPointSerializer(serializers.Serializer):
         )
         return super().to_representation(instance)
 
+
 class TripPointSerializerGeoJSON(GeoFeatureModelSerializer):
     trip = serializers.IntegerField(source="id", read_only=True)
     route = GeometrySerializerMethodField()
 
     def get_route(self, obj):
         return obj.path
-    
+
     # def to_representation(self, instance):
     #     self.fields["tracked_at"] = serializers.DateTimeField(
     #         default_timezone=ZoneInfo(instance.vehicle.enterprise.time_zone.code)
     #     )
     #     return super().to_representation(instance)
-    
+
     class Meta:
         model = Trip
         geo_field = "route"
-        fields = (
-            "trip",
-        )
-    
+        fields = ("trip",)
 
 
 class TripSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    started_at = serializers.DateTimeField(read_only=True)    
+    started_at = serializers.DateTimeField(read_only=True)
     start_point = serializers.SerializerMethodField(read_only=True)
     ended_at = serializers.DateTimeField(read_only=True)
     end_point = serializers.SerializerMethodField(read_only=True)
@@ -58,7 +60,6 @@ class TripSerializer(serializers.Serializer):
         if address is None and obj.near_start_address is not None:
             address = f"(~{round(obj.near_start_address_distance.m)} м) {obj.near_start_address}"
 
-
         return {
             "lat": obj.start_point.y,
             "lon": obj.start_point.x,
@@ -68,7 +69,9 @@ class TripSerializer(serializers.Serializer):
     def get_end_point(self, obj):
         address = obj.end_address
         if address is None and obj.near_end_address is not None:
-            address = f"(~{round(obj.near_end_address_distance.m)} м) {obj.near_end_address}"
+            address = (
+                f"(~{round(obj.near_end_address_distance.m)} м) {obj.near_end_address}"
+            )
 
         return {
             "lat": obj.end_point.y,

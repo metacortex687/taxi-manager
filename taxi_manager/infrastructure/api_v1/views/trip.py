@@ -1,10 +1,12 @@
-from taxi_manager.vehicle.models import Vehicle
-from taxi_manager.enterprise.models import Enterprise
+from taxi_manager.infrastructure.vehicle.models import Vehicle
+from taxi_manager.infrastructure.enterprise.models import Enterprise
 
-from taxi_manager.geo_tracking.models import VehicleLocation, Trip
-from taxi_manager.geocoding.models import GeoAddress
+from taxi_manager.infrastructure.geo_tracking.models import VehicleLocation, Trip
+from taxi_manager.infrastructure.geocoding.models import GeoAddress
 
-from taxi_manager.exchange.services import EnterprisePeriodExchangeService
+from taxi_manager.infrastructure.exchange.services import (
+    EnterprisePeriodExchangeService,
+)
 
 from ..serializers.trip import (
     TripPointSerializer,
@@ -15,7 +17,7 @@ from ..serializers.trip import (
 from django.shortcuts import get_object_or_404
 
 from django.contrib.gis.db.models.functions import Distance
-from django.contrib.gis.db.models import PointField, MakeLine,  GeometryField
+from django.contrib.gis.db.models import PointField, MakeLine, GeometryField
 
 from rest_framework import generics, parsers, views, response
 
@@ -39,7 +41,6 @@ class TripPointListAPIView(generics.ListAPIView):
             return TripPointSerializerGeoJSON
 
         return TripPointSerializer
-
 
     def get_queryset(self):
         vehicle_id = self.kwargs.get("vehicle_id")
@@ -85,7 +86,6 @@ class TripListAPIView(generics.ListAPIView):
             filter_data_to = datetime.fromisoformat(
                 self.request.query_params.get("to").replace("Z", "+00:00")
             )
-
 
         vehicle = Vehicle.objects.get(pk=vehicle_id)
 
@@ -176,7 +176,7 @@ class TripListAPIView(generics.ListAPIView):
         return super().list(request, *args, **kwargs)
 
 
-def export_enterprise_trip_archive(request,enterprise_id):
+def export_enterprise_trip_archive(request, enterprise_id):
     service = EnterprisePeriodExchangeService()
 
     date_from = datetime.fromisoformat(request.GET.get("from", None))
@@ -184,12 +184,13 @@ def export_enterprise_trip_archive(request,enterprise_id):
     print(enterprise_id, "enterprise_id")
     enterprise = get_object_or_404(Enterprise, pk=enterprise_id)
 
-
     archive = service.export_archive(enterprise, date_from, date_to)
- 
+
     filename = service.get_filename(enterprise, date_from, date_to)
 
-    return FileResponse(archive, filename=filename, content_type="application/zip", as_attachment=True)
+    return FileResponse(
+        archive, filename=filename, content_type="application/zip", as_attachment=True
+    )
 
 
 class ImportEnterpriseTripArchiveView(views.APIView):
@@ -202,20 +203,7 @@ class ImportEnterpriseTripArchiveView(views.APIView):
         file_obj = request.data["file"]
 
         service = EnterprisePeriodExchangeService()
-        service.import_archive(io.BytesIO(file_obj.read())) 
-            
+        service.import_archive(io.BytesIO(file_obj.read()))
+
         print("Окончание загрузки")
         return response.Response(status=204)
-    
-
-
-
-
-
-
-
-
-
-
-
-

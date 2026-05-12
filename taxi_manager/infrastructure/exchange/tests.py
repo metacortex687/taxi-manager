@@ -1,10 +1,17 @@
-from taxi_manager.geo_tracking.models import Trip, VehicleLocation
-from taxi_manager.vehicle.models import Vehicle, Model
-from taxi_manager.enterprise.models import Enterprise
-from taxi_manager.time_zones.models import TimeZone
+from taxi_manager.infrastructure.geo_tracking.models import Trip, VehicleLocation
+from taxi_manager.infrastructure.vehicle.models import Vehicle, Model
+from taxi_manager.infrastructure.enterprise.models import Enterprise
+from taxi_manager.infrastructure.time_zones.models import TimeZone
 
 from .services import EnterprisePeriodExchangeService
-from .resources import TripResource, VehicleLocationResource, VehicleResource, EnterpriseResource, TimeZoneResource, ModelResource
+from .resources import (
+    TripResource,
+    VehicleLocationResource,
+    VehicleResource,
+    EnterpriseResource,
+    TimeZoneResource,
+    ModelResource,
+)
 from .models import ExchangeItem
 
 
@@ -22,7 +29,7 @@ import tablib
 from django.test import TestCase
 
 
-# uv run manage.py test taxi_manager.exchange.tests
+# uv run manage.py test taxi_manager.infrastructure.exchange.tests
 
 
 def dataset_from_dict(data: dict) -> tuple[list, list]:
@@ -31,7 +38,7 @@ def dataset_from_dict(data: dict) -> tuple[list, list]:
 
 def clear_db():
     ExchangeItem.objects.all().delete()
-    
+
     Trip.objects.all().delete()
     VehicleLocation.objects.all().delete()
     Vehicle.objects.all().delete()
@@ -41,14 +48,13 @@ def clear_db():
     Model.objects.all().delete()
 
 
-
 class ExchangeTimeZoneTest(TestCase):
     def setUp(self):
         self.time_zone = {
             "code": "UTC",
             "utc_offset": 0,
         }
-        
+
         TimeZone.objects.create(**self.time_zone)
 
     def test_time_zone_export_json_csv(self):
@@ -111,10 +117,9 @@ class ExchangeModelTest(TestCase):
         }
         Model.objects.create(**self.model1)
         self.model1 = {
-           **self.model1,
-           "exchange_uuid": "388992dc-4c51-4f56-b9c3-c076a9adc8be",
-        }      
-
+            **self.model1,
+            "exchange_uuid": "388992dc-4c51-4f56-b9c3-c076a9adc8be",
+        }
 
     def test_model_export_json_csv(self):
         dataset = ModelResource().export()
@@ -279,13 +284,12 @@ class ExchangeEnterpriseTest(TestCase):
 
         self.assertEqual(Enterprise.objects.first().name, "enterprise1")
 
-        exchange_uuid, name, city, time_zone  = dataset_enterprise[0]
+        exchange_uuid, name, city, time_zone = dataset_enterprise[0]
         dataset_enterprise[0] = (exchange_uuid, "new_name", city, time_zone)
 
         EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
         self.assertEqual(1, Enterprise.objects.all().count())
         self.assertEqual(Enterprise.objects.first().name, "new_name")
-
 
 
 class ExchangeVehicleTest(TestCase):
@@ -344,7 +348,9 @@ class ExchangeVehicleTest(TestCase):
         second_dataset = VehicleResource().export()
         self.assertEqual(first_exchange_uuid, second_dataset["exchange_uuid"][0])
 
-        ExchangeItem.objects.filter(content_type = ExchangeItem.get_content_type(Vehicle)).delete()  # После удаление уникальный идентификатор пересоздастся
+        ExchangeItem.objects.filter(
+            content_type=ExchangeItem.get_content_type(Vehicle)
+        ).delete()  # После удаление уникальный идентификатор пересоздастся
         third_dataset = VehicleResource().export()
         self.assertNotEqual(first_exchange_uuid, third_dataset["exchange_uuid"][0])
 
@@ -353,12 +359,13 @@ class ExchangeVehicleTest(TestCase):
         ModelResource().export()
         dataset_vehicle = VehicleResource().export()
 
-        self.assertEqual(dataset_vehicle["enterprise"][0], dataset_enterprise["exchange_uuid"][0])
+        self.assertEqual(
+            dataset_vehicle["enterprise"][0], dataset_enterprise["exchange_uuid"][0]
+        )
 
     def test_vehicle_export_raises_error_if_enterprise_exchange_uuid_is_missing(self):
         with self.assertRaisesMessage(
-            exceptions.FieldError,
-            "Невозможно выполнить экспорт значения:"
+            exceptions.FieldError, "Невозможно выполнить экспорт значения:"
         ):
             VehicleResource().export()
 
@@ -397,12 +404,10 @@ class ExchangeVehicleTest(TestCase):
         # EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
         ModelResource().import_data(dataset_model, raise_errors=True)
 
-        
         with self.assertRaisesMessage(
-            exceptions.ImportError,
-            "Невозможно выполнить импорт ссылки:"
+            exceptions.ImportError, "Невозможно выполнить импорт ссылки:"
         ):
-            VehicleResource().import_data(dataset_vehicle, raise_errors=True)        
+            VehicleResource().import_data(dataset_vehicle, raise_errors=True)
 
         self.assertEqual(0, Vehicle.objects.all().count())
 
@@ -437,14 +442,35 @@ class ExchangeVehicleTest(TestCase):
         TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
         EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
         ModelResource().import_data(dataset_model, raise_errors=True)
-        VehicleResource().import_data(dataset_vehicle, raise_errors=True)        
+        VehicleResource().import_data(dataset_vehicle, raise_errors=True)
 
-        exchange_uuid, price, year_of_manufacture, mileage, number, vin, model, enterprise = dataset_vehicle[0]
+        (
+            exchange_uuid,
+            price,
+            year_of_manufacture,
+            mileage,
+            number,
+            vin,
+            model,
+            enterprise,
+        ) = dataset_vehicle[0]
         self.assertTrue(Vehicle.objects.filter(vin=vin).exists())
 
-        new_vin = "1"*len(vin)
+        new_vin = "1" * len(vin)
 
-        new_dataset_vehicle = tablib.Dataset([exchange_uuid, price, year_of_manufacture, mileage, number, new_vin, model, enterprise], headers=dataset_vehicle.headers)
+        new_dataset_vehicle = tablib.Dataset(
+            [
+                exchange_uuid,
+                price,
+                year_of_manufacture,
+                mileage,
+                number,
+                new_vin,
+                model,
+                enterprise,
+            ],
+            headers=dataset_vehicle.headers,
+        )
 
         VehicleResource().import_data(new_dataset_vehicle, raise_errors=True)
 
@@ -491,9 +517,8 @@ class ExchangeVehicleLocationTest(TestCase):
 
         vehicle1 = Vehicle.objects.create(**self.vehicle1_data)
 
-
         self.vehicle_location1_data = {
-            "enterprise":self.enterprise1,
+            "enterprise": self.enterprise1,
             "vehicle": vehicle1,
             "location": Point(37.6173, 55.7558, srid=4326),
             "tracked_at": datetime(2026, 3, 10, 10, 30, 0, tzinfo=UTC),
@@ -501,68 +526,94 @@ class ExchangeVehicleLocationTest(TestCase):
         VehicleLocation.objects.create(**self.vehicle_location1_data)
 
         self.vehicle_location2_data = {
-            "enterprise":self.enterprise1,
+            "enterprise": self.enterprise1,
             "vehicle": vehicle1,
             "location": Point(37.6173, 55.7558, srid=4326),
             "tracked_at": datetime(2026, 3, 12, 12, 30, 0, tzinfo=UTC),
         }
         VehicleLocation.objects.create(**self.vehicle_location2_data)
- 
-    
+
     def test_export_import_vehicle_location(self):
         dataset_time_zone = TimeZoneResource().export()
         dataset_enterprise = EnterpriseResource().export()
         dataset_model = ModelResource().export()
-        dataset_vehicle = VehicleResource().export() 
+        dataset_vehicle = VehicleResource().export()
 
         dataset_vehicle_location = VehicleLocationResource().export()
 
         self.assertEqual(2, VehicleLocation.objects.all().count())
-        self.assertEqual(1, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1_data["tracked_at"]).count())
+        self.assertEqual(
+            1,
+            VehicleLocation.objects.filter(
+                tracked_at=self.vehicle_location1_data["tracked_at"]
+            ).count(),
+        )
 
         clear_db()
 
         TimeZoneResource().import_data(dataset_time_zone, raise_errors=True)
         EnterpriseResource().import_data(dataset_enterprise, raise_errors=True)
         ModelResource().import_data(dataset_model, raise_errors=True)
-        VehicleResource().import_data(dataset_vehicle, raise_errors=True)    
+        VehicleResource().import_data(dataset_vehicle, raise_errors=True)
 
         self.assertEqual(0, VehicleLocation.objects.all().count())
-        self.assertEqual(0, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1_data["tracked_at"]).count())
+        self.assertEqual(
+            0,
+            VehicleLocation.objects.filter(
+                tracked_at=self.vehicle_location1_data["tracked_at"]
+            ).count(),
+        )
 
-        VehicleLocationResource().import_data(dataset_vehicle_location, raise_errors=True)  
+        VehicleLocationResource().import_data(
+            dataset_vehicle_location, raise_errors=True
+        )
 
         self.assertEqual(2, VehicleLocation.objects.all().count())
-        self.assertEqual(1, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1_data["tracked_at"]).count())
-
+        self.assertEqual(
+            1,
+            VehicleLocation.objects.filter(
+                tracked_at=self.vehicle_location1_data["tracked_at"]
+            ).count(),
+        )
 
     def test_export_import_vehicle_location_with_target_cleanup(self):
         TimeZoneResource().export()
         EnterpriseResource().export()
         ModelResource().export()
-        VehicleResource().export() 
+        VehicleResource().export()
 
         period_from = datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC)
         period_to = datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC)
 
-        dataset_vehicle_location = VehicleLocationResource().export_data_for_enterprise_and_period(
-            self.enterprise1,
-            period_from,
-            period_to,
+        dataset_vehicle_location = (
+            VehicleLocationResource().export_data_for_enterprise_and_period(
+                self.enterprise1,
+                period_from,
+                period_to,
             )
+        )
 
         self.assertEqual(1, len(dataset_vehicle_location))
 
         self.assertEqual(2, VehicleLocation.objects.all().count())
-        self.assertEqual(1, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1_data["tracked_at"]).count())
+        self.assertEqual(
+            1,
+            VehicleLocation.objects.filter(
+                tracked_at=self.vehicle_location1_data["tracked_at"]
+            ).count(),
+        )
 
         empty_dataset_vehicle_location = tablib.Dataset(
             headers=dataset_vehicle_location.headers
         )
 
-
         self.assertEqual(2, VehicleLocation.objects.all().count())
-        self.assertEqual(1, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1_data["tracked_at"]).count())
+        self.assertEqual(
+            1,
+            VehicleLocation.objects.filter(
+                tracked_at=self.vehicle_location1_data["tracked_at"]
+            ).count(),
+        )
 
         empty_dataset_vehicle_location = tablib.Dataset(
             headers=dataset_vehicle_location.headers
@@ -572,38 +623,48 @@ class ExchangeVehicleLocationTest(TestCase):
             self.enterprise1,
             period_from,
             period_to,
-            raise_errors=True
-            )
-
+            raise_errors=True,
+        )
 
         self.assertEqual(1, VehicleLocation.objects.all().count())
-        self.assertEqual(0, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1_data["tracked_at"]).count())
-
-
-        VehicleLocationResource().clear_and_import_data_for_enterprise_and_period(
-            dataset_vehicle_location,
-            self.enterprise1,
-            period_from,
-            period_to,
-            raise_errors=True
-            )  
-        
-        self.assertEqual(2, VehicleLocation.objects.all().count())
-        self.assertEqual(1, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1_data["tracked_at"]).count())
-
+        self.assertEqual(
+            0,
+            VehicleLocation.objects.filter(
+                tracked_at=self.vehicle_location1_data["tracked_at"]
+            ).count(),
+        )
 
         VehicleLocationResource().clear_and_import_data_for_enterprise_and_period(
             dataset_vehicle_location,
             self.enterprise1,
             period_from,
             period_to,
-            raise_errors=True
-            )  
-        
+            raise_errors=True,
+        )
+
         self.assertEqual(2, VehicleLocation.objects.all().count())
-        self.assertEqual(1, VehicleLocation.objects.filter(tracked_at=self.vehicle_location1_data["tracked_at"]).count())
+        self.assertEqual(
+            1,
+            VehicleLocation.objects.filter(
+                tracked_at=self.vehicle_location1_data["tracked_at"]
+            ).count(),
+        )
 
+        VehicleLocationResource().clear_and_import_data_for_enterprise_and_period(
+            dataset_vehicle_location,
+            self.enterprise1,
+            period_from,
+            period_to,
+            raise_errors=True,
+        )
 
+        self.assertEqual(2, VehicleLocation.objects.all().count())
+        self.assertEqual(
+            1,
+            VehicleLocation.objects.filter(
+                tracked_at=self.vehicle_location1_data["tracked_at"]
+            ).count(),
+        )
 
 
 class ExchangeTripTest(TestCase):
@@ -717,9 +778,7 @@ class ExchangeTripTest(TestCase):
             Trip.objects.filter(started_at=self.trip1_data["started_at"]).count(),
         )
 
-        empty_dataset_trip = tablib.Dataset(
-            headers=dataset_trip.headers
-        )
+        empty_dataset_trip = tablib.Dataset(headers=dataset_trip.headers)
 
         TripResource().clear_and_import_data_for_enterprise_and_period(
             empty_dataset_trip,
@@ -858,9 +917,7 @@ class ExchangeEnterprisePeriodExchangeServiceTest(TestCase):
         }
         Trip.objects.create(**self.trip2_data)
 
-
     def test_export_import_period_data(self):
-   
         self.assertEqual(2, VehicleLocation.objects.count())
         self.assertEqual(2, Trip.objects.count())
         self.assertEqual(2, Enterprise.objects.count())
@@ -868,7 +925,6 @@ class ExchangeEnterprisePeriodExchangeServiceTest(TestCase):
         self.assertEqual(1, TimeZone.objects.count())
         self.assertEqual(2, Vehicle.objects.count())
 
- 
         period_from = datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC)
         period_to = datetime(2026, 3, 10, 12, 0, 0, tzinfo=UTC)
 
@@ -887,7 +943,7 @@ class ExchangeEnterprisePeriodExchangeServiceTest(TestCase):
         self.assertEqual(0, TimeZone.objects.count())
         self.assertEqual(0, Vehicle.objects.count())
 
-        EnterprisePeriodExchangeService().import_archive(archive, raise_errors=True)        
+        EnterprisePeriodExchangeService().import_archive(archive, raise_errors=True)
 
         self.assertEqual(1, TimeZone.objects.count())
         self.assertEqual(1, Enterprise.objects.count())
@@ -901,7 +957,6 @@ class ExchangeEnterprisePeriodExchangeServiceTest(TestCase):
         self.assertEqual(2, Trip.objects.count())
         self.assertEqual(2, VehicleLocation.objects.count())
 
- 
         period_from = datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC)
         period_to = datetime(2026, 3, 10, 12, 0, 0, tzinfo=UTC)
 
@@ -910,7 +965,6 @@ class ExchangeEnterprisePeriodExchangeServiceTest(TestCase):
             period_from=period_from,
             period_to=period_to,
         )
-        
 
         new_vehicle_location_data = {
             "enterprise": self.enterprise1,
@@ -931,17 +985,7 @@ class ExchangeEnterprisePeriodExchangeServiceTest(TestCase):
         self.assertEqual(3, Trip.objects.count())
         self.assertEqual(3, VehicleLocation.objects.count())
 
-        EnterprisePeriodExchangeService().import_archive(archive, raise_errors=True)   
+        EnterprisePeriodExchangeService().import_archive(archive, raise_errors=True)
 
         self.assertEqual(2, Trip.objects.count())
         self.assertEqual(2, VehicleLocation.objects.count())
-
-
-
-
-
-
-
-
-
-    

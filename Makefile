@@ -2,7 +2,7 @@
 
 start-vite:
 	echo "Starting Vite watcher..."
-	cd /home/taxi-manager/taxi_manager/react_frontend && npm run dev -- --host 0.0.0.0
+	cd /home/taxi-manager/taxi_manager/infrastructure/react_frontend && npm run dev -- --host 0.0.0.0
 
 docker-build:
 	docker build --no-cache -t metacortex687/taxi-manager .
@@ -23,10 +23,12 @@ build:
 	make collectstatic && make migrate
 
 run-gunicorn-dev:
-	uv run gunicorn taxi_manager.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120 --access-logfile -
+	uv run gunicorn taxi_manager.infrastructure.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120 --access-logfile -
 
 run-gunicorn:
-	uv run gunicorn taxi_manager.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-class gthread --threads 4 --timeout 120 --access-logfile -
+	uv run gunicorn taxi_manager.infrastructure.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-class gthread --threads 4 --timeout 120 --access-logfile -
+
+
 
 ensure-superuser:
 	uv run manage.py ensure_superuser
@@ -36,6 +38,12 @@ ensure-demo-data:
 
 demo-up:
 	docker compose -f docker-compose.demo.yaml up --build
+
+dev-up:
+	docker compose -f docker-compose.yaml up --build
+
+dev-down:
+	docker compose -f docker-compose.yaml down
 
 demo-down:
 	docker compose -f docker-compose.demo.yaml down

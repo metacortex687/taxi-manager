@@ -6,13 +6,13 @@ from django.contrib.gis.geos import Point, Polygon
 
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from taxi_manager.api_v1.views.main import VehicleViewSet
-from taxi_manager.enterprise.models import Enterprise
-from taxi_manager.vehicle.models import Model, Vehicle, Driver
-from taxi_manager.geo_tracking.models import Trip, VehicleLocation
-from taxi_manager.time_zones.models import TimeZone
-from taxi_manager.geocoding.models import GeoAddress
-from taxi_manager.reports.models import Report, CarMileageReport
+from taxi_manager.infrastructure.api_v1.views.main import VehicleViewSet
+from taxi_manager.infrastructure.enterprise.models import Enterprise
+from taxi_manager.infrastructure.vehicle.models import Model, Vehicle, Driver
+from taxi_manager.infrastructure.geo_tracking.models import Trip, VehicleLocation
+from taxi_manager.infrastructure.time_zones.models import TimeZone
+from taxi_manager.infrastructure.geocoding.models import GeoAddress
+from taxi_manager.infrastructure.reports.models import Report, CarMileageReport
 
 from datetime import datetime, UTC
 
@@ -20,9 +20,15 @@ from datetime import datetime, UTC
 class VehicleAPITest(TestCase):
     def setUp(self):
         self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
-        self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city", time_zone=self.time_zone)
-        self.enterprise2 = Enterprise.objects.create(name="enterprise2", city="city", time_zone=self.time_zone)
-        self.enterprise3 = Enterprise.objects.create(name="enterprise3", city="city", time_zone=self.time_zone)
+        self.enterprise1 = Enterprise.objects.create(
+            name="enterprise1", city="city", time_zone=self.time_zone
+        )
+        self.enterprise2 = Enterprise.objects.create(
+            name="enterprise2", city="city", time_zone=self.time_zone
+        )
+        self.enterprise3 = Enterprise.objects.create(
+            name="enterprise3", city="city", time_zone=self.time_zone
+        )
 
         self.user = get_user_model().objects.create_user(
             username="user", email="test@mail.com", password="secret"
@@ -538,7 +544,9 @@ class VehicleAPITest(TestCase):
 class TokenAPITest(TestCase):
     def setUp(self):
         self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
-        self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city", time_zone=self.time_zone)
+        self.enterprise1 = Enterprise.objects.create(
+            name="enterprise1", city="city", time_zone=self.time_zone
+        )
         self.manager1 = get_user_model().objects.create_user(
             username="manager1", email="manager1@mail.com", password="secret"
         )
@@ -619,9 +627,15 @@ class TokenAPITest(TestCase):
 class EnterpriseAPITest(TestCase):
     def setUp(self):
         self.time_zone = TimeZone.objects.create(code="UTC", utc_offset=0)
-        self.enterprise1 = Enterprise.objects.create(name="enterprise1", city="city", time_zone=self.time_zone)
-        self.enterprise2 = Enterprise.objects.create(name="enterprise2", city="city", time_zone=self.time_zone)
-        self.enterprise3 = Enterprise.objects.create(name="enterprise3", city="city", time_zone=self.time_zone)
+        self.enterprise1 = Enterprise.objects.create(
+            name="enterprise1", city="city", time_zone=self.time_zone
+        )
+        self.enterprise2 = Enterprise.objects.create(
+            name="enterprise2", city="city", time_zone=self.time_zone
+        )
+        self.enterprise3 = Enterprise.objects.create(
+            name="enterprise3", city="city", time_zone=self.time_zone
+        )
 
         self.manager1 = get_user_model().objects.create_user(
             username="manager1", email="manager1@mail.com", password="secret"
@@ -671,7 +685,10 @@ class EnterpriseAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual({self.enterprise1.id, self.enterprise2.id}, {result["id"] for result in response.data["results"]})
+        self.assertEqual(
+            {self.enterprise1.id, self.enterprise2.id},
+            {result["id"] for result in response.data["results"]},
+        )
 
     def test_superuser_lists_only_managed_enterprises(self):
         self.manager1.is_superuser = True
@@ -683,7 +700,10 @@ class EnterpriseAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual({self.enterprise1.id, self.enterprise2.id}, {result["id"] for result in response.data["results"]})
+        self.assertEqual(
+            {self.enterprise1.id, self.enterprise2.id},
+            {result["id"] for result in response.data["results"]},
+        )
 
     def test_user_cannot_retriev_enterprise_without_token_return_401(self):
         response = self.client.get(f"/api/v1/enterprises/{self.enterprise3.pk}/")
@@ -721,12 +741,13 @@ class BaseAuthTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data["auth_token"])
         return response.data["auth_token"]
-   
+
     def client_get(self, url, user):
-        return self.client.get(url,
+        return self.client.get(
+            url,
             headers={"Authorization": f"Token {self.get_token(user)}"},
         )
-    
+
     def client_post(self, url, user, data):
         return self.client.post(
             url,
@@ -734,8 +755,6 @@ class BaseAuthTestCase(TestCase):
             content_type="application/json",
             headers={"Authorization": f"Token {self.get_token(user)}"},
         )
-
-
 
 
 class TripPointAPITest(BaseAuthTestCase):
@@ -814,7 +833,6 @@ class TripPointAPITest(BaseAuthTestCase):
 
         self.assertEqual(response.status_code, 200)
 
-
     def test_return_list_points_only_in_trip_200(self):
         token = self.get_token(self.manager1)
 
@@ -846,7 +864,6 @@ class TripPointAPITest(BaseAuthTestCase):
         self.assertIn([37.6173, 55.7558], coordinates)
         self.assertIn([37.6175, 55.756], coordinates)
         self.assertNotIn([37.618, 55.756], coordinates)
-
 
     def test_return_list_points_only_in_trip_utc_plus_3(self):
         token = self.get_token(self.manager1)
@@ -919,7 +936,7 @@ class TripAPITest(BaseAuthTestCase):
             mileage=100,
             enterprise=self.enterprise1,
             price=125000,
-        )       
+        )
 
         self.trip1 = Trip.objects.create(
             enterprise=self.enterprise1,
@@ -970,67 +987,70 @@ class TripAPITest(BaseAuthTestCase):
             tracked_at=datetime(2026, 3, 10, 11, 25, 0, tzinfo=UTC),
         )
 
-
         self.address1 = "Address1"
 
         west = 37.6123784
-        east = 37.6255645 
+        east = 37.6255645
         north = 55.7559849
         south = 55.7480273
 
-        polygon = Polygon((
+        polygon = Polygon(
+            (
                 (west, south),
                 (east, south),
                 (east, north),
                 (west, north),
                 (west, south),
-            ), srid=4326
+            ),
+            srid=4326,
         )
-        GeoAddress.objects.create(display_name=self.address1, area = polygon)
+        GeoAddress.objects.create(display_name=self.address1, area=polygon)
 
-
-
-    def test_list_trips_returns_200_for_manager(self): 
-        '''
-        Менеджер может получить список поездок автомобиля 
-        '''
-        response = self.client_get(f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1)
+    def test_list_trips_returns_200_for_manager(self):
+        """
+        Менеджер может получить список поездок автомобиля
+        """
+        response = self.client_get(
+            f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1
+        )
 
         self.assertEqual(response.status_code, 200)
 
         results = response.data["results"]
-        self.assertEqual(len(results),1)
+        self.assertEqual(len(results), 1)
 
-
-    def test_trip_list_contains_start_point(self): 
-        '''
+    def test_trip_list_contains_start_point(self):
+        """
         В информации по поездке есть стартовая точка
-        '''
-        response = self.client_get(f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1)
+        """
+        response = self.client_get(
+            f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1
+        )
 
         self.assertEqual(response.status_code, 200)
 
         results = response.data["results"]
 
-        self.assertEqual(len(results),1)
-        self.assertEqual(results[0]["start_point"]["lon"],self.start_point.location.x)
-        self.assertEqual(results[0]["start_point"]["lat"],self.start_point.location.y)
-        self.assertEqual(results[0]["start_point"]["address"],self.address1)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["start_point"]["lon"], self.start_point.location.x)
+        self.assertEqual(results[0]["start_point"]["lat"], self.start_point.location.y)
+        self.assertEqual(results[0]["start_point"]["address"], self.address1)
 
-
-    def test_trip_list_contains_end_point(self): 
-        '''
+    def test_trip_list_contains_end_point(self):
+        """
         В информации по поездке есть последняя точка
-        '''
-        response = self.client_get(f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1)
+        """
+        response = self.client_get(
+            f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1
+        )
 
         self.assertEqual(response.status_code, 200)
 
         results = response.data["results"]
 
-        self.assertEqual(len(results),1)
-        self.assertEqual(results[0]["end_point"]["lon"],self.end_point.location.x)
-        self.assertEqual(results[0]["end_point"]["lat"],self.end_point.location.y)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["end_point"]["lon"], self.end_point.location.x)
+        self.assertEqual(results[0]["end_point"]["lat"], self.end_point.location.y)
         self.assertIsNotNone(results[0]["end_point"]["address"])
 
 
@@ -1093,7 +1113,6 @@ class ReportsTest(BaseAuthTestCase):
             tracked_at=datetime(2026, 3, 10, 10, 30, 0, tzinfo=UTC),
         )
 
-
     def test_list_reports(self):
         response = self.client_get("/api/v1/reports/list/", self.manager1)
 
@@ -1104,7 +1123,6 @@ class ReportsTest(BaseAuthTestCase):
         self.assertTrue("name" in data[0])
         self.assertTrue("verbose_name" in data[0])
         self.assertTrue("params" in data[0])
-
 
     def test_post_report(self):
         params = {
@@ -1130,22 +1148,26 @@ class ReportsTest(BaseAuthTestCase):
         self.assertEqual(1, Report.objects.count())
 
     def test_post_get_report(self):
-        params = {"enterprise": self.enterprise1.id, 
-                  "vehicle": self.vehicle1.id,
-                  "time_zone": self.time_zone.code,
-                  "frequency": "DAY",
-                  "period_from": datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC),
-                  "period_to": datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC),
-                  }
+        params = {
+            "enterprise": self.enterprise1.id,
+            "vehicle": self.vehicle1.id,
+            "time_zone": self.time_zone.code,
+            "frequency": "DAY",
+            "period_from": datetime(2026, 3, 10, 10, 0, 0, tzinfo=UTC),
+            "period_to": datetime(2026, 3, 10, 11, 0, 0, tzinfo=UTC),
+        }
 
-        response = self.client_post("/api/v1/reports/carmileagereport/", self.manager1, data=params)
+        response = self.client_post(
+            "/api/v1/reports/carmileagereport/", self.manager1, data=params
+        )
         self.assertEqual(response.status_code, 201)
 
         uuid = response.data["uuid"]
-        response = self.client_get(f"/api/v1/reports/carmileagereport/{uuid}/", self.manager1)
+        response = self.client_get(
+            f"/api/v1/reports/carmileagereport/{uuid}/", self.manager1
+        )
 
         self.assertEqual(response.status_code, 200)
-
 
     def test_car_mileage_report_result(self):
         params = {
@@ -1181,7 +1203,3 @@ class ReportsTest(BaseAuthTestCase):
         self.assertIn("result", data)
         self.assertTrue(len(data["result"]) > 0)
         self.assertAlmostEqual(0.22, data["result"][0]["mileage"], delta=0.01)
-
-
-
-

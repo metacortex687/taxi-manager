@@ -11,12 +11,18 @@ from django.contrib.gis.geos import Point
 from django.utils import timezone
 
 
-from taxi_manager.enterprise.models import Enterprise
-from taxi_manager.vehicle.models import Driver, Model, Vehicle, VehicleDriver
-from taxi_manager.time_zones.models import TimeZone
+from taxi_manager.infrastructure.enterprise.models import Enterprise
+from taxi_manager.infrastructure.vehicle.models import (
+    Driver,
+    Model,
+    Vehicle,
+    VehicleDriver,
+)
+from taxi_manager.infrastructure.time_zones.models import TimeZone
 
-from taxi_manager.demo_data.tracking_generator import TrackingGenerator
-from taxi_manager.geo_tracking.models import Trip, VehicleLocation
+from taxi_manager.infrastructure.demo_data.tracking_generator import TrackingGenerator
+from taxi_manager.infrastructure.geo_tracking.models import Trip, VehicleLocation
+
 
 class DemoDataGenerator:
     def __init__(self, stdout=None):
@@ -48,7 +54,9 @@ class DemoDataGenerator:
                 models=models,
             )
 
-    def _generate_data_for_enterprise(self, enterprise_name, count_drivers, count_vehicles, fake, models):
+    def _generate_data_for_enterprise(
+        self, enterprise_name, count_drivers, count_vehicles, fake, models
+    ):
         time_zone = TimeZone.objects.filter(code="UTC").first()
 
         if time_zone is None:
@@ -123,7 +131,7 @@ class DemoDataGenerator:
                 start_idx_driver + count_assigned_drivers,
             )
 
-            assigned_drivers = drivers[start_idx_driver:(end_idx_driver + 1)]
+            assigned_drivers = drivers[start_idx_driver : (end_idx_driver + 1)]
 
             vehicle.drivers.add(
                 *assigned_drivers,
@@ -224,7 +232,6 @@ class DemoDataGenerator:
         self.write(f"Нанято на работу {len(drivers)} водителей")
 
         return drivers
-    
 
     @transaction.atomic
     def generate_trip(
@@ -235,7 +242,7 @@ class DemoDataGenerator:
         speed_km_h,
         delta_time_s,
         start_time=None,
-        seed=0
+        seed=0,
     ):
         self.write("Построение маршрута...")
 

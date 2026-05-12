@@ -4,4 +4,4 @@ __pycache__
 *.pyc
 
 node_modules
-taxi_manager/react_frontend/node_modules
+taxi_manager/infrastructure/react_frontend/node_modules

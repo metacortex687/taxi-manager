@@ -1,9 +1,14 @@
 from rest_framework import generics, viewsets
 
-from taxi_manager.vehicle.models import Vehicle, Model, Driver, VehicleDriver
-from taxi_manager.enterprise.models import Enterprise
-from taxi_manager.time_zones.models import TimeZone
-from taxi_manager.geo_tracking.models import VehicleLocation
+from taxi_manager.infrastructure.vehicle.models import (
+    Vehicle,
+    Model,
+    Driver,
+    VehicleDriver,
+)
+from taxi_manager.infrastructure.enterprise.models import Enterprise
+from taxi_manager.infrastructure.time_zones.models import TimeZone
+from taxi_manager.infrastructure.geo_tracking.models import VehicleLocation
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters as drf_filters
@@ -278,4 +283,3 @@ class VehicleLocationListAPIView(generics.ListAPIView):
             return VehileLocationSerializerGeoJson
 
         return VehileLocationSerializer
-

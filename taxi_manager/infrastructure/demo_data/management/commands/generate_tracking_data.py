@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
-from taxi_manager.demo_data.services import DemoDataGenerator
-from taxi_manager.vehicle.models import Vehicle
+from taxi_manager.infrastructure.demo_data.services import DemoDataGenerator
+from taxi_manager.infrastructure.vehicle.models import Vehicle
 
 
 class Command(BaseCommand):

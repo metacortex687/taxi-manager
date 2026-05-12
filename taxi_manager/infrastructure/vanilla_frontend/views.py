@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
-from taxi_manager.enterprise.models import Enterprise
-from taxi_manager.vehicle.models import Vehicle
-from taxi_manager.reports.services import ReportService
+from taxi_manager.infrastructure.enterprise.models import Enterprise
+from taxi_manager.infrastructure.vehicle.models import Vehicle
+from taxi_manager.infrastructure.reports.services import ReportService
 
 
 def vehicles(request, pk):
@@ -9,37 +9,57 @@ def vehicles(request, pk):
         request, "vehicles.html", {"enterprise": get_object_or_404(Enterprise, pk=pk)}
     )
 
+
 def vehicle_edit(request, pk):
     return render(
-        request, "vehicle.html", {"entity": get_object_or_404(Vehicle, pk=pk), "action": "edit"}
+        request,
+        "vehicle.html",
+        {"entity": get_object_or_404(Vehicle, pk=pk), "action": "edit"},
     )
 
+
 def vehicle_new(request):
-    return render(
-        request, "vehicle.html", {"action": "new"}
-    )
+    return render(request, "vehicle.html", {"action": "new"})
+
 
 def vehicle_trips(request, pk):
     return render(
-        request, "vehicle_trips.html", {"entity": get_object_or_404(Vehicle, pk=pk), "action": "view"}
+        request,
+        "vehicle_trips.html",
+        {"entity": get_object_or_404(Vehicle, pk=pk), "action": "view"},
     )
+
 
 def enterprise_edit(request, pk):
     return render(
-        request, "enterprise.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "edit"}
+        request,
+        "enterprise.html",
+        {"entity": get_object_or_404(Enterprise, pk=pk), "action": "edit"},
     )
+
 
 def enterprise_export_trips(request, pk):
     return render(
-        request, "enterprise_export_trips.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "view"}
+        request,
+        "enterprise_export_trips.html",
+        {"entity": get_object_or_404(Enterprise, pk=pk), "action": "view"},
     )
+
 
 def enterprise_import_trips(request, pk):
     return render(
-        request, "enterprise_import_trips.html", {"entity": get_object_or_404(Enterprise, pk=pk), "action": "view"}
+        request,
+        "enterprise_import_trips.html",
+        {"entity": get_object_or_404(Enterprise, pk=pk), "action": "view"},
     )
+
 
 def report(request, report_name):
     return render(
-        request, "report.html", {"report_name": report_name, "report_verbouse_name": ReportService().verbouse_name(report_name)}
+        request,
+        "report.html",
+        {
+            "report_name": report_name,
+            "report_verbouse_name": ReportService().verbouse_name(report_name),
+        },
     )

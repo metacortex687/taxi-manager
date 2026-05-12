@@ -6,13 +6,14 @@ from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import MakeLine
 from django.contrib.gis.db.models.functions import Length
 
-from taxi_manager.vehicle.models import Vehicle
-from taxi_manager.enterprise.models import Enterprise
+from taxi_manager.infrastructure.vehicle.models import Vehicle
+from taxi_manager.infrastructure.enterprise.models import Enterprise
+
 
 class VehicleLocationQuerySet(models.QuerySet):
-    def filter_period(self, period_from, period_to):        
+    def filter_period(self, period_from, period_to):
         return self.filter(tracked_at__gte=period_from, tracked_at__lt=period_to)
-    
+
     def filter_enterprise(self, enterprise):
         return self.filter(enterprise=enterprise)
 
@@ -40,15 +41,15 @@ class VehicleLocation(models.Model):
 
 
 class TripQuerySet(models.QuerySet):
-    def filter_period(self, period_from, period_to):        
+    def filter_period(self, period_from, period_to):
         return self.filter(started_at__gte=period_from, ended_at__lt=period_to)
-    
+
     def filter_enterprise(self, enterprise):
         return self.filter(enterprise=enterprise)
-    
+
     def filter_vehicle(self, vehicle):
-        return self.filter(vehicle=vehicle)   
-    
+        return self.filter(vehicle=vehicle)
+
     def annotate_path(self):
         path_subquery = (
             VehicleLocation.objects.filter(
@@ -59,9 +60,7 @@ class TripQuerySet(models.QuerySet):
             .order_by()
             .values("vehicle")
             .annotate(
-                path=MakeLine(
-                    Cast("location", output_field=GeometryField(srid=4326))
-                )
+                path=MakeLine(Cast("location", output_field=GeometryField(srid=4326)))
             )
             .values("path")[:1]
         )
@@ -72,16 +71,17 @@ class TripQuerySet(models.QuerySet):
                 output_field=GeometryField(srid=4326),
             )
         )
-    
+
     def annotate_mileage(self):
-        return self.annotate(
-            mileage=Length("path", spheroid=True)
-        )
+        return self.annotate(mileage=Length("path", spheroid=True))
 
 
 class Trip(models.Model):
     enterprise = models.ForeignKey(
-        Enterprise, on_delete=models.RESTRICT, verbose_name="Предприятие", related_name="trips"
+        Enterprise,
+        on_delete=models.RESTRICT,
+        verbose_name="Предприятие",
+        related_name="trips",
     )
     vehicle = models.ForeignKey(
         Vehicle,

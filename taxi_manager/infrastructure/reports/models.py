@@ -1,7 +1,7 @@
-from taxi_manager.enterprise.models import Enterprise
-from taxi_manager.vehicle.models import Vehicle
-from taxi_manager.geo_tracking.models import Trip
-from taxi_manager.time_zones.models import TimeZone
+from taxi_manager.infrastructure.enterprise.models import Enterprise
+from taxi_manager.infrastructure.vehicle.models import Vehicle
+from taxi_manager.infrastructure.geo_tracking.models import Trip
+from taxi_manager.infrastructure.time_zones.models import TimeZone
 
 from . import pdf
 
@@ -47,18 +47,17 @@ class Report(models.Model):
     @classmethod
     def get_result_model(cls):
         raise NotImplementedError
-    
+
     def create_values(self):
         raise NotImplementedError
-
 
     def get_results(self) -> models.QuerySet:
         return self.get_result_model().objects.filter(report=self).order_by("date")
 
     def save(self, *args, **kwargs):
         report_tz = ZoneInfo(self.time_zone.code)
-        self.period_from    = self.period_from.astimezone(report_tz)
-        self.period_to      = self.period_to.astimezone(report_tz)
+        self.period_from = self.period_from.astimezone(report_tz)
+        self.period_to = self.period_to.astimezone(report_tz)
 
         self.name = self._build_name()
 
@@ -67,14 +66,13 @@ class Report(models.Model):
     @classmethod
     def get_pdf_render(cls):
         return None
-        
 
     def get_period_dates_in_report_time_zone(self):
         report_tz = ZoneInfo(self.time_zone.code)
         period_from = self.period_from.astimezone(report_tz).date().isoformat()
         period_to = self.period_to.astimezone(report_tz).date().isoformat()
         return period_from, period_to
-    
+
     def _build_name(self):
         period_from, period_to = self.get_period_dates_in_report_time_zone()
 
@@ -89,7 +87,7 @@ class Report(models.Model):
                 "name": model._meta.model_name,
                 "verbose_name": model._meta.verbose_name,
                 "report_class": model,
-                "params": model.get_params()
+                "params": model.get_params(),
             }
             for model in filter(
                 lambda model: issubclass(model, cls) and model is not cls,
@@ -101,7 +99,6 @@ class Report(models.Model):
     def get_params(cls):
         return ["frequency", "period_from", "period_to"]
 
-
     def trunc_date(self, field_name):
         return {
             "DAY": TruncDay,
@@ -109,9 +106,6 @@ class Report(models.Model):
             "MONTH": TruncMonth,
             "YEAR": TruncYear,
         }[self.frequency](field_name, tzinfo=ZoneInfo(self.time_zone.code))
-
-         
-
 
 
 class ReportValue(models.Model):
@@ -139,6 +133,7 @@ class ReportValue(models.Model):
             for field_name in cls.get_table_fields()
         ]
 
+
 class CarMileageReportValue(ReportValue):
     mileage = models.FloatField(verbose_name="Пробег, км")
     count_trip = models.IntegerField(verbose_name="Поездок")
@@ -158,14 +153,13 @@ class CarMileageReport(Report):
     @classmethod
     def get_result_model(cls):
         return CarMileageReportValue
-    
+
     @classmethod
     def get_pdf_render(cls):
         return pdf.renderReportToPDF
 
-
     def create_values(self):
-        #time.sleep(10) #Правильная имитация задержки
+        # time.sleep(10) #Правильная имитация задержки
         grouped_rows = (
             Trip.objects.filter_enterprise(self.enterprise)
             .filter_vehicle(self.vehicle)
@@ -189,6 +183,7 @@ class CarMileageReport(Report):
         ]
 
         CarMileageReportValue.objects.bulk_create(values_to_create)
+
 
 class CarRoutesReportValue(ReportValue):
     path = models.JSONField(verbose_name="Маршруты")
@@ -245,4 +240,4 @@ class DefaultUserValues(models.Model):
     period_to = models.DateTimeField(null=True)
     enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE, null=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True)
-    frequency = models.CharField(max_length=5,choices=REPORT_FREQUENCIES, null=True)
+    frequency = models.CharField(max_length=5, choices=REPORT_FREQUENCIES, null=True)

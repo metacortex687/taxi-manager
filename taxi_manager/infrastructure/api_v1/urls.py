@@ -14,7 +14,7 @@ from .views.trip import (
     TripPointListAPIView,
     TripListAPIView,
     export_enterprise_trip_archive,
-    ImportEnterpriseTripArchiveView
+    ImportEnterpriseTripArchiveView,
 )
 
 from rest_framework.routers import DefaultRouter
@@ -48,8 +48,7 @@ urlpatterns = [
     path("vehicles/<int:vehicle_id>/locations/", VehicleLocationListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/trip-points/", TripPointListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/trips/", TripListAPIView.as_view()),
-
-    path("reports/", include("taxi_manager.reports.urls")),
+    path("reports/", include("taxi_manager.infrastructure.reports.urls")),
     # path("logout/", SessionLogoutView.as_view()),
     path(r"auth/", include("djoser.urls")),
     re_path(r"^auth/", include("djoser.urls.authtoken")),

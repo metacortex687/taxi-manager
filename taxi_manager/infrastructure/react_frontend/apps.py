@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class ReactFrontendConfig(AppConfig):
-    name = 'taxi_manager.react_frontend'
+    name = "taxi_manager.infrastructure.react_frontend"

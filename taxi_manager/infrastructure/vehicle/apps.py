@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class VehicleConfig(AppConfig):
-    name = 'taxi_manager.vehicle'
+    name = "taxi_manager.infrastructure.vehicle"

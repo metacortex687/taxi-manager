@@ -1,7 +1,12 @@
 from django.test import TestCase
 from django.core.management import call_command
 from .models import Enterprise
-from taxi_manager.vehicle.models import Driver, Model, Vehicle, VehicleDriver
+from taxi_manager.infrastructure.vehicle.models import (
+    Driver,
+    Model,
+    Vehicle,
+    VehicleDriver,
+)
 from django.core.management.base import CommandError
 from django.db.models import F, Q
 
@@ -85,75 +90,159 @@ class CommandGenerateDataTest(TestCase):
 
     def test_generate_links_of_vehicles_and_drivers(self):
         name_enterprise = ["test_name1", "test_name2", "test_name3"]
-        call_command("generate_data", enterprise=name_enterprise, driver=15, vehicle=51, seed=24) 
+        call_command(
+            "generate_data", enterprise=name_enterprise, driver=15, vehicle=51, seed=24
+        )
 
         self.assertTrue(VehicleDriver.objects.exists())
-        self.assertEqual(VehicleDriver.objects.count(), 529) #Для seed=24 529 оно должно быть большим
+        self.assertEqual(
+            VehicleDriver.objects.count(), 529
+        )  # Для seed=24 529 оно должно быть большим
 
-
-    def test_generate_set_active_links_of_vehicles_and_drivers_when_one_enterprise_and_fewer_vehicles_then_driver(self):
+    def test_generate_set_active_links_of_vehicles_and_drivers_when_one_enterprise_and_fewer_vehicles_then_driver(
+        self,
+    ):
         name_enterprise = ["test_name1"]
-        call_command("generate_data", enterprise=name_enterprise, driver=150, vehicle=51, seed=24) 
+        call_command(
+            "generate_data", enterprise=name_enterprise, driver=150, vehicle=51, seed=24
+        )
 
-        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 6)  #6 а не 5 так как уменьшил вероятность авто без машин и водителей без авто
+        self.assertEqual(
+            VehicleDriver.objects.filter(active=True).count(), 6
+        )  # 6 а не 5 так как уменьшил вероятность авто без машин и водителей без авто
 
-    def test_generate_set_active_links_of_vehicles_and_drivers_when_one_enterprise_and_more_vehicles_then_driver(self):
+    def test_generate_set_active_links_of_vehicles_and_drivers_when_one_enterprise_and_more_vehicles_then_driver(
+        self,
+    ):
         name_enterprise = ["test_name1"]
-        call_command("generate_data", enterprise=name_enterprise, driver=3, vehicle=51, seed=24) 
+        call_command(
+            "generate_data", enterprise=name_enterprise, driver=3, vehicle=51, seed=24
+        )
 
-        self.assertEqual(Vehicle.objects.count(), 51) 
-        self.assertEqual(Driver.objects.count(), 3) 
-        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 3) #3 а не 2 так как уменьшил вероятность авто без машин и водителей без авто
+        self.assertEqual(Vehicle.objects.count(), 51)
+        self.assertEqual(Driver.objects.count(), 3)
+        self.assertEqual(
+            VehicleDriver.objects.filter(active=True).count(), 3
+        )  # 3 а не 2 так как уменьшил вероятность авто без машин и водителей без авто
 
-    
     def test_generate_more_data(self):
         name_enterprise = ["test_name1"]
-        call_command("generate_data", enterprise=name_enterprise, driver=100, vehicle=1000, seed=15) 
+        call_command(
+            "generate_data",
+            enterprise=name_enterprise,
+            driver=100,
+            vehicle=1000,
+            seed=15,
+        )
 
-        self.assertEqual(Vehicle.objects.count(), 1000) 
-        self.assertEqual(Driver.objects.count(), 100) 
-        self.assertEqual(VehicleDriver.objects.count(), 3927) #Числа случайные для seed=15, важен прорядок чисел
-        self.assertEqual(VehicleDriver.objects.values("driver").distinct().count(), 100) #Числа случайные для seed=15, важен прорядок чисел
-        self.assertEqual(VehicleDriver.objects.values("vehicle").distinct().count(), 1000) #Числа случайные для seed=15, важен прорядок чисел
-        self.assertEqual(VehicleDriver.objects.filter(active=True).count(), 100) #Числа случайные для seed=15, важен прорядок чисел
+        self.assertEqual(Vehicle.objects.count(), 1000)
+        self.assertEqual(Driver.objects.count(), 100)
+        self.assertEqual(
+            VehicleDriver.objects.count(), 3927
+        )  # Числа случайные для seed=15, важен прорядок чисел
+        self.assertEqual(
+            VehicleDriver.objects.values("driver").distinct().count(), 100
+        )  # Числа случайные для seed=15, важен прорядок чисел
+        self.assertEqual(
+            VehicleDriver.objects.values("vehicle").distinct().count(), 1000
+        )  # Числа случайные для seed=15, важен прорядок чисел
+        self.assertEqual(
+            VehicleDriver.objects.filter(active=True).count(), 100
+        )  # Числа случайные для seed=15, важен прорядок чисел
 
     def test_generate_links_vehicle_driver_for_all_enterprises(self):
-        name_enterprise = ["test_name1","test_name2","test_name3","test_name4","test_name5"]
-        call_command("generate_data", enterprise=name_enterprise, driver=100, vehicle=1000, seed=15) 
+        name_enterprise = [
+            "test_name1",
+            "test_name2",
+            "test_name3",
+            "test_name4",
+            "test_name5",
+        ]
+        call_command(
+            "generate_data",
+            enterprise=name_enterprise,
+            driver=100,
+            vehicle=1000,
+            seed=15,
+        )
 
-        self.assertEqual(VehicleDriver.objects.values("enterprise").distinct().count(), len(name_enterprise))
-        self.assertEqual(Driver.objects.values("enterprise").distinct().count(), len(name_enterprise))
-        self.assertEqual(Vehicle.objects.values("enterprise").distinct().count(), len(name_enterprise))
+        self.assertEqual(
+            VehicleDriver.objects.values("enterprise").distinct().count(),
+            len(name_enterprise),
+        )
+        self.assertEqual(
+            Driver.objects.values("enterprise").distinct().count(), len(name_enterprise)
+        )
+        self.assertEqual(
+            Vehicle.objects.values("enterprise").distinct().count(),
+            len(name_enterprise),
+        )
 
     def test_generate_vehicle_driver_links_match_driver_enterprise(self):
         self.assertEqual(VehicleDriver.objects.count(), 0)
 
-        name_enterprise = ["test_name1","test_name2","test_name3","test_name4","test_name5"]
-        call_command("generate_data", enterprise=name_enterprise, driver=20, vehicle=20, seed=15) 
-  
-        self.assertEqual(Driver.objects.count(), 20*5)
-        self.assertEqual(VehicleDriver.objects.filter(~Q(enterprise = F("driver__enterprise"))).count(), 0)
-        self.assertFalse(VehicleDriver.objects.filter(~Q(enterprise = F("driver__enterprise"))).exists())
+        name_enterprise = [
+            "test_name1",
+            "test_name2",
+            "test_name3",
+            "test_name4",
+            "test_name5",
+        ]
+        call_command(
+            "generate_data", enterprise=name_enterprise, driver=20, vehicle=20, seed=15
+        )
+
+        self.assertEqual(Driver.objects.count(), 20 * 5)
+        self.assertEqual(
+            VehicleDriver.objects.filter(
+                ~Q(enterprise=F("driver__enterprise"))
+            ).count(),
+            0,
+        )
+        self.assertFalse(
+            VehicleDriver.objects.filter(
+                ~Q(enterprise=F("driver__enterprise"))
+            ).exists()
+        )
 
     def test_generate_vehicle_driver_links_match_vehicle_enterprise(self):
         self.assertEqual(VehicleDriver.objects.count(), 0)
 
-        name_enterprise = ["test_name1","test_name2","test_name3","test_name4","test_name5"]
-        call_command("generate_data", enterprise=name_enterprise, driver=20, vehicle=20, seed=15) 
-  
-        self.assertEqual(VehicleDriver.objects.filter(~Q(enterprise = F("vehicle__enterprise"))).count(), 0)
-        self.assertFalse(VehicleDriver.objects.filter(~Q(enterprise = F("vehicle__enterprise"))).exists())
+        name_enterprise = [
+            "test_name1",
+            "test_name2",
+            "test_name3",
+            "test_name4",
+            "test_name5",
+        ]
+        call_command(
+            "generate_data", enterprise=name_enterprise, driver=20, vehicle=20, seed=15
+        )
+
+        self.assertEqual(
+            VehicleDriver.objects.filter(
+                ~Q(enterprise=F("vehicle__enterprise"))
+            ).count(),
+            0,
+        )
+        self.assertFalse(
+            VehicleDriver.objects.filter(
+                ~Q(enterprise=F("vehicle__enterprise"))
+            ).exists()
+        )
 
     def test_generate_for_multiply_many_enterprise_check_count_vehicle(self):
-        name_enterprise = ["test_name1", "test_name2", "test_name3"] 
-        call_command("generate_data", enterprise=name_enterprise, driver=3, vehicle=51, seed=24) 
+        name_enterprise = ["test_name1", "test_name2", "test_name3"]
+        call_command(
+            "generate_data", enterprise=name_enterprise, driver=3, vehicle=51, seed=24
+        )
 
-        self.assertEqual(Vehicle.objects.count(), 51*len(name_enterprise)) 
-        
-        
+        self.assertEqual(Vehicle.objects.count(), 51 * len(name_enterprise))
+
     def test_generate_for_multiply_enterprise_check_count_driver(self):
-        name_enterprise = ["test_name1", "test_name2", "test_name3"] 
-        call_command("generate_data", enterprise=name_enterprise, driver=3, vehicle=51, seed=24)
- 
-        self.assertEqual(Driver.objects.count(), 3*len(name_enterprise))   
+        name_enterprise = ["test_name1", "test_name2", "test_name3"]
+        call_command(
+            "generate_data", enterprise=name_enterprise, driver=3, vehicle=51, seed=24
+        )
 
+        self.assertEqual(Driver.objects.count(), 3 * len(name_enterprise))
