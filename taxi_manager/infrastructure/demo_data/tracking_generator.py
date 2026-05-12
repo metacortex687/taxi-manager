@@ -34,7 +34,7 @@ class TrackingGenerator:
         
         data_path = (
             Path(settings.BASE_DIR)
-            / "taxi_manager"
+            / "infrastructure"
             / "demo_data"
             / "geo_data"
             / f"{file_name}"
