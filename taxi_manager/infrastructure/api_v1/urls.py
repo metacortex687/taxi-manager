@@ -9,6 +9,7 @@ from .views.main import (
     EnterpriseListAPIView,
     TimeZoneListAPIView,
     VehicleLocationListAPIView,
+    enterprise_list_view,
 )
 from .views.trip import (
     TripPointListAPIView,
@@ -43,7 +44,7 @@ urlpatterns = [
         ImportEnterpriseTripArchiveView.as_view(),
     ),
     path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
-    path("enterprises/", EnterpriseListAPIView.as_view()),
+    path("enterprises/", enterprise_list_view),
     path("timezones/", TimeZoneListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/locations/", VehicleLocationListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/trip-points/", TripPointListAPIView.as_view()),
