@@ -1,17 +1,6 @@
-from dataclasses import asdict
-
 from rest_framework import generics, viewsets
 
-from taxi_manager.application.use_cases.enterprise_manager_usecase import (
-    EnterpriseManagerUseCase,
-)
-from taxi_manager.domain.entities.manager import ManagerId
-from taxi_manager.infrastructure.repositories.enterprise_manager_django_rep import (
-    EnterpriseManagerDjangoRep,
-)
-from taxi_manager.infrastructure.repositories.time_zone_django_rep import (
-    TimeZoneDjangoRep,
-)
+
 from taxi_manager.infrastructure.vehicle.models import (
     Vehicle,
     Model,
@@ -173,33 +162,19 @@ class ModelDetailAPIView(generics.RetrieveAPIView):
     serializer_class = ModelSerializer
 
 
-@api_view(["GET"])
-def enterprise_list_view(request):
-    user = request.user
-
-    if user.is_anonymous:
-        raise NotAuthenticated("Авторизуйтесь")
-
-    uc = EnterpriseManagerUseCase(
-        enterprise_manager_assigment_rep=EnterpriseManagerDjangoRep(),
-        time_zone_rep=TimeZoneDjangoRep(),
-    )
-
-    enterprises = uc.get_manager_assigments(ManagerId(user.id))
-
-    return Response({"results": [asdict(enterprise) for enterprise in enterprises]})
 
 
-class EnterpriseListAPIView(generics.ListAPIView):
-    serializer_class = EnterpriseSerializer
 
-    def get_queryset(self):
-        user = self.request.user
+# class EnterpriseListAPIView(generics.ListAPIView):
+#     serializer_class = EnterpriseSerializer
 
-        if user.is_anonymous:
-            raise NotAuthenticated("Авторизуйтесь")
+#     def get_queryset(self):
+#         user = self.request.user
 
-        return user.managed_enterprises.select_related("time_zone").all()
+#         if user.is_anonymous:
+#             raise NotAuthenticated("Авторизуйтесь")
+
+#         return user.managed_enterprises.select_related("time_zone").all()
 
 
 class EnterpriseDetailAPIView(generics.RetrieveUpdateDestroyAPIView):

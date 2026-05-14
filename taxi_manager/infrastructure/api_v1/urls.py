@@ -1,4 +1,7 @@
 from django.urls import path, include, re_path
+
+from .views import onion_views
+
 from .views.main import (
     VehicleViewSet,
     ModelListAPIView,
@@ -6,10 +9,8 @@ from .views.main import (
     DriverListAPIView,
     DriverDetailAPIView,
     EnterpriseDetailAPIView,
-    EnterpriseListAPIView,
     TimeZoneListAPIView,
     VehicleLocationListAPIView,
-    enterprise_list_view,
 )
 from .views.trip import (
     TripPointListAPIView,
@@ -44,7 +45,7 @@ urlpatterns = [
         ImportEnterpriseTripArchiveView.as_view(),
     ),
     path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
-    path("enterprises/", enterprise_list_view),
+    path("enterprises/", onion_views.enterprise_list_view),
     path("timezones/", TimeZoneListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/locations/", VehicleLocationListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/trip-points/", TripPointListAPIView.as_view()),
