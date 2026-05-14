@@ -44,6 +44,8 @@ from datetime import datetime
 
 from django.db.models.functions import Cast
 
+from . import onion_views
+
 User = get_user_model()
 
 
@@ -180,6 +182,9 @@ class ModelDetailAPIView(generics.RetrieveAPIView):
 class EnterpriseDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Enterprise.objects.all()
     serializer_class = EnterpriseSerializer
+
+    def get(self, request, *args, **kwargs):
+        return onion_views.enterprise_detail_view(request, kwargs["pk"])
 
     def get_object(self):
         pk = self.kwargs["pk"]

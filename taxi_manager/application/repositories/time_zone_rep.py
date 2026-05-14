@@ -7,3 +7,7 @@ class TimeZoneRepInterface(ABC):
     @abstractmethod
     def get_list(self, time_zone_ids: list[TimeZoneId]) -> list[TimeZone]:
         pass
+
+    @abstractmethod
+    def get(self, time_zone_id: TimeZoneId) -> TimeZone:
+        pass

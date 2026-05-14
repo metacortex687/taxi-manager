@@ -2,7 +2,7 @@ from taxi_manager.application.repositories.time_zone_rep import (
     TimeZoneRepInterface,
 )
 
-from ...domain.entities.enterprise import Enterprise
+from ...domain.entities.enterprise import Enterprise, EnterpriseId
 
 from ...domain.entities.manager import ManagerId
 
@@ -18,12 +18,12 @@ class EnterpriseManagerUseCase:
         enterprise_manager_assigment_rep: EnterpriseManagerAssigmentRepInterface,
         time_zone_rep: TimeZoneRepInterface,
     ):
-        self.enterprise_manager_assigment_repository = enterprise_manager_assigment_rep
+        self.enterprise_manager_assigment_rep = enterprise_manager_assigment_rep
         self.time_zone_repository = time_zone_rep
 
     def get_manager_assigments(self, manager_id: ManagerId) -> list[EnterpriseDTO]:
         enterprises = (
-            self.enterprise_manager_assigment_repository.get_manager_assigments(
+            self.enterprise_manager_assigment_rep.get_manager_assigments(
                 manager_id
             )
         )
@@ -38,3 +38,7 @@ class EnterpriseManagerUseCase:
             )
             for enterprise in enterprises
         ]
+    
+    def is_assigment_exist(self, manager_id: ManagerId, enterprise_id: EnterpriseId):
+        return self.enterprise_manager_assigment_rep.is_assigment_exist(manager_id, enterprise_id)
+

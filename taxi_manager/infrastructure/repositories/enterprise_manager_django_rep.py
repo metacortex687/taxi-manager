@@ -28,3 +28,6 @@ class EnterpriseManagerDjangoRep(EnterpriseManagerAssigmentRepInterface):
             )
             for obj in orm_objects
         ]
+    
+    def is_assigment_exist(self, manager_id: ManagerId, enterprise_id: EnterpriseId):
+        return ManagerOrm.objects.filter(user=manager_id.value, enterprise=enterprise_id.value).exists()

@@ -19,3 +19,10 @@ class TimeZoneDjangoRep(TimeZoneRepInterface):
             )
             for obj in orm_objects
         ]
+    
+    def get(self, time_zone_id: TimeZoneId) -> TimeZone:
+        obj = TimeZoneOrm.objects.get(pk=time_zone_id.value)
+
+        return TimeZone(
+                id=TimeZoneId(obj.id), code=obj.code, utc_offset=obj.utc_offset
+            ) 
