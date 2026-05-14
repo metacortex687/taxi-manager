@@ -18,6 +18,6 @@ class EnterpriseDTO:
             id=enterprise.id.value,
             name=enterprise.name,
             city=enterprise.city,
-            time_zone=enterprise.time_zone.value,
+            time_zone=enterprise.time_zone_id.value,
             time_zone_code=time_zone.code,
         )

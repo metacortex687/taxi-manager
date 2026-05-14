@@ -24,10 +24,12 @@ class EnterpriseManagerDjangoRep(EnterpriseManagerAssigmentRepInterface):
                 id=EnterpriseId(obj["enterprise_id"]),
                 name=obj["enterprise__name"],
                 city=obj["enterprise__city"],
-                time_zone=TimeZoneId(obj["enterprise__time_zone_id"]),
+                time_zone_id=TimeZoneId(obj["enterprise__time_zone_id"]),
             )
             for obj in orm_objects
         ]
-    
+
     def is_assigment_exist(self, manager_id: ManagerId, enterprise_id: EnterpriseId):
-        return ManagerOrm.objects.filter(user=manager_id.value, enterprise=enterprise_id.value).exists()
+        return ManagerOrm.objects.filter(
+            user=manager_id.value, enterprise=enterprise_id.value
+        ).exists()

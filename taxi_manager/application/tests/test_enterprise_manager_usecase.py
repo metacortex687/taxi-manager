@@ -21,7 +21,7 @@ class FakeEnterpriseManagerRepository(EnterpriseManagerAssigmentRepInterface):
                 id=EnterpriseId(1),
                 name="Enterprise 1",
                 city="Almaty",
-                time_zone=TimeZoneId(1),
+                time_zone_id=TimeZoneId(1),
             )
         ]
 
@@ -32,7 +32,7 @@ class FakeTimeZoneRepository(TimeZoneRepInterface):
             TimeZone(id=TimeZoneId(1), code="Asia/Almaty", utc_offset=5),
             TimeZone(id=TimeZoneId(2), code="test2", utc_offset=0),
         ]
-    
+
     def get(self, time_zone_id):
         raise NotImplementedError
 

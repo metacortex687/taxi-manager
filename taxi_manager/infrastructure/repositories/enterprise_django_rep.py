@@ -8,5 +8,8 @@ class EnterpriseDjangoRep(EnterpriseRepInterface):
     def get(self, enterprise_id: EnterpriseId):
         obj = EnterpriseORM.objects.get(pk=enterprise_id.value)
         return Enterprise(
-            id=EnterpriseId(obj.id), name=obj.name, city=obj.city, time_zone=TimeZoneId(obj.time_zone.id)
+            id=EnterpriseId(obj.id),
+            name=obj.name,
+            city=obj.city,
+            time_zone_id=TimeZoneId(obj.time_zone.id),
         )
