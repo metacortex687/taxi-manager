@@ -184,7 +184,7 @@ class EnterpriseDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = EnterpriseSerializer
 
     def get(self, request, *args, **kwargs):
-        return onion_views.enterprise_detail_view(request, kwargs["pk"])
+        return onion_views.enterprise_detail_view_get(request, kwargs["pk"])
 
     def get_object(self):
         pk = self.kwargs["pk"]

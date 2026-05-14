@@ -44,7 +44,7 @@ def enterprise_list_view(request):
 
 
 # @api_view(["GET"])
-def enterprise_detail_view(request, pk):
+def enterprise_detail_view_get(request, pk):
     user = request.user
 
     enterprise_id = EnterpriseId(pk)
