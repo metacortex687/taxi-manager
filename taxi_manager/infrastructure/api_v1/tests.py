@@ -700,6 +700,18 @@ class EnterpriseAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
 
+    def test_manager_cannot_delete_managed_enterprise_if_other_managers_assigned_return_409(self):
+        pk = self.enterprise2.pk
+        self.assertTrue(Enterprise.objects.filter(pk=pk).exists())
+
+        response = self.client.delete(
+            f"/api/v1/enterprises/{pk}/",
+            headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertTrue(Enterprise.objects.filter(pk=pk).exists())
+
     def test_manager_cannot_delete_unmanaged_enterprise_return_403(self):
         pk = self.enterprise3.pk
         self.assertTrue(Enterprise.objects.filter(pk=pk).exists())
