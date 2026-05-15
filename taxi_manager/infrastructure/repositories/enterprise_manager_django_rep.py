@@ -1,4 +1,4 @@
-from taxi_manager.application.enterprise_manager_assignment.enterprise_manager_assignment_repository import (
+from taxi_manager.application.enterprise_manager_assignment.repository import (
     IEnterpriseManagerAssignmentRepository,
 )
 

@@ -4,10 +4,10 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.response import Response
 
-from taxi_manager.application.enterprise_manager_assignment.enterprise_manager_usecase import (
+from taxi_manager.application.enterprise_manager_assignment.usecase import (
     EnterpriseManagerUseCase,
 )
-from taxi_manager.application.enterprise.enterprise_usecase import EnterpriseUseCase
+from taxi_manager.application.enterprise.usecase import EnterpriseUseCase
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
 from taxi_manager.domain.entities.manager import ManagerId
 from taxi_manager.domain.entities.time_zone import TimeZoneId
