@@ -1,13 +1,13 @@
-from taxi_manager.application.repositories.time_zone_rep import (
-    TimeZoneRepInterface,
+from taxi_manager.application.repositories.time_zone_repository import (
+    ITimeZoneRepository,
 )
 
 from ...domain.entities.enterprise import Enterprise, EnterpriseId
 
 from ...domain.entities.manager import ManagerId
 
-from ..repositories.enterprise_manager_assigment_rep import (
-    EnterpriseManagerAssigmentRepInterface,
+from ..repositories.enterprise_manager_assignment_repository import (
+    IEnterpriseManagerAssignmentRepository,
 )
 from ..dto.enterprise_dto import EnterpriseDTO
 
@@ -15,8 +15,8 @@ from ..dto.enterprise_dto import EnterpriseDTO
 class EnterpriseManagerUseCase:
     def __init__(
         self,
-        enterprise_manager_assigment_rep: EnterpriseManagerAssigmentRepInterface,
-        time_zone_rep: TimeZoneRepInterface,
+        enterprise_manager_assigment_rep: IEnterpriseManagerAssignmentRepository,
+        time_zone_rep: ITimeZoneRepository,
     ):
         self.enterprise_manager_assigment_rep = enterprise_manager_assigment_rep
         self.time_zone_repository = time_zone_rep
@@ -37,7 +37,9 @@ class EnterpriseManagerUseCase:
             for enterprise in enterprises
         ]
 
-    def get_enterprise_assigments(self, enterprise_id: EnterpriseId) -> list[EnterpriseDTO]:
+    def get_enterprise_assigments(
+        self, enterprise_id: EnterpriseId
+    ) -> list[EnterpriseDTO]:
         enterprises = self.enterprise_manager_assigment_rep.get_enterprise_assigments(
             enterprise_id
         )
@@ -54,11 +56,12 @@ class EnterpriseManagerUseCase:
         ]
 
     def delete(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
-        return self.enterprise_manager_assigment_rep.delete(
-            enterprise_id, manager_id
-        )
-    
-    def is_assigment_exist(self, manager_id: ManagerId, enterprise_id: EnterpriseId)->bool:
+        return self.enterprise_manager_assigment_rep.delete(enterprise_id, manager_id)
+
+    def is_assigment_exist(
+        self, manager_id: ManagerId, enterprise_id: EnterpriseId
+    ) -> bool:
         return self.enterprise_manager_assigment_rep.is_assigment_exist(
-            manager_id, enterprise_id #TODO enterprise_id, manager_id
+            manager_id,
+            enterprise_id,  # TODO enterprise_id, manager_id
         )

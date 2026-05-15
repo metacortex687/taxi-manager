@@ -1,12 +1,11 @@
-from abc import ABC, abstractmethod 
+from abc import ABC, abstractmethod
 
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
 
 
-
-class EnterpriseRepInterface(ABC):
+class IEnterpriseRepository(ABC):
     @abstractmethod
-    def get(self, enterprise_id:EnterpriseId) -> Enterprise:
+    def get(self, enterprise_id: EnterpriseId) -> Enterprise:
         pass
 
     @abstractmethod

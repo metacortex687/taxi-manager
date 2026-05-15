@@ -1,14 +1,16 @@
 from taxi_manager.application.dto.enterprise_dto import EnterpriseDTO
-from taxi_manager.application.repositories.enterprise_rep import EnterpriseRepInterface
-from taxi_manager.application.repositories.time_zone_rep import TimeZoneRepInterface
+from taxi_manager.application.repositories.enterprise_repository import (
+    IEnterpriseRepository,
+)
+from taxi_manager.application.repositories.time_zone_repository import ITimeZoneRepository
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
 
 
 class EnterpriseUseCase:
     def __init__(
         self,
-        enterprise_rep: EnterpriseRepInterface,
-        time_zone_rep: TimeZoneRepInterface,
+        enterprise_rep: IEnterpriseRepository,
+        time_zone_rep: ITimeZoneRepository,
     ):
         self.enterprise_rep = enterprise_rep
         self.time_zone_rep = time_zone_rep
@@ -23,4 +25,4 @@ class EnterpriseUseCase:
         self.enterprise_rep.update(enterprise)
 
     def delete(self, enterprise_id: EnterpriseId):
-        self.enterprise_rep.delete(enterprise_id)     
+        self.enterprise_rep.delete(enterprise_id)

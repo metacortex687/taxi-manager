@@ -1,5 +1,5 @@
-from taxi_manager.application.repositories.enterprise_manager_assigment_rep import (
-    EnterpriseManagerAssigmentRepInterface,
+from taxi_manager.application.repositories.enterprise_manager_assignment_repository import (
+    IEnterpriseManagerAssignmentRepository,
 )
 
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
@@ -10,7 +10,7 @@ from taxi_manager.domain.entities.manager import ManagerId
 from taxi_manager.infrastructure.enterprise.models import Manager as ManagerOrm
 
 
-class EnterpriseManagerDjangoRep(EnterpriseManagerAssigmentRepInterface):
+class EnterpriseManagerDjangoRep(IEnterpriseManagerAssignmentRepository):
     def get_manager_assigments(self, manager_id: ManagerId) -> list[Enterprise]:
         orm_objects = ManagerOrm.objects.filter(user=manager_id.value).values(
             "user_id",
@@ -29,7 +29,9 @@ class EnterpriseManagerDjangoRep(EnterpriseManagerAssigmentRepInterface):
             for obj in orm_objects
         ]
 
-    def get_enterprise_assigments(self, enterprise_id: EnterpriseId) -> list[Enterprise]:
+    def get_enterprise_assigments(
+        self, enterprise_id: EnterpriseId
+    ) -> list[Enterprise]:
         orm_objects = ManagerOrm.objects.filter(enterprise=enterprise_id.value).values(
             "user_id",
             "enterprise_id",
@@ -45,7 +47,7 @@ class EnterpriseManagerDjangoRep(EnterpriseManagerAssigmentRepInterface):
                 time_zone_id=TimeZoneId(obj["enterprise__time_zone_id"]),
             )
             for obj in orm_objects
-        ]    
+        ]
 
     def is_assigment_exist(self, manager_id: ManagerId, enterprise_id: EnterpriseId):
         return ManagerOrm.objects.filter(
