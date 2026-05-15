@@ -113,6 +113,15 @@ def enterprise_detail_view_delete(request, pk):
     return Response(status=204)
 
 
+@api_view(["GET", "PUT", "DELETE"])
+def enterprise_detail_view(request, pk):
+    if request.method == "GET":
+        return enterprise_detail_view_get(request, pk)
 
+    if request.method == "PUT":
+        return enterprise_detail_view_put(request, pk)
+
+    if request.method == "DELETE":
+        return enterprise_detail_view_delete(request, pk)
 
 

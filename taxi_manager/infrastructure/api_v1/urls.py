@@ -8,7 +8,6 @@ from .views.main import (
     ModelDetailAPIView,
     DriverListAPIView,
     DriverDetailAPIView,
-    EnterpriseDetailAPIView,
     TimeZoneListAPIView,
     VehicleLocationListAPIView,
 )
@@ -44,7 +43,7 @@ urlpatterns = [
         "enterprises/<int:enterprise_id>/import/trips/<str:filename>/",
         ImportEnterpriseTripArchiveView.as_view(),
     ),
-    path("enterprises/<int:pk>/", EnterpriseDetailAPIView.as_view()),
+    path("enterprises/<int:pk>/", onion_views.enterprise_detail_view),
     path("enterprises/", onion_views.enterprise_list_view),
     path("timezones/", TimeZoneListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/locations/", VehicleLocationListAPIView.as_view()),

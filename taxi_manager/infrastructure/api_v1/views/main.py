@@ -179,37 +179,37 @@ class ModelDetailAPIView(generics.RetrieveAPIView):
 #         return user.managed_enterprises.select_related("time_zone").all()
 
 
-class EnterpriseDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Enterprise.objects.all()
-    serializer_class = EnterpriseSerializer
+# class EnterpriseDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Enterprise.objects.all()
+#     serializer_class = EnterpriseSerializer
 
-    def get(self, request, *args, **kwargs):
-        return onion_views.enterprise_detail_view_get(request, kwargs["pk"])
+#     def get(self, request, *args, **kwargs):
+#         return onion_views.enterprise_detail_view_get(request, kwargs["pk"])
 
-    def put(self, request, *args, **kwargs):
-        return onion_views.enterprise_detail_view_put(request, kwargs["pk"])
+#     def put(self, request, *args, **kwargs):
+#         return onion_views.enterprise_detail_view_put(request, kwargs["pk"])
     
-    def delete(self, request, *args, **kwargs):
-        return onion_views.enterprise_detail_view_delete(request, kwargs["pk"])
+#     def delete(self, request, *args, **kwargs):
+#         return onion_views.enterprise_detail_view_delete(request, kwargs["pk"])
 
-    def get_object(self):
-        pk = self.kwargs["pk"]
-        user = self.request.user
+#     def get_object(self):
+#         pk = self.kwargs["pk"]
+#         user = self.request.user
 
-        obj = get_object_or_404(Enterprise, pk=pk)
+#         obj = get_object_or_404(Enterprise, pk=pk)
 
-        if user.is_superuser:
-            return obj
+#         if user.is_superuser:
+#             return obj
 
-        try:
-            perm_obj = user.managed_enterprises.get(pk=pk)
-        except Enterprise.DoesNotExist:
-            raise PermissionDenied(
-                f'У вас нет прав менеджера в "{obj.name}"(id={obj.id})'
-            )
+#         try:
+#             perm_obj = user.managed_enterprises.get(pk=pk)
+#         except Enterprise.DoesNotExist:
+#             raise PermissionDenied(
+#                 f'У вас нет прав менеджера в "{obj.name}"(id={obj.id})'
+#             )
 
-        if perm_obj:
-            return perm_obj
+#         if perm_obj:
+#             return perm_obj
 
 
 class DriverListAPIView(generics.ListAPIView):
