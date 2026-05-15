@@ -1,7 +1,7 @@
 from taxi_manager.application.dto.enterprise_dto import EnterpriseDTO
 from taxi_manager.application.repositories.enterprise_rep import EnterpriseRepInterface
 from taxi_manager.application.repositories.time_zone_rep import TimeZoneRepInterface
-from taxi_manager.domain.entities.enterprise import EnterpriseId
+from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
 
 
 class EnterpriseUseCase:
@@ -18,3 +18,8 @@ class EnterpriseUseCase:
         time_zone = self.time_zone_rep.get(enterprise.time_zone_id)
 
         return EnterpriseDTO.from_entity_and_timezone(enterprise, time_zone)
+
+    def update(self, enterprise: Enterprise):
+        self.enterprise_rep.update(enterprise)
+
+        

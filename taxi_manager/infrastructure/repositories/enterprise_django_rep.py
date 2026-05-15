@@ -13,3 +13,10 @@ class EnterpriseDjangoRep(EnterpriseRepInterface):
             city=obj.city,
             time_zone_id=TimeZoneId(obj.time_zone.id),
         )
+
+    def update(self, enterprise: Enterprise):
+        EnterpriseORM.objects.filter(id=enterprise.id.value).update(
+            name=enterprise.name,
+            city=enterprise.city,
+            time_zone=enterprise.time_zone_id.value,
+        )

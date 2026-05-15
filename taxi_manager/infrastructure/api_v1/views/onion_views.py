@@ -8,8 +8,9 @@ from taxi_manager.application.use_cases.enterprise_manager_usecase import (
     EnterpriseManagerUseCase,
 )
 from taxi_manager.application.use_cases.enterprise_usecase import EnterpriseUseCase
-from taxi_manager.domain.entities.enterprise import EnterpriseId
+from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
 from taxi_manager.domain.entities.manager import ManagerId
+from taxi_manager.domain.entities.time_zone import TimeZoneId
 from taxi_manager.infrastructure.repositories.enterprise_django_rep import (
     EnterpriseDjangoRep,
 )
@@ -58,3 +59,33 @@ def enterprise_detail_view_get(request, pk):
         )
 
     return Response(asdict(enterprise_usecase.get(enterprise_id)))
+
+# @api_view(["PUT"])
+def enterprise_detail_view_put(request, pk):
+    user = request.user
+
+    enterprise_id = EnterpriseId(pk)
+    enterprise = enterprise_usecase.get(enterprise_id)
+
+    if not enterprise_manager_usecase.is_assigment_exist(
+        ManagerId(user.id), enterprise_id
+    ):
+        raise PermissionDenied(
+            f'У вас нет прав менеджера в "{enterprise.name}"(id={pk})'
+        )
+    
+
+    enterprise_to_update = Enterprise(
+        id = enterprise_id,
+        name = request.data["name"],
+        city = request.data["city"],
+        time_zone_id = TimeZoneId(request.data["time_zone"])        
+    ) 
+
+    enterprise_usecase.update(enterprise_to_update)
+
+    enterprise = enterprise_usecase.get(enterprise_id)
+    return Response(asdict(enterprise_usecase.get(enterprise_id)))
+
+
+

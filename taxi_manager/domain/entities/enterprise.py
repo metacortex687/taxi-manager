@@ -15,4 +15,4 @@ class Enterprise:
     id: EnterpriseId
     name: str
     city: str
-    time_zone_id: TimeZoneId  # TODO time_zone_id
+    time_zone_id: TimeZoneId  
