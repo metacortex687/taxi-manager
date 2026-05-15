@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
-from taxi_manager.domain.entities.manager import ManagerId
+from taxi_manager.domain.entities.manager import Manager, ManagerId
 
 
 class IEnterpriseManagerAssignmentRepository(ABC):
@@ -10,5 +10,13 @@ class IEnterpriseManagerAssignmentRepository(ABC):
         pass
 
     @abstractmethod
+    def get_enterprise_assigments(enterprise_id: EnterpriseId) -> list[Manager]:
+        pass
+
+    @abstractmethod
     def delete(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
+        pass
+
+    @abstractmethod    
+    def is_assignment_exist(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
         pass

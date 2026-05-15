@@ -1,4 +1,4 @@
-from taxi_manager.application.time_zone.repository import (
+from taxi_manager.application.time_zone.time_zone_repository import (
     ITimeZoneRepository,
 )
 
@@ -6,10 +6,10 @@ from ...domain.entities.enterprise import Enterprise, EnterpriseId
 
 from ...domain.entities.manager import ManagerId
 
-from .repository import (
+from .enterprise_manager_assignment_repository import (
     IEnterpriseManagerAssignmentRepository,
 )
-from ..enterprise.dto import EnterpriseDTO
+from ..enterprise.enterprise_dto import EnterpriseDTO
 
 
 class EnterpriseManagerUseCase:
@@ -44,8 +44,6 @@ class EnterpriseManagerUseCase:
         self, enterprise_id: EnterpriseId, manager_id: ManagerId
     ) -> bool:
         return self.enterprise_manager_assigment_rep.is_assignment_exist(
-            enterprise_id, 
-            manager_id,            
+            enterprise_id,
+            manager_id,
         )
-
-

@@ -4,6 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.response import Response
 
+from taxi_manager.application.enterprise.commands import DeleteEnterpriseCommand
+from taxi_manager.application.enterprise.results import DeleteEnterpriseStatus
 from taxi_manager.application.enterprise_manager_assignment.usecase import (
     EnterpriseManagerUseCase,
 )
@@ -27,8 +29,9 @@ enterprise_manager_usecase = EnterpriseManagerUseCase(
 )
 
 enterprise_usecase = EnterpriseUseCase(
-    enterprise_rep=EnterpriseDjangoRep(),
-    time_zone_rep=TimeZoneDjangoRep(),
+    enterprise_repository=EnterpriseDjangoRep(),
+    time_zone_repository=TimeZoneDjangoRep(),
+    enterprise_manager_repository=EnterpriseManagerDjangoRep(),
 )
 
 
@@ -51,14 +54,15 @@ def enterprise_detail_view_get(request, pk):
     enterprise_id = EnterpriseId(pk)
     enterprise = enterprise_usecase.get(enterprise_id)
 
-    if not enterprise_manager_usecase.is_assigment_exist(
-        ManagerId(user.id), enterprise_id
+    if not enterprise_manager_usecase.is_assignment_exist(
+        enterprise_id, ManagerId(user.id)
     ):
         raise PermissionDenied(
             f'У вас нет прав менеджера в "{enterprise.name}"(id={pk})'
         )
 
     return Response(asdict(enterprise_usecase.get(enterprise_id)))
+
 
 # @api_view(["PUT"])
 def enterprise_detail_view_put(request, pk):
@@ -67,20 +71,19 @@ def enterprise_detail_view_put(request, pk):
     enterprise_id = EnterpriseId(pk)
     enterprise = enterprise_usecase.get(enterprise_id)
 
-    if not enterprise_manager_usecase.is_assigment_exist(
-        ManagerId(user.id), enterprise_id
+    if not enterprise_manager_usecase.is_assignment_exist(
+        enterprise_id, ManagerId(user.id)
     ):
         raise PermissionDenied(
             f'У вас нет прав менеджера в "{enterprise.name}"(id={pk})'
         )
-    
 
     enterprise_to_update = Enterprise(
-        id = enterprise_id,
-        name = request.data["name"],
-        city = request.data["city"],
-        time_zone_id = TimeZoneId(request.data["time_zone"])        
-    ) 
+        id=enterprise_id,
+        name=request.data["name"],
+        city=request.data["city"],
+        time_zone_id=TimeZoneId(request.data["time_zone"]),
+    )
 
     enterprise_usecase.update(enterprise_to_update)
 
@@ -89,26 +92,24 @@ def enterprise_detail_view_put(request, pk):
 
 
 def enterprise_detail_view_delete(request, pk):
-    user = request.user
+    command = DeleteEnterpriseCommand(
+        enterprise_id=pk,
+        manager_id=request.user.id,
+    )
 
-    enterprise_id = EnterpriseId(pk)
-    enterprise = enterprise_usecase.get(enterprise_id)
+    result = enterprise_usecase.delete_by_manager(command)
 
-    manager_id = ManagerId(user.id)
+    if result.status == DeleteEnterpriseStatus.NOT_MANAGER:
+        return Response(
+            {"detail": result.message},
+            status=403,
+        )
 
-    if not enterprise_manager_usecase.is_assigment_exist(
-        manager_id, enterprise_id
-    ):
-        raise PermissionDenied(
-            f'У вас нет прав менеджера в "{enterprise.name}"(id={pk})'
-        )   
-    
-    if len(enterprise_manager_usecase.get_enterprise_assigments(enterprise_id)) > 1:
-        return Response(status=409)
-
-    enterprise_manager_usecase.delete(enterprise_id, manager_id)
-
-    enterprise_usecase.delete(enterprise_id)
+    if result.status == DeleteEnterpriseStatus.HAS_OTHER_MANAGERS:
+        return Response(
+            {"detail": result.message},
+            status=409,
+        )
 
     return Response(status=204)
 
@@ -123,5 +124,3 @@ def enterprise_detail_view(request, pk):
 
     if request.method == "DELETE":
         return enterprise_detail_view_delete(request, pk)
-
-

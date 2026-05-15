@@ -1,28 +1,79 @@
+from taxi_manager.application.enterprise.commands import DeleteEnterpriseCommand
 from taxi_manager.application.enterprise.dto import EnterpriseDTO
 from taxi_manager.application.enterprise.repository import (
     IEnterpriseRepository,
 )
+from taxi_manager.application.enterprise.results import DeleteEnterpriseResult
+from taxi_manager.application.enterprise_manager_assignment.repository import IEnterpriseManagerAssignmentRepository
 from taxi_manager.application.time_zone.repository import ITimeZoneRepository
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
+from taxi_manager.domain.entities.manager import ManagerId
 
 
 class EnterpriseUseCase:
     def __init__(
         self,
-        enterprise_rep: IEnterpriseRepository,
-        time_zone_rep: ITimeZoneRepository,
+        enterprise_repository: IEnterpriseRepository,
+        time_zone_repository: ITimeZoneRepository,
+        enterprise_manager_repository: IEnterpriseManagerAssignmentRepository
     ):
-        self.enterprise_rep = enterprise_rep
-        self.time_zone_rep = time_zone_rep
+        self.enterprise_repository = enterprise_repository
+        self.time_zone_repository = time_zone_repository
+        self.enterprise_manager_repository = enterprise_manager_repository
 
     def get(self, enterprise_id: EnterpriseId) -> EnterpriseDTO:
-        enterprise = self.enterprise_rep.get(enterprise_id)
-        time_zone = self.time_zone_rep.get(enterprise.time_zone_id)
+        enterprise = self.enterprise_repository.get(enterprise_id)
+        time_zone = self.time_zone_repository.get(enterprise.time_zone_id)
 
         return EnterpriseDTO.from_entity_and_timezone(enterprise, time_zone)
 
     def update(self, enterprise: Enterprise):
-        self.enterprise_rep.update(enterprise)
+        self.enterprise_repository.update(enterprise)
 
     def delete(self, enterprise_id: EnterpriseId):
-        self.enterprise_rep.delete(enterprise_id)
+        self.enterprise_repository.delete(enterprise_id)
+
+    def delete_by_manager(
+        self, command: DeleteEnterpriseCommand
+    ) -> DeleteEnterpriseResult:
+        enterprise_id = EnterpriseId(command.enterprise_id)
+        manager_id = ManagerId(command.manager_id)
+
+        enterprise = self.enterprise_repository.get(enterprise_id)
+
+        if not self.enterprise_manager_repository.is_assignment_exist(
+            enterprise_id=enterprise_id,
+            manager_id=manager_id,
+        ):
+            return DeleteEnterpriseResult.not_manager(
+                f'У вас нет прав менеджера в "{enterprise.name}"(id={enterprise_id.value})'
+            )
+
+        if self._has_other_managers(
+            enterprise_id=enterprise_id,
+            manager_id=manager_id,
+        ):
+            return DeleteEnterpriseResult.has_other_managers(
+                f'Нельзя удалить предприятие "{enterprise.name}"(id={enterprise_id.value}), '
+                f"потому что по нему есть другие менеджеры"
+            )
+
+        self.enterprise_manager_repository.delete(
+            enterprise_id=enterprise_id,
+            manager_id=manager_id,
+        )
+
+        self.enterprise_repository.delete(enterprise_id)
+
+        return DeleteEnterpriseResult.deleted()
+
+    def _has_other_managers(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
+        managers = self.enterprise_manager_repository.get_enterprise_assigments(
+            enterprise_id
+        )
+
+        for manager in managers:
+            if manager.id != manager_id:
+                return True 
+
+        return False
