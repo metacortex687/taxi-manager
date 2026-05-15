@@ -99,6 +99,9 @@ def enterprise_detail_view_delete(request, pk):
 
     result = enterprise_usecase.delete_by_manager(command)
 
+    if result.status == DeleteEnterpriseStatus.DELETED:
+        return Response(status=204)
+
     if result.status == DeleteEnterpriseStatus.NOT_MANAGER:
         return Response(
             {"detail": result.message},
@@ -111,7 +114,10 @@ def enterprise_detail_view_delete(request, pk):
             status=409,
         )
 
-    return Response(status=204)
+    return Response(
+        {"detail": "Неизвестный результат удаления предприятия"},
+        status=500,
+    )
 
 
 @api_view(["GET", "PUT", "DELETE"])
