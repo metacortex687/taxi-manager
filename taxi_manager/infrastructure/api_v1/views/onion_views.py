@@ -88,4 +88,31 @@ def enterprise_detail_view_put(request, pk):
     return Response(asdict(enterprise_usecase.get(enterprise_id)))
 
 
+def enterprise_detail_view_delete(request, pk):
+    user = request.user
+
+    enterprise_id = EnterpriseId(pk)
+    enterprise = enterprise_usecase.get(enterprise_id)
+
+    manager_id = ManagerId(user.id)
+
+    if not enterprise_manager_usecase.is_assigment_exist(
+        manager_id, enterprise_id
+    ):
+        raise PermissionDenied(
+            f'У вас нет прав менеджера в "{enterprise.name}"(id={pk})'
+        )   
+    
+    if len(enterprise_manager_usecase.get_enterprise_assigments(enterprise_id)) > 1:
+        return Response(status=409)
+
+    enterprise_manager_usecase.delete(enterprise_id, manager_id)
+
+    enterprise_usecase.delete(enterprise_id)
+
+    return Response(status=204)
+
+
+
+
 

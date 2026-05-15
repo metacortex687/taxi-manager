@@ -20,3 +20,6 @@ class EnterpriseDjangoRep(EnterpriseRepInterface):
             city=enterprise.city,
             time_zone=enterprise.time_zone_id.value,
         )
+
+    def delete(self, enterprise_id: EnterpriseId):
+        EnterpriseORM.objects.filter(id=enterprise_id.value).delete()

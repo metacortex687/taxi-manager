@@ -189,6 +189,9 @@ class EnterpriseDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     def put(self, request, *args, **kwargs):
         return onion_views.enterprise_detail_view_put(request, kwargs["pk"])
     
+    def delete(self, request, *args, **kwargs):
+        return onion_views.enterprise_detail_view_delete(request, kwargs["pk"])
+
     def get_object(self):
         pk = self.kwargs["pk"]
         user = self.request.user

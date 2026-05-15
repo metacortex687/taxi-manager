@@ -22,4 +22,5 @@ class EnterpriseUseCase:
     def update(self, enterprise: Enterprise):
         self.enterprise_rep.update(enterprise)
 
-        
+    def delete(self, enterprise_id: EnterpriseId):
+        self.enterprise_rep.delete(enterprise_id)     
