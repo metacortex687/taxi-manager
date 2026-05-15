@@ -1,4 +1,4 @@
-from taxi_manager.application.repositories.enterprise_repository import IEnterpriseRepository
+from taxi_manager.application.enterprise.enterprise_repository import IEnterpriseRepository
 from taxi_manager.domain.entities.enterprise import EnterpriseId, Enterprise
 from taxi_manager.domain.entities.time_zone import TimeZoneId
 from taxi_manager.infrastructure.enterprise.models import Enterprise as EnterpriseORM

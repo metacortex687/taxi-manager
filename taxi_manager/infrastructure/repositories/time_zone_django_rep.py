@@ -1,4 +1,4 @@
-from taxi_manager.application.repositories.time_zone_repository import (
+from taxi_manager.application.time_zone.time_zone_repository import (
     ITimeZoneRepository,
 )
 

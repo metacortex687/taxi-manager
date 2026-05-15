@@ -1,8 +1,8 @@
-from taxi_manager.application.dto.enterprise_dto import EnterpriseDTO
-from taxi_manager.application.repositories.enterprise_repository import (
+from taxi_manager.application.enterprise.enterprise_dto import EnterpriseDTO
+from taxi_manager.application.enterprise.enterprise_repository import (
     IEnterpriseRepository,
 )
-from taxi_manager.application.repositories.time_zone_repository import ITimeZoneRepository
+from taxi_manager.application.time_zone.time_zone_repository import ITimeZoneRepository
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
 
 

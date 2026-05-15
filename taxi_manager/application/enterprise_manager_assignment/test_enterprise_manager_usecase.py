@@ -1,12 +1,12 @@
 from django.test import SimpleTestCase
 
-from taxi_manager.application.repositories.enterprise_manager_assignment_repository import (
+from taxi_manager.application.enterprise_manager_assignment.enterprise_manager_assignment_repository import (
     IEnterpriseManagerAssignmentRepository,
 )
-from taxi_manager.application.repositories.time_zone_repository import (
+from taxi_manager.application.time_zone.time_zone_repository import (
     ITimeZoneRepository,
 )
-from taxi_manager.application.use_cases.enterprise_manager_usecase import (
+from taxi_manager.application.enterprise_manager_assignment.enterprise_manager_usecase import (
     EnterpriseManagerUseCase,
 )
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
