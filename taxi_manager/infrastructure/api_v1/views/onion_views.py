@@ -4,8 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.response import Response
 
-from taxi_manager.application.enterprise.commands import DeleteEnterpriseCommand
-from taxi_manager.application.enterprise.results import DeleteEnterpriseStatus
+from taxi_manager.application.enterprise.commands import DeleteEnterpriseCommand, UpdateEnterpriseCommand
+from taxi_manager.application.enterprise.results import DeleteEnterpriseStatus, UpdateEnterpriseStatus
 from taxi_manager.application.enterprise_manager_assignment.usecase import (
     EnterpriseManagerUseCase,
 )
@@ -66,29 +66,32 @@ def enterprise_detail_view_get(request, pk):
 
 # @api_view(["PUT"])
 def enterprise_detail_view_put(request, pk):
-    user = request.user
-
-    enterprise_id = EnterpriseId(pk)
-    enterprise = enterprise_usecase.get(enterprise_id)
-
-    if not enterprise_manager_usecase.is_assignment_exist(
-        enterprise_id, ManagerId(user.id)
-    ):
-        raise PermissionDenied(
-            f'У вас нет прав менеджера в "{enterprise.name}"(id={pk})'
-        )
-
-    enterprise_to_update = Enterprise(
-        id=enterprise_id,
+    command = UpdateEnterpriseCommand(
+        manager_id=request.user.id,
+        enterprise_id=pk,
         name=request.data["name"],
         city=request.data["city"],
-        time_zone_id=TimeZoneId(request.data["time_zone"]),
+        time_zone_id=request.data["time_zone"],        
     )
 
-    enterprise_usecase.update(enterprise_to_update)
+    result = enterprise_usecase.update(command)
 
-    enterprise = enterprise_usecase.get(enterprise_id)
-    return Response(asdict(enterprise_usecase.get(enterprise_id)))
+    if result.status == UpdateEnterpriseStatus.NOT_MANAGER:
+        return Response(
+            {"detail": result.message},
+            status=403,
+        )
+
+    if result.status == UpdateEnterpriseStatus.UPDATED:
+        return Response(
+            asdict(result.enterprise_dto),
+            status=200,
+        )
+
+    return Response(
+        {"detail": "Неизвестный результат обновления предприятия"},
+        status=500,
+    )
 
 
 def enterprise_detail_view_delete(request, pk):

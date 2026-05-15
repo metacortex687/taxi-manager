@@ -9,3 +9,11 @@ class DeleteEnterpriseCommand:
     enterprise_id: int
     manager_id: int
 
+@dataclass(frozen=True)
+class UpdateEnterpriseCommand:
+    manager_id: int
+    enterprise_id: int
+    name: str
+    city: str
+    time_zone_id: int 
+    

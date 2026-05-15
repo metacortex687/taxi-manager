@@ -1,13 +1,22 @@
-from taxi_manager.application.enterprise.commands import DeleteEnterpriseCommand
+from taxi_manager.application.enterprise.commands import (
+    DeleteEnterpriseCommand,
+    UpdateEnterpriseCommand,
+)
 from taxi_manager.application.enterprise.dto import EnterpriseDTO
 from taxi_manager.application.enterprise.repository import (
     IEnterpriseRepository,
 )
-from taxi_manager.application.enterprise.results import DeleteEnterpriseResult
-from taxi_manager.application.enterprise_manager_assignment.repository import IEnterpriseManagerAssignmentRepository
+from taxi_manager.application.enterprise.results import (
+    DeleteEnterpriseResult,
+    UpdateEnterpriseResult,
+)
+from taxi_manager.application.enterprise_manager_assignment.repository import (
+    IEnterpriseManagerAssignmentRepository,
+)
 from taxi_manager.application.time_zone.repository import ITimeZoneRepository
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
 from taxi_manager.domain.entities.manager import ManagerId
+from taxi_manager.domain.entities.time_zone import TimeZoneId
 
 
 class EnterpriseUseCase:
@@ -15,7 +24,7 @@ class EnterpriseUseCase:
         self,
         enterprise_repository: IEnterpriseRepository,
         time_zone_repository: ITimeZoneRepository,
-        enterprise_manager_repository: IEnterpriseManagerAssignmentRepository
+        enterprise_manager_repository: IEnterpriseManagerAssignmentRepository,
     ):
         self.enterprise_repository = enterprise_repository
         self.time_zone_repository = time_zone_repository
@@ -27,8 +36,36 @@ class EnterpriseUseCase:
 
         return EnterpriseDTO.from_entity_and_timezone(enterprise, time_zone)
 
-    def update(self, enterprise: Enterprise):
-        self.enterprise_repository.update(enterprise)
+    def update(self, command: UpdateEnterpriseCommand) -> UpdateEnterpriseResult:
+        enterprise_id = EnterpriseId(command.enterprise_id)
+        manager_id = ManagerId(command.manager_id)
+
+        if not self.enterprise_manager_repository.is_assignment_exist(
+            enterprise_id=enterprise_id,
+            manager_id=manager_id,
+        ):
+            enterprise = self.enterprise_repository.get(enterprise_id)
+            return UpdateEnterpriseResult.not_manager(
+                f'У вас нет прав менеджера в "{enterprise.name}"(id={enterprise_id.value})'
+            )
+
+        updated_enterprise = Enterprise(
+            id=enterprise_id,
+            name=command.name,
+            city=command.city,
+            time_zone_id=TimeZoneId(command.time_zone_id),
+        )
+
+        self.enterprise_repository.update(updated_enterprise)
+
+        time_zone = self.time_zone_repository.get(updated_enterprise.time_zone_id)
+
+        enterprise_dto = EnterpriseDTO.from_entity_and_timezone(
+            updated_enterprise,
+            time_zone,
+        )
+
+        return UpdateEnterpriseResult.updated(enterprise_dto)
 
     def delete(self, enterprise_id: EnterpriseId):
         self.enterprise_repository.delete(enterprise_id)
@@ -74,6 +111,6 @@ class EnterpriseUseCase:
 
         for manager in managers:
             if manager.id != manager_id:
-                return True 
+                return True
 
         return False

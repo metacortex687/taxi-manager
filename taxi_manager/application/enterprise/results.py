@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 
+from taxi_manager.application.enterprise.dto import EnterpriseDTO
+
 
 class DeleteEnterpriseStatus(Enum):
     DELETED = "deleted"
@@ -28,5 +30,28 @@ class DeleteEnterpriseResult:
     def has_other_managers(cls, message: str):
         return cls(
             status=DeleteEnterpriseStatus.HAS_OTHER_MANAGERS,
+            message=message,
+        )
+
+
+class UpdateEnterpriseStatus(Enum):
+    UPDATED = "updated"
+    NOT_MANAGER = "not_manager"
+
+
+@dataclass(frozen=True)
+class UpdateEnterpriseResult:
+    status: UpdateEnterpriseStatus
+    enterprise_dto: EnterpriseDTO
+    message: str = ""    
+
+    @classmethod
+    def updated(cls, enterprise_dto: EnterpriseDTO):
+        return cls(status=UpdateEnterpriseStatus.UPDATED, enterprise_dto=enterprise_dto)
+
+    @classmethod
+    def not_manager(cls, message: str):
+        return cls(
+            status=UpdateEnterpriseStatus.NOT_MANAGER,
             message=message,
         )
