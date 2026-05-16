@@ -55,3 +55,28 @@ class UpdateEnterpriseResult:
             status=UpdateEnterpriseStatus.NOT_MANAGER,
             message=message,
         )
+
+class GetEnterpriseDetailStatus(Enum):
+    RECEIVED = "received"
+    NOT_MANAGER = "not_manager"
+
+
+@dataclass(frozen=True)
+class GetEnterpriseDetailResult:
+    status: GetEnterpriseDetailStatus
+    enterprise_dto: EnterpriseDTO | None = None
+    message: str = ""
+
+    @classmethod
+    def received(cls, enterprise_dto: EnterpriseDTO):
+        return cls(
+            status=GetEnterpriseDetailStatus.RECEIVED,
+            enterprise_dto=enterprise_dto,
+        )
+
+    @classmethod
+    def not_manager(cls, message: str):
+        return cls(
+            status=GetEnterpriseDetailStatus.NOT_MANAGER,
+            message=message,
+        )

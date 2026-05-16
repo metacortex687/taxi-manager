@@ -5,7 +5,7 @@ from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.response import Response
 
 from taxi_manager.application.enterprise.commands import DeleteEnterpriseCommand, UpdateEnterpriseCommand
-from taxi_manager.application.enterprise.results import DeleteEnterpriseStatus, UpdateEnterpriseStatus
+from taxi_manager.application.enterprise.results import DeleteEnterpriseStatus, GetEnterpriseDetailStatus, UpdateEnterpriseStatus
 from taxi_manager.application.enterprise_manager_assignment.usecase import (
     EnterpriseManagerUseCase,
 )
@@ -51,19 +51,26 @@ def enterprise_list_view(request):
 
 # @api_view(["GET"])
 def enterprise_detail_view_get(request, pk):
-    user = request.user
 
-    enterprise_id = EnterpriseId(pk)
-    enterprise = enterprise_usecase.get(enterprise_id)
+    result = enterprise_usecase.get_by_manager(pk, request.user.id)
 
-    if not enterprise_manager_usecase.is_assignment_exist(
-        enterprise_id, ManagerId(user.id)
-    ):
-        raise PermissionDenied(
-            f'У вас нет прав менеджера в "{enterprise.name}"(id={pk})'
+    if result.status == GetEnterpriseDetailStatus.NOT_MANAGER:
+        return Response(
+            {"detail": result.message},
+            status=403,
+        )
+    
+    if result.status == GetEnterpriseDetailStatus.RECEIVED:
+        return Response(
+            asdict(result.enterprise_dto),
+            status=200,
         )
 
-    return Response(asdict(enterprise_usecase.get(enterprise_id)))
+    return Response(
+        {"detail": "Неизвестный результат получения предприятия"},
+        status=500,
+    )
+
 
 
 # @api_view(["PUT"])
