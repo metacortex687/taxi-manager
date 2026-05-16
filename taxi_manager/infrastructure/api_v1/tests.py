@@ -736,6 +736,35 @@ class EnterpriseAPITest(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertTrue(Enterprise.objects.filter(pk=pk).exists())    
 
+    def test_manager_can_create_enterprise_with_token_return_201(self):
+        name = "created_enterprise"
+
+        self.assertFalse(Enterprise.objects.filter(name=name).exists())
+        enterprise_count = Enterprise.objects.count()
+
+        response = self.client.post(
+            "/api/v1/enterprises/",
+            data={
+                "name": name,
+                "city": "created_city",
+                "time_zone": self.time_zone.pk,
+            },
+            content_type="application/json",
+            headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["name"], name)
+        self.assertEqual(Enterprise.objects.count(), enterprise_count + 1)
+
+        enterprise = Enterprise.objects.get(name=name)
+
+        self.assertEqual(enterprise.city, "created_city")
+        self.assertEqual(enterprise.time_zone, self.time_zone)
+        self.assertTrue(
+            self.manager1.managed_enterprises.filter(pk=enterprise.pk).exists()
+        )
+
     def test_manager_list_enterprises_returns_only_managed(self):
         response = self.client.get(
             "/api/v1/enterprises/",
