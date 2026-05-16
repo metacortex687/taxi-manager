@@ -765,6 +765,33 @@ class EnterpriseAPITest(TestCase):
             self.manager1.managed_enterprises.filter(pk=enterprise.pk).exists()
         )
 
+    def test_manager_can_create_and_delete_enterprise_with_token_return_204(self):
+        create_response = self.client.post(
+            "/api/v1/enterprises/",
+            data={
+                "name": "created_and_deleted_enterprise",
+                "city": "created_city",
+                "time_zone": self.time_zone.pk,
+            },
+            content_type="application/json",
+            headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
+        )
+
+        self.assertEqual(create_response.status_code, 201)
+
+        pk = create_response.data["id"]
+
+        self.assertTrue(Enterprise.objects.filter(pk=pk).exists())
+        self.assertTrue(self.manager1.managed_enterprises.filter(pk=pk).exists())
+
+        delete_response = self.client.delete(
+            f"/api/v1/enterprises/{pk}/",
+            headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
+        )
+
+        self.assertEqual(delete_response.status_code, 204)
+        self.assertFalse(Enterprise.objects.filter(pk=pk).exists())
+
     def test_manager_list_enterprises_returns_only_managed(self):
         response = self.client.get(
             "/api/v1/enterprises/",
