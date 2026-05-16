@@ -14,6 +14,7 @@ from taxi_manager.application.enterprise_manager_assignment.repository import (
     IEnterpriseManagerAssignmentRepository,
 )
 from taxi_manager.application.time_zone.repository import ITimeZoneRepository
+from taxi_manager.application.unit_of_work import IUnitOfWork
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
 from taxi_manager.domain.entities.manager import ManagerId
 from taxi_manager.domain.entities.time_zone import TimeZoneId
@@ -25,10 +26,12 @@ class EnterpriseUseCase:
         enterprise_repository: IEnterpriseRepository,
         time_zone_repository: ITimeZoneRepository,
         enterprise_manager_repository: IEnterpriseManagerAssignmentRepository,
+        unit_of_work: IUnitOfWork,
     ):
         self.enterprise_repository = enterprise_repository
         self.time_zone_repository = time_zone_repository
         self.enterprise_manager_repository = enterprise_manager_repository
+        self.unit_of_work = unit_of_work
 
     def get(self, enterprise_id: EnterpriseId) -> EnterpriseDTO:
         enterprise = self.enterprise_repository.get(enterprise_id)
@@ -95,12 +98,12 @@ class EnterpriseUseCase:
                 f"потому что по нему есть другие менеджеры"
             )
 
-        self.enterprise_manager_repository.delete(
-            enterprise_id=enterprise_id,
-            manager_id=manager_id,
-        )
-
-        self.enterprise_repository.delete(enterprise_id)
+        with self.unit_of_work.transaction():
+            self.enterprise_manager_repository.delete(
+                enterprise_id=enterprise_id,
+                manager_id=manager_id,
+            )
+            self.enterprise_repository.delete(enterprise_id)
 
         return DeleteEnterpriseResult.deleted()
 

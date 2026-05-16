@@ -22,6 +22,7 @@ from taxi_manager.infrastructure.repositories.enterprise_manager_django_rep impo
 from taxi_manager.infrastructure.repositories.time_zone_django_rep import (
     TimeZoneDjangoRep,
 )
+from taxi_manager.infrastructure.repositories.unit_of_work import DjangoUnitOfWork
 
 enterprise_manager_usecase = EnterpriseManagerUseCase(
     enterprise_manager_assigment_rep=EnterpriseManagerDjangoRep(),
@@ -32,6 +33,7 @@ enterprise_usecase = EnterpriseUseCase(
     enterprise_repository=EnterpriseDjangoRep(),
     time_zone_repository=TimeZoneDjangoRep(),
     enterprise_manager_repository=EnterpriseManagerDjangoRep(),
+    unit_of_work=DjangoUnitOfWork(),
 )
 
 
