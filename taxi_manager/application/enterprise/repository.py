@@ -11,3 +11,7 @@ class IEnterpriseRepository(ABC):
     @abstractmethod
     def update(self, enterprise: Enterprise):
         pass
+
+    @abstractmethod
+    def delete(self, enterprise_id: EnterpriseId):
+        pass

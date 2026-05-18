@@ -80,3 +80,20 @@ class GetEnterpriseDetailResult:
             status=GetEnterpriseDetailStatus.NOT_MANAGER,
             message=message,
         )
+    
+class CreateEnterpriseStatus(Enum):
+    CREATED = "created"
+
+
+@dataclass(frozen=True)
+class CreateEnterpriseResult:
+    status: CreateEnterpriseStatus
+    enterprise_dto: EnterpriseDTO
+    message: str = ""
+
+    @classmethod
+    def created(cls, enterprise_dto: EnterpriseDTO):
+        return cls(
+            status=CreateEnterpriseStatus.CREATED,
+            enterprise_dto=enterprise_dto,
+        )

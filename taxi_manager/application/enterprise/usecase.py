@@ -1,4 +1,5 @@
 from taxi_manager.application.enterprise.commands import (
+    CreateEnterpriseCommand,
     DeleteEnterpriseCommand,
     UpdateEnterpriseCommand,
 )
@@ -128,3 +129,30 @@ class EnterpriseUseCase:
                 return True
 
         return False
+
+    def create_by_manager(self, command: CreateEnterpriseCommand) -> results.CreateEnterpriseResult:
+        manager_id = ManagerId(command.manager_id)
+        time_zone_id = TimeZoneId(command.time_zone_id)
+
+        time_zone = self.time_zone_repository.get(time_zone_id)
+
+        new_enterprise = Enterprise(
+            id=EnterpriseId(0),
+            name=command.name,
+            city=command.city,
+            time_zone_id=time_zone_id,
+        )
+
+        with self.unit_of_work.transaction():
+            enterprise = self.enterprise_repository.create(new_enterprise)
+            self.enterprise_manager_repository.create(
+                enterprise_id=enterprise.id,
+                manager_id=manager_id,
+            )
+
+        enterprise_dto = EnterpriseDTO.from_entity_and_timezone(
+            enterprise,
+            time_zone,
+        )
+
+        return results.CreateEnterpriseResult.created(enterprise_dto)

@@ -55,3 +55,9 @@ class EnterpriseManagerDjangoRep(IEnterpriseManagerAssignmentRepository):
         ManagerOrm.objects.filter(
             user=manager_id.value, enterprise=enterprise_id.value
         ).delete()
+
+    def create(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
+        ManagerOrm.objects.get_or_create(
+            user_id=manager_id.value,
+            enterprise_id=enterprise_id.value,
+        )

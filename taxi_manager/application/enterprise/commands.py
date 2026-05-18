@@ -16,4 +16,10 @@ class UpdateEnterpriseCommand:
     name: str
     city: str
     time_zone_id: int 
-    
+
+@dataclass(frozen=True)
+class CreateEnterpriseCommand:
+    manager_id: int
+    name: str
+    city: str
+    time_zone_id: int    

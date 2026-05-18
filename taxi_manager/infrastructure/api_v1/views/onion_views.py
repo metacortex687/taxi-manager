@@ -4,8 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.response import Response
 
-from taxi_manager.application.enterprise.commands import DeleteEnterpriseCommand, UpdateEnterpriseCommand
-from taxi_manager.application.enterprise.results import DeleteEnterpriseStatus, GetEnterpriseDetailStatus, UpdateEnterpriseStatus
+from taxi_manager.application.enterprise.commands import CreateEnterpriseCommand, DeleteEnterpriseCommand, UpdateEnterpriseCommand
+from taxi_manager.application.enterprise.results import CreateEnterpriseStatus, DeleteEnterpriseStatus, GetEnterpriseDetailStatus, UpdateEnterpriseStatus
 from taxi_manager.application.enterprise_manager_assignment.usecase import (
     EnterpriseManagerUseCase,
 )
@@ -37,8 +37,15 @@ enterprise_usecase = EnterpriseUseCase(
 )
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 def enterprise_list_view(request):
+    if request.method == "GET":
+        return enterprise_list_view_get(request)
+    
+    if request.method == "POST":
+        return enterprise_list_view_post(request)
+
+def enterprise_list_view_get(request):
     user = request.user
 
     if user.is_anonymous:
@@ -48,6 +55,26 @@ def enterprise_list_view(request):
 
     return Response({"results": [asdict(enterprise) for enterprise in enterprises]})
 
+def enterprise_list_view_post(request):
+    command = CreateEnterpriseCommand(
+        manager_id=request.user.id,
+        name=request.data["name"],
+        city=request.data["city"],
+        time_zone_id=request.data["time_zone"],
+    )
+
+    result = enterprise_usecase.create_by_manager(command)
+
+    if result.status == CreateEnterpriseStatus.CREATED:
+        return Response(
+            asdict(result.enterprise_dto),
+            status=201,
+        )
+
+    return Response(
+        {"detail": "Неизвестный результат создания предприятия"},
+        status=500,
+    )
 
 # @api_view(["GET"])
 def enterprise_detail_view_get(request, pk):
