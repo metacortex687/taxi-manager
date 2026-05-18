@@ -22,6 +22,7 @@ dependencies = [
     "osmnx>=2.1.0",
     "psycopg2-binary>=2.9.11",
     "uwsgi>=2.0.31",
+    "vk-api>=11.10.0",
     "whitenoise>=6.12.0",
 ]
 
