@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "taxi_manager.infrastructure.exchange",
     "taxi_manager.infrastructure.reports",
     "taxi_manager.infrastructure.react_frontend",
+    "taxi_manager.infrastructure.vk_bot",
 ]
 
 MIDDLEWARE = [
