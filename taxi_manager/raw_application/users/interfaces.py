@@ -1,0 +1,9 @@
+class IUserService:
+    def chat_user_login(self, chat_user_id, login, password) -> bool:
+        raise NotImplementedError
+
+    def is_chat_user_login(self, chat_user_id) -> bool:
+        raise NotImplementedError
+
+
+    
