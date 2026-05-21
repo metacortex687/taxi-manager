@@ -48,12 +48,15 @@ class StartState(IState):
 class AuthorizedState(IState):
     def __init__(self, state_context: StateContext):
         self.state_context = state_context
+        self.chat_user_id = self.state_context.chat_user_id
         self.chat_report_sevice = self.state_context.chat_report_sevice
+        self.user_service = self.state_context.user_service
               
 
     def handle(self, text):
         if text.startswith("/report"):
-            return self, self.chat_report_sevice.report(text.replace("/report", "").strip()) 
+            django_user_id = self.user_service.get_django_user_id(self.chat_user_id)
+            return self, self.chat_report_sevice.report(text.replace("/report", "").strip(), django_user_id) 
         
         return self, ["Список отчетов:"]+self.chat_report_sevice.list_reports() 
 

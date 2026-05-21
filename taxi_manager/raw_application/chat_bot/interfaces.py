@@ -12,5 +12,5 @@ class IChatReportService:
     def list_reports(self) -> list[str]:
         raise NotImplementedError
     
-    def report(params: dict) -> list[str]:
+    def report(command_line: str) -> list[str]:
         raise NotImplementedError        

@@ -17,3 +17,6 @@ class VKUserService(IUserService):
 
     def is_chat_user_login(self, chat_user_id):
         return self.vk_bot_user_repository.is_authenticated(chat_user_id)
+    
+    def get_django_user_id(self, chat_user_id) -> int:
+        return self.vk_bot_user_repository.get_django_user_id(chat_user_id)

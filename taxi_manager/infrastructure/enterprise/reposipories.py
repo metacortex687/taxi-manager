@@ -11,4 +11,14 @@ class VehicleRepository:
                 .first()
             )     
         return ZoneInfo(result)
+    
+    def user_have_access(self, car_id, user_id):
+        return (
+            Vehicle.objects
+            .filter(
+                id=car_id,
+                enterprise__manager_users__id=user_id,
+            )
+            .exists()
+        )    
 

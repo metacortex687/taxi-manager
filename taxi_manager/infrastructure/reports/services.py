@@ -195,10 +195,13 @@ class ChatReportService(IChatReportService):
                 "/report car_mileage --period month --car_id 117 --date 01.03.2026"
         ]
 
-    def report(self, command_line: str) -> list[str]:
+    def report(self, command_line: str, user_id: int) -> list[str]:
         print(command_line)
 
         args = self.report_args_parser.parse_args(command_line.split())
+
+        if not self.vehicle_repository.user_have_access(args.car_id, user_id):
+            return [f"Нет доступа к автомобилю id={args.car_id}"]
 
         period = args.period
         date = datetime.strptime(args.date, "%d.%m.%Y").replace(
@@ -222,7 +225,7 @@ class ChatReportService(IChatReportService):
         return report_parser
 
     def car_mileage_day(self, car_id, date_day):
-        result_report = self.trip_repository.mileage_m(
+        result_report = self.trip_repository.mileage_km(
             car_id, date_day, date_day + timedelta(day=1)
         )
 
@@ -232,7 +235,7 @@ class ChatReportService(IChatReportService):
         return [f"По автомобилю  id={car_id} пробег {result_report}км за выбранный период"]
 
     def car_mileage_month(self, car_id, date_month):
-        result_report = self.trip_repository.mileage_m(
+        result_report = self.trip_repository.mileage_km(
             car_id, date_month, date_month + relativedelta(months=1)
         )
 
