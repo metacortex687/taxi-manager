@@ -58,5 +58,9 @@ class AuthorizedState(IState):
             django_user_id = self.user_service.get_django_user_id(self.chat_user_id)
             return self, self.chat_report_sevice.report(text.replace("/report", "").strip(), django_user_id) 
         
+        if text.startswith("/logout"):
+            self.user_service.chat_user_logout(self.chat_user_id)
+            return StartState(self.state_context), ["Вы вышли из системы"]
+        
         return self, ["Список отчетов:"]+self.chat_report_sevice.list_reports() 
 

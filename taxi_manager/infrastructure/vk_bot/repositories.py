@@ -20,3 +20,5 @@ class VkBotUserRepository:
         return vk_user.user.id
 
 
+    def logout(self, vk_user_id: str) -> bool:
+        self.VkUserModel.objects.filter(vk_user_id=vk_user_id).delete()

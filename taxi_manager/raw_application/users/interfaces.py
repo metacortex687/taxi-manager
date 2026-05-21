@@ -7,7 +7,9 @@ class IUserService:
     
     def get_django_user_id(self, chat_user_id) -> int:
         raise NotImplementedError
-
+    
+    def chat_user_logout(self, chat_user_id) -> bool:
+        raise NotImplementedError
 
 
     

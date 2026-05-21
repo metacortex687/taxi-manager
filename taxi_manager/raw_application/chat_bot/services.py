@@ -14,7 +14,7 @@ class ChatBotService:
         user_service: IUserService,
         chat_report_sevice: IChatReportService,
     ):
-        print(chat_bot_client)
+
         self.chatbot_client = chat_bot_client
         self.user_service = user_service
         self.chat_report_sevice = chat_report_sevice
