@@ -7,3 +7,10 @@ class IChatBotClient:
 
     def send(self, user_id: str, message: str):
         raise NotImplementedError
+
+class IChatReportService:
+    def list_reports(self) -> list[str]:
+        raise NotImplementedError
+    
+    def report(params: dict) -> list[str]:
+        raise NotImplementedError        

@@ -1,3 +1,10 @@
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
+from taxi_manager.infrastructure.enterprise.reposipories import VehicleRepository
+from taxi_manager.infrastructure.geocoding.reposipories import TripReposipory
+from taxi_manager.raw_application.chat_bot.interfaces import IChatReportService
+
 from . import models
 from . import tasks
 
@@ -9,6 +16,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
 from django.db import transaction
 
+import argparse
 from io import BytesIO
 import uuid
 
@@ -168,3 +176,67 @@ class ReportService:
     def get_file_name_pdf_by_uuid(self, report_type, uuid):
         report = self.get_report_by_uuid(report_type, uuid)
         return f"{report.name}.pdf"
+
+
+class ChatReportService(IChatReportService):
+    def __init__(
+        self, trip_repository: TripReposipory, vehicle_repository: VehicleRepository
+    ):
+        self.report_args_parser = self._create_report_parser()
+        self.trip_repository = trip_repository
+        self.vehicle_repository = vehicle_repository
+
+    def list_reports(self):
+        return [
+                "1. Пробег автомобиля за период:\n"
+                "car_mileage --period <day|month> --car_id <id_автомобиля> --date <ДД.ММ.ГГГГ>\n"
+                "Примеры:\n"
+                "/report car_mileage --period day --car_id 117 --date 23.03.2026\n"
+                "/report car_mileage --period month --car_id 117 --date 01.03.2026"
+        ]
+
+    def report(self, command_line: str) -> list[str]:
+        print(command_line)
+
+        args = self.report_args_parser.parse_args(command_line.split())
+
+        period = args.period
+        date = datetime.strptime(args.date, "%d.%m.%Y").replace(
+            tzinfo=self.vehicle_repository.time_zone(args.car_id)
+        )
+
+        if period == "day":
+            return self.car_mileage_day(args.car_id, date)
+
+        if period == "month":
+            return self.car_mileage_month(args.car_id, date)
+
+        return [str(args)]
+
+    def _create_report_parser(self):
+        report_parser = argparse.ArgumentParser()
+        report_parser.add_argument("report_name")
+        report_parser.add_argument("--period", required=True)
+        report_parser.add_argument("--date", type=str, required=True)
+        report_parser.add_argument("--car_id", type=int, required=True)
+        return report_parser
+
+    def car_mileage_day(self, car_id, date_day):
+        result_report = self.trip_repository.mileage_m(
+            car_id, date_day, date_day + timedelta(day=1)
+        )
+
+        if not result_report:
+            return [f"По автомобилю id={car_id} нет пробега за выбранный период"]
+
+        return [f"По автомобилю  id={car_id} пробег {result_report}км за выбранный период"]
+
+    def car_mileage_month(self, car_id, date_month):
+        result_report = self.trip_repository.mileage_m(
+            car_id, date_month, date_month + relativedelta(months=1)
+        )
+
+        if not result_report:
+            return [f"По автомобилю id={car_id} нет пробега за выбранный период"]
+
+        return [f"По автомобилю  id={car_id} пробег {result_report} км за выбранный период"]    
