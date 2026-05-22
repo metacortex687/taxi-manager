@@ -49,7 +49,10 @@ class TripQuerySet(models.QuerySet):
 
     def filter_vehicle(self, vehicle):
         return self.filter(vehicle=vehicle)
-
+    
+    def filter_vehicles(self, vehicle_ids):
+        return self.filter(vehicle__in=vehicle_ids)
+    
     def annotate_path(self):
         path_subquery = (
             VehicleLocation.objects.filter(

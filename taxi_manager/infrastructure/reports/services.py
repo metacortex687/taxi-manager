@@ -1,7 +1,11 @@
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from dateutil.relativedelta import relativedelta
 
-from taxi_manager.infrastructure.enterprise.reposipories import VehicleRepository
+from taxi_manager.infrastructure.enterprise.reposipories import (
+    EnterpriseRepository,
+    VehicleRepository,
+)
 from taxi_manager.infrastructure.geocoding.reposipories import TripReposipory
 from taxi_manager.raw_application.chat_bot.interfaces import IChatReportService
 
@@ -180,66 +184,142 @@ class ReportService:
 
 class ChatReportService(IChatReportService):
     def __init__(
-        self, trip_repository: TripReposipory, vehicle_repository: VehicleRepository
+        self,
+        trip_repository: TripReposipory,
+        vehicle_repository: VehicleRepository,
+        enterprise_repository: EnterpriseRepository,
     ):
         self.report_args_parser = self._create_report_parser()
         self.trip_repository = trip_repository
         self.vehicle_repository = vehicle_repository
+        self.enterprise_repository = enterprise_repository
 
     def list_reports(self):
         return [
-                "1. Пробег автомобиля за период:\n"
-                "car_mileage --period <day|month> --car_id <id_автомобиля> --date <ДД.ММ.ГГГГ>\n"
-                "Примеры:\n"
-                "/report car_mileage --period day --car_id 117 --date 23.03.2026\n"
-                "/report car_mileage --period month --car_id 117 --date 01.03.2026"
+            "1. Пробег автомобиля за период:\n"
+            "car_mileage --period <day|month> --number [гос.номер автомобиля] --date <ДД.ММ.ГГГГ>\n"
+            "Если не указать number результат будет по всем автомобилям менеджера\n"
+            "Примеры:\n"
+            "/report car_mileage --period day --number w132Vq --date 23.03.2026\n"
+            "/report car_mileage --period month --number w132Vq --date 01.03.2026\n"
+            "/report car_mileage --period year --number w132Vq --date 01.01.2026\n"
         ]
 
     def report(self, command_line: str, user_id: int) -> list[str]:
         print(command_line)
 
         args = self.report_args_parser.parse_args(command_line.split())
+        
+        if args.number:
+            return self._report_one_car_vehicle(args.number, user_id, args.date, args.period)
+        
+        return self._report_manager_cars_vehicle(user_id, args.date, args.period)
 
-        if not self.vehicle_repository.user_have_access(args.car_id, user_id):
-            return [f"Нет доступа к автомобилю id={args.car_id}"]
+    def _report_one_car_vehicle(self, car_number: str, user_id: str, date: str, period: str):
+        car_id = self.vehicle_repository.id_by_number(car_number)
 
-        period = args.period
-        date = datetime.strptime(args.date, "%d.%m.%Y").replace(
-            tzinfo=self.vehicle_repository.time_zone(args.car_id)
+        if not car_id:
+           return [f"Автомобиля с номером {car_number} нет в базе."]
+        
+        if not self.vehicle_repository.user_have_access(car_id, user_id):
+            return [f"У менеджера нет доступа к автомобилю {car_number}"]
+        
+        from_date, to_date = self._period_dates(date, period, self.vehicle_repository.time_zone(car_id))
+
+        result = self.trip_repository.mileage_km(
+            [car_id], from_date, to_date
+        )
+
+        if not result:
+            return [f"По автомобилю {car_number} нет пробега за выбранный период"]
+        
+
+        text_result = "Автомобили:\n"
+        for row in result:
+            text_result += f"{row['number']} пробег {row['mileage']:.0f} км."
+
+        return [text_result]
+
+    def _report_manager_cars_vehicle(self, user_id: str, date: str, period:str):
+        enterprise_ids = self.enterprise_repository.manager_enterprise_ids(user_id)
+
+        if not enterprise_ids:
+            return ["У менеджера нет назначенных предприятий"]
+        
+        result = []
+        for enterprise_id in enterprise_ids:
+            result.extend(self._report_enterprise_cars_vehicle(enterprise_id, date, period))
+
+        return result
+    
+    def _report_enterprise_cars_vehicle(self, enterprise_id: str, date: str, period: str):
+        enterprises_info = self.enterprise_repository.enterprises_info_dict([enterprise_id])
+
+        time_zone = self.enterprise_repository.time_zone(enterprise_id)
+        from_date, to_date = self._period_dates(date, period, time_zone)
+
+        vehicles = self.enterprise_repository.vehicle_ids(enterprise_id)
+
+        result = self.trip_repository.mileage_km(
+            vehicles, from_date, to_date
+        )
+
+        if not result:
+            return []
+
+        text_result = f"Автомобили {enterprises_info[enterprise_id]["name"]}:\n"
+        for row in result:
+            text_result += f"{row['number']} пробег {row['mileage']:.0f} км."
+
+        return [text_result]
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+    
+    
+
+
+
+    def _period_dates(self, date: str, period:str, tzinfo: ZoneInfo):
+        date = datetime.strptime(date, "%d.%m.%Y").replace(
+            tzinfo=tzinfo
         )
 
         if period == "day":
-            return self.car_mileage_day(args.car_id, date)
+            return date, date + timedelta(day=1)
+
 
         if period == "month":
-            return self.car_mileage_month(args.car_id, date)
+            return date, date + relativedelta(months=1)
 
-        return [str(args)]
+        if period == "year":
+            return date, date + relativedelta(years=1)
+        
+        raise NotImplementedError
+
 
     def _create_report_parser(self):
         report_parser = argparse.ArgumentParser()
         report_parser.add_argument("report_name")
         report_parser.add_argument("--period", required=True)
         report_parser.add_argument("--date", type=str, required=True)
-        report_parser.add_argument("--car_id", type=int, required=True)
+        report_parser.add_argument("--number", type=str)
         return report_parser
 
-    def car_mileage_day(self, car_id, date_day):
-        result_report = self.trip_repository.mileage_km(
-            car_id, date_day, date_day + timedelta(day=1)
-        )
 
-        if not result_report:
-            return [f"По автомобилю id={car_id} нет пробега за выбранный период"]
-
-        return [f"По автомобилю  id={car_id} пробег {result_report}км за выбранный период"]
-
-    def car_mileage_month(self, car_id, date_month):
-        result_report = self.trip_repository.mileage_km(
-            car_id, date_month, date_month + relativedelta(months=1)
-        )
-
-        if not result_report:
-            return [f"По автомобилю id={car_id} нет пробега за выбранный период"]
-
-        return [f"По автомобилю  id={car_id} пробег {result_report} км за выбранный период"]    
+class Report:
+    def __init__(self):
+        pass

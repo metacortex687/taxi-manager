@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 
-from taxi_manager.infrastructure.enterprise.reposipories import VehicleRepository
+from taxi_manager.infrastructure.enterprise.reposipories import EnterpriseRepository, VehicleRepository
 from taxi_manager.infrastructure.geocoding.reposipories import TripReposipory
 from taxi_manager.infrastructure.reports.services import ChatReportService
 from taxi_manager.infrastructure.vk_bot.bot import VkChatBot
@@ -27,6 +27,7 @@ class Command(BaseCommand):
             chat_report_sevice=ChatReportService(
                 trip_repository=TripReposipory(),
                 vehicle_repository=VehicleRepository(),
+                enterprise_repository=EnterpriseRepository(),
             ),
         )
 
