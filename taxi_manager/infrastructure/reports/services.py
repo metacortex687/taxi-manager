@@ -197,7 +197,7 @@ class ChatReportService(IChatReportService):
     def list_reports(self):
         return [
             "1. Пробег автомобиля за период:\n"
-            "car_mileage --period <day|month> --number [гос.номер автомобиля] --date <ДД.ММ.ГГГГ>\n"
+            "car_mileage --period <day|month> --number [гос.номер автомобиля] --date <ДД.ММ.ГГГГ> --min_mileage_km [км. минимальный пробег]\n"
             "Если не указать number результат будет по всем автомобилям менеджера\n"
             "Примеры:\n"
             "/report car_mileage --period day --number w132Vq --date 23.03.2026\n"
@@ -209,30 +209,35 @@ class ChatReportService(IChatReportService):
         print(command_line)
 
         args = self.report_args_parser.parse_args(command_line.split())
-        
-        if args.number:
-            return self._report_one_car_vehicle(args.number, user_id, args.date, args.period)
-        
-        return self._report_manager_cars_vehicle(user_id, args.date, args.period)
 
-    def _report_one_car_vehicle(self, car_number: str, user_id: str, date: str, period: str):
+        if args.number:
+            return self._report_one_car_vehicle(
+                args.number, user_id, args.date, args.period
+            )
+
+        return self._report_manager_cars_vehicle(
+            user_id, args.date, args.period, args.min_mileage_km
+        )
+
+    def _report_one_car_vehicle(
+        self, car_number: str, user_id: str, date: str, period: str
+    ):
         car_id = self.vehicle_repository.id_by_number(car_number)
 
         if not car_id:
-           return [f"Автомобиля с номером {car_number} нет в базе."]
-        
+            return [f"Автомобиля с номером {car_number} нет в базе."]
+
         if not self.vehicle_repository.user_have_access(car_id, user_id):
             return [f"У менеджера нет доступа к автомобилю {car_number}"]
-        
-        from_date, to_date = self._period_dates(date, period, self.vehicle_repository.time_zone(car_id))
 
-        result = self.trip_repository.mileage_km(
-            [car_id], from_date, to_date
+        from_date, to_date = self._period_dates(
+            date, period, self.vehicle_repository.time_zone(car_id)
         )
+
+        result = self.trip_repository.mileage_km([car_id], from_date, to_date)
 
         if not result:
             return [f"По автомобилю {car_number} нет пробега за выбранный период"]
-        
 
         text_result = "Автомобили:\n"
         for row in result:
@@ -240,20 +245,34 @@ class ChatReportService(IChatReportService):
 
         return [text_result]
 
-    def _report_manager_cars_vehicle(self, user_id: str, date: str, period:str):
+    def _report_manager_cars_vehicle(
+        self, user_id: str, date: str, period: str, min_mileage_km: float | None
+    ):
         enterprise_ids = self.enterprise_repository.manager_enterprise_ids(user_id)
 
         if not enterprise_ids:
             return ["У менеджера нет назначенных предприятий"]
-        
+
         result = []
         for enterprise_id in enterprise_ids:
-            result.extend(self._report_enterprise_cars_vehicle(enterprise_id, date, period))
+            result.extend(
+                self._report_enterprise_cars_vehicle(
+                    enterprise_id, date, period, min_mileage_km
+                )
+            )
+
+        if not result:
+            result = ["По предприятиям менеджера нет маршрутов удовлетворяющих условию"]
+
 
         return result
-    
-    def _report_enterprise_cars_vehicle(self, enterprise_id: str, date: str, period: str):
-        enterprises_info = self.enterprise_repository.enterprises_info_dict([enterprise_id])
+
+    def _report_enterprise_cars_vehicle(
+        self, enterprise_id: str, date: str, period: str, min_mileage_km: float | None
+    ):
+        enterprises_info = self.enterprise_repository.enterprises_info_dict(
+            [enterprise_id]
+        )
 
         time_zone = self.enterprise_repository.time_zone(enterprise_id)
         from_date, to_date = self._period_dates(date, period, time_zone)
@@ -261,55 +280,31 @@ class ChatReportService(IChatReportService):
         vehicles = self.enterprise_repository.vehicle_ids(enterprise_id)
 
         result = self.trip_repository.mileage_km(
-            vehicles, from_date, to_date
+            vehicles, from_date, to_date, min_mileage_km
         )
 
         if not result:
             return []
 
-        text_result = f"Автомобили {enterprises_info[enterprise_id]["name"]}:\n"
+        text_result = f"Автомобили {enterprises_info[enterprise_id]['name']}:\n"
         for row in result:
             text_result += f"{row['number']} пробег {row['mileage']:.0f} км."
 
         return [text_result]
 
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-    
-    
-
-
-
-    def _period_dates(self, date: str, period:str, tzinfo: ZoneInfo):
-        date = datetime.strptime(date, "%d.%m.%Y").replace(
-            tzinfo=tzinfo
-        )
+    def _period_dates(self, date: str, period: str, tzinfo: ZoneInfo):
+        date = datetime.strptime(date, "%d.%m.%Y").replace(tzinfo=tzinfo)
 
         if period == "day":
             return date, date + timedelta(day=1)
-
 
         if period == "month":
             return date, date + relativedelta(months=1)
 
         if period == "year":
             return date, date + relativedelta(years=1)
-        
-        raise NotImplementedError
 
+        raise NotImplementedError
 
     def _create_report_parser(self):
         report_parser = argparse.ArgumentParser()
@@ -317,9 +312,6 @@ class ChatReportService(IChatReportService):
         report_parser.add_argument("--period", required=True)
         report_parser.add_argument("--date", type=str, required=True)
         report_parser.add_argument("--number", type=str)
+        report_parser.add_argument("--min_mileage_km", type=float)
+
         return report_parser
-
-
-class Report:
-    def __init__(self):
-        pass
