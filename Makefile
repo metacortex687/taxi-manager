@@ -74,3 +74,6 @@ install-geo-deps-ci:
 		libgeos-dev \
 		libproj-dev
 	sudo rm -rf /var/lib/apt/lists/*
+
+run-vk-bot:
+	uv run manage.py run_vk_bot
