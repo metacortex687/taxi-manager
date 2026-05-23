@@ -4,7 +4,7 @@ from taxi_manager.infrastructure.geo_tracking.models import Trip
 from django.db.models import Sum
 
 class TripReposipory:
-    def mileage_km(self, car_ids,  from_date, to_date, min_mileage_km: float|None):
+    def mileage_km(self, car_ids,  from_date, to_date, min_mileage_km: float|None = None):
         rows = (
             Trip.objects
             .filter_vehicles(car_ids)
