@@ -288,7 +288,7 @@ class ChatReportService(IChatReportService):
 
         text_result = f"Автомобили {enterprises_info[enterprise_id]['name']}:\n"
         for row in result:
-            text_result += f"{row['number']} пробег {row['mileage']:.0f} км."
+            text_result += f"{row['number']} пробег {row['mileage']:.0f} км. \n"
 
         return [text_result]
 
