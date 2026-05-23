@@ -20,6 +20,7 @@ class IEnterpriseManagerAssignmentRepository(ABC):
     @abstractmethod    
     def is_assignment_exist(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
         pass
-
+    
+    @abstractmethod 
     def create(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
         pass

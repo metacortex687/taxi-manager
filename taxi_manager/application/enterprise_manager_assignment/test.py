@@ -1,14 +1,10 @@
 from django.test import SimpleTestCase
 
-from taxi_manager.application.enterprise_manager_assignment.enterprise_manager_assignment_repository import (
-    IEnterpriseManagerAssignmentRepository,
-)
-from taxi_manager.application.time_zone.time_zone_repository import (
-    ITimeZoneRepository,
-)
 from taxi_manager.application.enterprise_manager_assignment.enterprise_manager_usecase import (
     EnterpriseManagerUseCase,
 )
+from taxi_manager.application.enterprise_manager_assignment.repository import IEnterpriseManagerAssignmentRepository
+from taxi_manager.application.time_zone.repository import ITimeZoneRepository
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
 from taxi_manager.domain.entities.manager import ManagerId
 from taxi_manager.domain.entities.time_zone import TimeZone, TimeZoneId
@@ -24,6 +20,19 @@ class FakeEnterpriseManagerRepository(IEnterpriseManagerAssignmentRepository):
                 time_zone_id=TimeZoneId(1),
             )
         ]
+    
+    def get_enterprise_assigments(enterprise_id: EnterpriseId):
+        pass
+
+
+    def delete(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
+        pass
+
+    def is_assignment_exist(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
+        pass
+    
+    def create(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
+        pass
 
 
 class FakeTimeZoneRepository(ITimeZoneRepository):

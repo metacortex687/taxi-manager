@@ -1,15 +1,14 @@
-from taxi_manager.application.time_zone.time_zone_repository import (
-    ITimeZoneRepository,
-)
 
-from ...domain.entities.enterprise import Enterprise, EnterpriseId
+
+from taxi_manager.application.enterprise.dto import EnterpriseDTO
+from taxi_manager.application.enterprise_manager_assignment.repository import IEnterpriseManagerAssignmentRepository
+from taxi_manager.application.time_zone.repository import ITimeZoneRepository
+
+from ...domain.entities.enterprise import EnterpriseId
 
 from ...domain.entities.manager import ManagerId
 
-from .enterprise_manager_assignment_repository import (
-    IEnterpriseManagerAssignmentRepository,
-)
-from ..enterprise.enterprise_dto import EnterpriseDTO
+
 
 
 class EnterpriseManagerUseCase:
