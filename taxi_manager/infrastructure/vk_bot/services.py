@@ -20,6 +20,9 @@ class VKUserService(IUserService):
     
     def get_django_user_id(self, chat_user_id) -> int:
         return self.vk_bot_user_repository.get_django_user_id(chat_user_id)
+    
+    def get_chat_user_id(self, django_user_id) -> int:
+        return self.vk_bot_user_repository.get_chat_user_id(django_user_id)
 
     def chat_user_logout(self, chat_user_id) -> bool:
         return self.vk_bot_user_repository.logout(chat_user_id)

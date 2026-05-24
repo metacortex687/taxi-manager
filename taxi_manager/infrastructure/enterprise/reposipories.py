@@ -1,7 +1,9 @@
 from zoneinfo import ZoneInfo
 
+
 from taxi_manager.infrastructure.vehicle.models import Vehicle
-from taxi_manager.infrastructure.enterprise.models import Enterprise
+from taxi_manager.infrastructure.enterprise.models import Enterprise, Manager
+from taxi_manager.raw_application.chat_bot.interfaces import IEnterpriseRepository
 
 
 class VehicleRepository:
@@ -27,7 +29,7 @@ class VehicleRepository:
         )
 
 
-class EnterpriseRepository:
+class EnterpriseRepository(IEnterpriseRepository):
     def time_zone(self, enterprise_id):
         return ZoneInfo(
             Enterprise.objects.filter(id=enterprise_id)
@@ -41,6 +43,14 @@ class EnterpriseRepository:
                 "id", flat=True
             )
         )
+    
+    def assigment_manager_ids(self, enterprise_id):
+        return list(
+            Enterprise.objects.filter(id=enterprise_id).values_list(
+                "manager_users__id", flat=True
+            )
+        )
+
 
     def vehicle_ids(self, enterprise_id):
         return list(

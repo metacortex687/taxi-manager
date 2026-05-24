@@ -1,6 +1,7 @@
 from taxi_manager.raw_application.chat_bot.interfaces import (
     IChatBotClient,
     IChatReportService,
+    IEnterpriseRepository,
 )
 from taxi_manager.raw_application.users.interfaces import IUserService
 
@@ -37,3 +38,34 @@ class ChatBotService:
 
             for text in texts:
                 self.chatbot_client.send(chat_user_id, text)
+
+
+
+
+
+class ChatBotNotificationService:
+    def __init__(
+        self,
+        chat_bot_client: IChatBotClient,
+        user_service: IUserService,
+        enterprise_repository: IEnterpriseRepository 
+    ):
+        self.chatbot_client = chat_bot_client
+        self.user_service = user_service
+        self.enterprise_repository = enterprise_repository
+
+
+    def on_save_trip(self, trip_dict):
+
+        manager_ids = self.enterprise_repository.assigment_manager_ids(trip_dict["enterprise_id"])
+
+        for manager_id in manager_ids:
+            chat_user_id = self.user_service.get_chat_user_id(manager_id)
+            if not chat_user_id:
+                continue
+            self.chatbot_client.send(chat_user_id, str(trip_dict))
+
+
+
+
+

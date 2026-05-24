@@ -2,11 +2,14 @@ from django.core.management.base import BaseCommand
 
 from django.conf import settings
 
+from taxi_manager.infrastructure.enterprise.reposipories import (
+    EnterpriseRepository,
+    VehicleRepository,
+)
 
-from taxi_manager.infrastructure.enterprise.reposipories import EnterpriseRepository, VehicleRepository
 from taxi_manager.infrastructure.geocoding.reposipories import TripReposipory
 from taxi_manager.infrastructure.reports.services import ChatReportService
-from taxi_manager.infrastructure.vk_bot.bot import VkChatBot
+from taxi_manager.infrastructure.vk_bot.bot import VkChatBotClient
 from taxi_manager.infrastructure.vk_bot.repositories import VkBotUserRepository
 from taxi_manager.infrastructure.vk_bot.services import VKUserService
 from taxi_manager.raw_application.chat_bot.services import ChatBotService
@@ -22,7 +25,7 @@ class Command(BaseCommand):
             return
 
         chat_bot = ChatBotService(
-            chat_bot_client=VkChatBot(token, group_id),
+            chat_bot_client=VkChatBotClient(token, group_id),
             user_service=VKUserService(vk_bot_user_repository=VkBotUserRepository()),
             chat_report_sevice=ChatReportService(
                 trip_repository=TripReposipory(),
@@ -32,3 +35,4 @@ class Command(BaseCommand):
         )
 
         chat_bot.start()
+

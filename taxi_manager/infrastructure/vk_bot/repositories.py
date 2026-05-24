@@ -18,7 +18,15 @@ class VkBotUserRepository:
             return None
 
         return vk_user.user.id
+    
+    def get_chat_user_id(self, django_user_id: str) -> int:
+        vk_user = self.VkUserModel.objects.filter(user_id=django_user_id).first()
 
+        if vk_user is None:
+            return None
+
+        return vk_user.vk_user_id
+    
 
     def logout(self, vk_user_id: str) -> bool:
         self.VkUserModel.objects.filter(vk_user_id=vk_user_id).delete()
