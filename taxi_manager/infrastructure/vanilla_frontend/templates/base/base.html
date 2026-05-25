@@ -62,7 +62,6 @@
             const tokenAuth = localStorage.getItem("tokenAuth")
             if (tokenAuth === null && window.location.pathname !== "/login/") {
                 const curent_href = window.location.href;
-                console.log(window.location.pathname)
                 window.location = `${window.location.origin}/login/?next=${curent_href}`
             };
 

@@ -6,9 +6,7 @@ import {Table} from 'react-bootstrap'
 
 function VehiclesPage() {
     const { enterprise_id } = useParams()
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!")
-    console.log(enterprise_id)
-    console.log(routes.vehicles.api(enterprise_id))
+
 
 
     const query = useQuery({
@@ -25,7 +23,7 @@ function VehiclesPage() {
         return <p>Ошибка: {query.error.message}</p>
     }
 
-    console.log(query.data)
+
     return (
         <Table className="table-striped">
             <thead>

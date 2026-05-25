@@ -17,7 +17,7 @@ function FormInputDate({ id, name, label, value, onChange }) {
             },
         })
     }
-    console.log(value)
+
     return (
         <FormInput
             id={id}

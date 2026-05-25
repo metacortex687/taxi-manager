@@ -36,7 +36,7 @@ function EnterpriseEditPage() {
             return
         }
 
-        console.log(enterpriseQuery.data)
+
         setFormData({
             name: enterpriseQuery.data.name,
             city: enterpriseQuery.data.city,

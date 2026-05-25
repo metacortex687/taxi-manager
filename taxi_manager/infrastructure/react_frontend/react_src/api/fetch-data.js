@@ -29,7 +29,7 @@ const fetchDataJSON = async (url, method = "GET", body=undefined, publicData=fal
     const data = response.status === 204 ? {} : await response.json()
 
     if (!response.ok) {
-        console.log(data)
+
         if (data.detail === undefined) {  
             // allert_message(JSON.stringify(data))                 
             return data

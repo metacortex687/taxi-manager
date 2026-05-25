@@ -50,7 +50,7 @@ const loadEntity = async (api_path, getParams = {}) => {
         patch += (patch.includes("?") ? "&" : "?") + params.join("&")
     }
 
-    console.log(patch)
+
 
     return await fetchDataJSON(patch)
 }
@@ -130,7 +130,7 @@ const entityFromForm = () => {
         res[field.source_name] = document.getElementById(htmlIdField(field)).value
     }
 
-    console.log(res)
+  
 
     return res
 }

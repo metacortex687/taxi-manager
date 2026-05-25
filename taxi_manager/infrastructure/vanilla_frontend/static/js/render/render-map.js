@@ -2,7 +2,7 @@ import { createDefaultWrapper } from "../render/render.js"
 
 const renderMapField = (field, entity, parentElement, eventData = { id: undefined }) => {
 
-    console.log(entity)
+
 
     const wrapper = createDefaultWrapper(parentElement)
 
@@ -136,7 +136,7 @@ const renderMapField = (field, entity, parentElement, eventData = { id: undefine
         features: end_points
 
     }
-    console.log(geoJSONendPoints)
+
     L.geoJSON(geoJSONendPoints
         ,
         {

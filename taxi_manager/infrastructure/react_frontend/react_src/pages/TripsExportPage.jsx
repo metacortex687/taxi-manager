@@ -29,21 +29,7 @@ function TripsExportPage() {
 
 
 
-    // const query = useQuery({
-    //     queryKey: ["vehicles", enterprise_id],
-    //     queryFn: async () => (await fetchDataJSON(routes.vehicles.api(enterprise_id))).results
-    // }
-    // )
 
-    // if (query.isPending) {
-    //     return <p>Загрузка...</p>
-    // }
-
-    // if (query.isError) {
-    //     return <p>Ошибка: {query.error.message}</p>
-    // }
-
-    // console.log(query.data)
     return (
         <div>
             <h1>Экспорт за период</h1>
