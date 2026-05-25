@@ -25,7 +25,7 @@ from ..serializers.main import (
     VehileLocationSerializerGeoJson,
     VehileLocationSerializer,
 )
-from django.db.models import OuterRef, Subquery, F
+from django.db.models import Q, OuterRef, Subquery, F
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
@@ -34,6 +34,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.utils import timezone
 from rest_framework.decorators import action, api_view
 from rest_framework.permissions import SAFE_METHODS
@@ -80,9 +81,14 @@ class VehicleViewSet(viewsets.ModelViewSet):
         enterprise_ids = user.managed_enterprises.values("id")
         vehicles = vehicles.filter(enterprise__in=enterprise_ids)
 
-        vehicles = vehicles.prefetch_related("model").select_related(
+        vehicles = vehicles.select_related("model").select_related(
             "enterprise__time_zone"
+        ).annotate(
+        driver_ids=ArrayAgg(
+            "vehicledriver__driver_id",
+            distinct=True,
         )
+    )
 
         return vehicles.annotate(
             active_driver_id=Subquery(active_driver), color=F("model__color")

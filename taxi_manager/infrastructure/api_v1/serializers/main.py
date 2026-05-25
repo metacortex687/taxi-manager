@@ -46,9 +46,13 @@ class VehicleReadSerializer(serializers.ModelSerializer):
     color = serializers.CharField()
     model__name = serializers.CharField(source="model.name")
     enterprise_id = serializers.SerializerMethodField()
+    driver_ids = serializers.SerializerMethodField()
     # model_name = serializers.SerializerMethodField()
     # model = ModelSerializer()
 
+    def get_driver_ids(self, obj):
+        return obj.driver_ids or []
+    
     def get_model_id(self, obj):
         return obj.model.id
 
@@ -66,7 +70,7 @@ class VehicleReadSerializer(serializers.ModelSerializer):
         )
 
         representation = super().to_representation(instance)
-        representation["driver_ids"] = representation.pop("drivers")
+        # representation["driver_ids"] = representation.pop("drivers")
 
         # representation["enterprise_id"] = representation.pop("enterprise")
 
@@ -89,11 +93,11 @@ class VehicleReadSerializer(serializers.ModelSerializer):
             "mileage",
             "price",
             # "enterprise_id",
-            "drivers",
             "active_driver_id",
             "model__name",
             "enterprise_id",
             "purchased_at",
+            "driver_ids",
         )
 
 
