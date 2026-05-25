@@ -36,7 +36,8 @@ ALLOWED_HOSTS = ["*"]
 INTERNAL_IPS = [
     "127.0.0.1",
     "0.0.0.0",
-    "localhost"
+    "localhost",
+    "194.113.34.197",
 ]
 
 # Application definition

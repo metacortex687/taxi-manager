@@ -15,6 +15,7 @@ services:
       - LOCATIONIQ_KEY=${LOCATIONIQ_KEY}
       - VK_BOT_TOKEN=${VK_BOT_TOKEN}
       - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
+      - DEBUG=${DEBUG}
       - PYTHONUNBUFFERED=1
     command: sh -c "make migrate && make collectstatic && make ensure-superuser  && make ensure-demo-data && make run-uwsgi"
     depends_on:
@@ -28,6 +29,7 @@ services:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - VK_BOT_TOKEN=${VK_BOT_TOKEN}
       - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
+      - DEBUG=${DEBUG}
       - PYTHONUNBUFFERED=1
     command: sh -c "make run-vk-bot"
     depends_on:
@@ -41,6 +43,7 @@ services:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - VK_BOT_TOKEN=${VK_BOT_TOKEN}
       - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
+      - DEBUG=${DEBUG}
       - PYTHONUNBUFFERED=1
     command: sh -c "make run-pgwatch-listener"
     depends_on:

@@ -80,6 +80,7 @@ jobs:
                 export LOCATIONIQ_KEY="${{ secrets.LOCATIONIQ_KEY }}"
                 export VK_BOT_TOKEN="${{ secrets.VK_BOT_TOKEN }}"
                 export VK_BOT_GROUP_ID="${{ secrets.VK_BOT_GROUP_ID }}"
+                export DEBUG=True
                 
                 docker compose -f docker-compose.dev.yaml pull taxi-manager
                 docker compose -f docker-compose.dev.yaml up -d --force-recreate
