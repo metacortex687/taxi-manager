@@ -3,11 +3,11 @@ from zoneinfo import ZoneInfo
 
 from taxi_manager.infrastructure.vehicle.models import Vehicle
 from taxi_manager.infrastructure.enterprise.models import Enterprise, Manager
-from taxi_manager.raw_application.chat_bot.interfaces import IEnterpriseRepository
+from taxi_manager.raw_application.chat_bot.interfaces import IEnterpriseRepository, IVehicleRepository
 
 
-class VehicleRepository:
-    def time_zone(self, car_id):
+class VehicleRepository(IVehicleRepository):
+    def time_zone(self, car_id): #TODO возвращать в get_by_id
         result = (
             Vehicle.objects.filter(id=car_id)
             .values_list("enterprise__time_zone__code", flat=True)
@@ -27,6 +27,9 @@ class VehicleRepository:
             .values_list("id", flat=True)
             .first()
         )
+    
+    def get_by_id(self, car_id):
+        return Vehicle.objects.filter(id=car_id).values("id", "number", "enterprise_id").first()
 
 
 class EnterpriseRepository(IEnterpriseRepository):
@@ -61,8 +64,8 @@ class EnterpriseRepository(IEnterpriseRepository):
 
     def enterprises_info_dict(self, enterprise_ids):
         return {
-            vehicle_id: {"name": name, "time_zone": ZoneInfo(time_zone_code)}
-            for vehicle_id, name, time_zone_code in (
+            enterprise_id: {"name": name, "time_zone": ZoneInfo(time_zone_code)}
+            for enterprise_id, name, time_zone_code in (
                 Enterprise.objects.filter(
                     id__in=enterprise_ids
                 ).values_list("id", "name", "time_zone__code")

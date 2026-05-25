@@ -32,3 +32,16 @@ class IEnterpriseRepository:
 
     def enterprises_info_dict(self, enterprise_ids):
         raise NotImplementedError
+
+class IVehicleRepository:
+    def time_zone(self, car_id): #TODO возвращать в get_by_id
+        raise NotImplementedError
+    
+    def user_have_access(self, car_id, user_id):
+        raise NotImplementedError
+
+    def id_by_number(self, number: str):
+        raise NotImplementedError
+    
+    def get_by_id(self, car_id):
+        raise NotImplementedError

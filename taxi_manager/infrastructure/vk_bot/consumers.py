@@ -2,7 +2,7 @@ from django.conf import settings
 
 from django_pgwatch.consumer import BaseConsumer, NotificationHandler
 
-from taxi_manager.infrastructure.enterprise.reposipories import EnterpriseRepository
+from taxi_manager.infrastructure.enterprise.reposipories import EnterpriseRepository, VehicleRepository
 from taxi_manager.infrastructure.geo_tracking.models import Trip
 from taxi_manager.infrastructure.vk_bot.bot import VkChatBotClient
 from taxi_manager.infrastructure.vk_bot.repositories import VkBotUserRepository
@@ -25,7 +25,8 @@ class VkBotTripChangeConsumer(BaseConsumer):
         self.notification_service = ChatBotNotificationService(
             chat_bot_client=VkChatBotClient(token, group_id),
             user_service=VKUserService(vk_bot_user_repository=VkBotUserRepository()),
-            enterprise_repository=EnterpriseRepository()
+            enterprise_repository=EnterpriseRepository(),
+            vehicle_repository=VehicleRepository(),
             ) 
 
 
