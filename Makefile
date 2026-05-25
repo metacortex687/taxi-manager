@@ -77,3 +77,6 @@ install-geo-deps-ci:
 
 run-vk-bot:
 	uv run manage.py run_vk_bot
+
+run-pgwatch-listener:
+	uv run manage.py pgwatch_listen --consumers vk_bot_trip_change
