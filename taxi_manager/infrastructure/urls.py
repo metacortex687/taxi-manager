@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 
@@ -22,6 +23,16 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("vjs/", include("taxi_manager.infrastructure.vanilla_frontend.urls")),
     path("api/v1/", include("taxi_manager.infrastructure.api_v1.urls")),
-    path("site/", include("taxi_manager.infrastructure.simply_site.urls")),
+    path("site/", include("taxi_manager.infrastructure.simply_site.urls")),    
+]
+
+if not settings.TESTING:
+    from debug_toolbar.toolbar import debug_toolbar_urls
+
+    urlpatterns = [
+        *urlpatterns,
+    ] + debug_toolbar_urls()
+
+urlpatterns += [
     path("", include("taxi_manager.infrastructure.react_frontend.urls")),
 ]

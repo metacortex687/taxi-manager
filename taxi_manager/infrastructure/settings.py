@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from dotenv import load_dotenv
 
 import dj_database_url
@@ -32,7 +33,11 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", False)
 
 ALLOWED_HOSTS = ["*"]
-
+INTERNAL_IPS = [
+    "127.0.0.1",
+    "0.0.0.0",
+    "localhost"
+]
 
 # Application definition
 
@@ -197,3 +202,17 @@ USE_VITE_DEV_SERVER = os.getenv("USE_VITE_DEV_SERVER", default=False)
 
 VK_BOT_TOKEN=os.getenv("VK_BOT_TOKEN")
 VK_BOT_GROUP_ID=os.getenv("VK_BOT_GROUP_ID")
+
+
+TESTING = "test" in sys.argv or "PYTEST_VERSION" in os.environ
+
+if not TESTING:
+    INSTALLED_APPS = [
+        *INSTALLED_APPS,
+        "debug_toolbar",
+    ]
+    MIDDLEWARE = [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+        # "debug_toolbar.middleware.show_toolbar_with_docker",
+        *MIDDLEWARE,
+    ]
