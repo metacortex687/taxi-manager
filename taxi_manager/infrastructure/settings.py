@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "rest_framework_gis",
     "import_export",
     'django_pgwatch',
+    "cachalot",
     "silk",
     # 'dj_rest_auth',
     "taxi_manager.infrastructure.users",
