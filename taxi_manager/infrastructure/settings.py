@@ -219,3 +219,5 @@ if not TESTING:
         # "debug_toolbar.middleware.show_toolbar_with_docker",
         *MIDDLEWARE,
     ]
+
+CACHALOT_ENABLED = False
