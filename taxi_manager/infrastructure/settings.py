@@ -220,4 +220,4 @@ if not TESTING:
         *MIDDLEWARE,
     ]
 
-CACHALOT_ENABLED = False
+CACHALOT_ENABLED = True
