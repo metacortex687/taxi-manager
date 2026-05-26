@@ -12,6 +12,7 @@ dependencies = [
     "django-filter>=25.2",
     "django-import-export>=4.4.0",
     "django-pgwatch>=1.0.0",
+    "django-silk>=5.5.0",
     "djangorestframework>=3.16.1",
     "djangorestframework-gis>=1.2.0",
     "djoser>=2.3.3",

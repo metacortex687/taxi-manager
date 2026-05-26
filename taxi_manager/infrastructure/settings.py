@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "rest_framework_gis",
     "import_export",
     'django_pgwatch',
+    "silk",
     # 'dj_rest_auth',
     "taxi_manager.infrastructure.users",
     "taxi_manager.infrastructure.vehicle",
@@ -76,6 +77,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "silk.middleware.SilkyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     # "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

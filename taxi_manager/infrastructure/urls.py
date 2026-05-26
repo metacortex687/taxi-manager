@@ -26,6 +26,8 @@ urlpatterns = [
     path("site/", include("taxi_manager.infrastructure.simply_site.urls")),    
 ]
 
+urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
+
 if not settings.TESTING:
     from debug_toolbar.toolbar import debug_toolbar_urls
 
