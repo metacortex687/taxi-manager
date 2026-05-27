@@ -209,15 +209,4 @@ VK_BOT_GROUP_ID=os.getenv("VK_BOT_GROUP_ID")
 
 TESTING = "test" in sys.argv or "PYTEST_VERSION" in os.environ
 
-if not TESTING:
-    INSTALLED_APPS = [
-        *INSTALLED_APPS,
-        "debug_toolbar",
-    ]
-    MIDDLEWARE = [
-        "debug_toolbar.middleware.DebugToolbarMiddleware",
-        # "debug_toolbar.middleware.show_toolbar_with_docker",
-        *MIDDLEWARE,
-    ]
-
 CACHALOT_ENABLED = True

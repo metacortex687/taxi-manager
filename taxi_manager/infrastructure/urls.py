@@ -28,13 +28,6 @@ urlpatterns = [
 
 urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
 
-if not settings.TESTING:
-    from debug_toolbar.toolbar import debug_toolbar_urls
-
-    urlpatterns = [
-        *urlpatterns,
-    ] + debug_toolbar_urls()
-
 urlpatterns += [
     path("", include("taxi_manager.infrastructure.react_frontend.urls")),
 ]
