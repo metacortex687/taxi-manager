@@ -6,6 +6,7 @@ services:
     volumes:
       - static_volume:/app/staticfiles
       - uwsgi_socket:/run/uwsgi
+      - memcached_socket:/run/memcached
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}  
       - DJANGO_SUPERUSER_NAME=${DJANGO_SUPERUSER_NAME}
@@ -20,9 +21,20 @@ services:
     depends_on:
       db:
         condition: service_healthy 
+      memcached:
+        condition: service_started
   memcached:
-    image: memcached
+    image: memcached:1.6
+    user: root
+    volumes:
+      - memcached_socket:/run/memcached
     command:
+      - -u
+      - root
+      - -s
+      - /run/memcached/memcached.sock
+      - -a
+      - "777"
       - --conn-limit=1024
       - --memory-limit=64
       - --threads=4
@@ -81,3 +93,4 @@ volumes:
   pgdata:
   static_volume:
   uwsgi_socket:
+  memcached_socket:
