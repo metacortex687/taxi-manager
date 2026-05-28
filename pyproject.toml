@@ -24,6 +24,7 @@ dependencies = [
     "networkx>=3.6.1",
     "osmnx>=2.1.0",
     "psycopg2-binary>=2.9.11",
+    "pymemcache>=4.0.0",
     "uwsgi>=2.0.31",
     "vk-api>=11.10.0",
     "whitenoise>=6.12.0",

@@ -210,3 +210,10 @@ VK_BOT_GROUP_ID=os.getenv("VK_BOT_GROUP_ID")
 TESTING = "test" in sys.argv or "PYTEST_VERSION" in os.environ
 
 CACHALOT_ENABLED = True
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+        "LOCATION": "memcached:11211",
+    }
+}
