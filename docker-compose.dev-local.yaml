@@ -1,0 +1,83 @@
+services:
+  taxi-manager:
+    build: .
+    image: metacortex687/taxi-manager-dev
+    restart: always
+    volumes:
+      - static_volume:/app/staticfiles
+      - uwsgi_socket:/run/uwsgi
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}  
+      - DJANGO_SUPERUSER_NAME=${DJANGO_SUPERUSER_NAME}
+      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+      - SECRET_KEY=${DJANGO_SECRET_KEY}
+      - LOCATIONIQ_KEY=${LOCATIONIQ_KEY}
+      - VK_BOT_TOKEN=${VK_BOT_TOKEN}
+      - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
+      - PYTHONUNBUFFERED=1
+    command: sh -c "make migrate && make collectstatic && make ensure-superuser  && make ensure-demo-data && make run-uwsgi"
+    depends_on:
+      db:
+        condition: service_healthy 
+  memcached:
+    image: memcached
+    command:
+      - --conn-limit=1024
+      - --memory-limit=64
+      - --threads=4
+  # vk-bot:
+  #   image: metacortex687/taxi-manager-dev
+  #   restart: always
+  #   environment:
+  #     - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  #     - SECRET_KEY=${DJANGO_SECRET_KEY}
+  #     - VK_BOT_TOKEN=${VK_BOT_TOKEN}
+  #     - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
+  #     - PYTHONUNBUFFERED=1
+  #   command: sh -c "make run-vk-bot"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy  
+  # change-data-listener:
+  #   image: metacortex687/taxi-manager-dev
+  #   restart: always
+  #   environment:
+  #     - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  #     - SECRET_KEY=${DJANGO_SECRET_KEY}
+  #     - VK_BOT_TOKEN=${VK_BOT_TOKEN}
+  #     - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
+  #     - PYTHONUNBUFFERED=1
+  #   command: sh -c "make run-pgwatch-listener"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy  
+  db:
+    image: postgis/postgis:16-3.5
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/static
+      - uwsgi_socket:/run/uwsgi
+    ports:
+      - "8080:80"
+    depends_on:
+      - taxi-manager
+volumes:
+  pgdata:
+  static_volume:
+  uwsgi_socket:

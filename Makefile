@@ -40,10 +40,10 @@ demo-up:
 	docker compose -f docker-compose.demo.yaml up --build
 
 dev-up:
-	docker compose -f docker-compose.dev.yaml up --build
+	docker compose -f docker-compose.dev-local.yaml up --build
 
 dev-down:
-	docker compose -f docker-compose.yaml down
+	docker compose -f docker-compose.dev-local.yaml down
 
 demo-down:
 	docker compose -f docker-compose.demo.yaml down
