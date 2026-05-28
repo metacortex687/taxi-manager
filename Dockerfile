@@ -25,12 +25,13 @@ RUN apt-get update \
 
 WORKDIR /app
 
+COPY Makefile ./
+RUN make install-geo-deps
+
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project
 
 COPY . .
-
-RUN make install-geo-deps
 
 RUN uv sync --frozen --no-editable
 
@@ -51,9 +52,10 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY --from=builder /app /app
-
+COPY Makefile ./
 RUN make install-geo-deps
+
+COPY --from=builder /app /app
 
 # RUN make collectstatic
 
