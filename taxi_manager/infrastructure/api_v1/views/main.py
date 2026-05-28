@@ -163,6 +163,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
 class ModelListAPIView(generics.ListAPIView):
     queryset = Model.objects.all()
     serializer_class = ModelSerializer
+    filterset_fields = ["name"]
 
 
 class ModelDetailAPIView(generics.RetrieveAPIView):
