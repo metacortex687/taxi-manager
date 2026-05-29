@@ -162,6 +162,8 @@ class VehicleViewSet(mixins.CreateModelMixin,
         except RestrictedError as e:
             raise DeletionConflict(str(e))
 
+    def retrieve(self, request, *args, **kwargs):
+        return onion_views.vehicle_detail_view_get(request, kwargs["pk"])
     # @action(detail=False, methods=["GET"], url_path="TEST", url_name="TTTTEST")
     # def vehicles_of_driver(self, request):
     #     print("vehicles_of_driver(self, request):")

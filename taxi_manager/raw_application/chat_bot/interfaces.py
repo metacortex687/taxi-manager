@@ -45,3 +45,10 @@ class IVehicleRepository:
     
     def get_by_id(self, car_id):
         raise NotImplementedError
+    
+    def get_active_driver_id(self, car_id):
+        raise NotImplementedError
+
+    
+    def get_driver_ids(self, car_id):
+        raise NotImplementedError

@@ -13,6 +13,7 @@ from taxi_manager.application.enterprise.usecase import EnterpriseUseCase
 from taxi_manager.domain.entities.enterprise import Enterprise, EnterpriseId
 from taxi_manager.domain.entities.manager import ManagerId
 from taxi_manager.domain.entities.time_zone import TimeZoneId
+from taxi_manager.infrastructure.enterprise.reposipories import VehicleRepository
 from taxi_manager.infrastructure.repositories.enterprise_django_rep import (
     EnterpriseDjangoRep,
 )
@@ -23,6 +24,8 @@ from taxi_manager.infrastructure.repositories.time_zone_django_rep import (
     TimeZoneDjangoRep,
 )
 from taxi_manager.infrastructure.repositories.unit_of_work import DjangoUnitOfWork
+from taxi_manager.raw_application.dto.result import ResultStatus
+from taxi_manager.raw_application.vehicles.services import VehicleService
 
 enterprise_manager_usecase = EnterpriseManagerUseCase(
     enterprise_manager_assigment_rep=EnterpriseManagerDjangoRep(),
@@ -169,3 +172,27 @@ def enterprise_detail_view(request, pk):
 
     if request.method == "DELETE":
         return enterprise_detail_view_delete(request, pk)
+
+
+vehicle_service = VehicleService(vehicle_repository=VehicleRepository(),enterprise_manager_assigment_repository=EnterpriseManagerDjangoRep())
+
+def vehicle_detail_view_get(request, pk):
+    result = vehicle_service.get_by_manager(pk, request.user.id)
+
+    if result.status == ResultStatus.NOT_MANAGER:
+        return Response(
+            {"detail": result.message},
+            status=403,
+        )
+    
+    if result.status == ResultStatus.RECEIVED:
+        return Response(
+            result.data,
+            status=200,
+        )
+            
+    return Response(
+        {"detail": "Неизвестный результат получения автомобиля"},
+        status=500,
+    )
+     

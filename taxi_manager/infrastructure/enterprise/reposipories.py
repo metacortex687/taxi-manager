@@ -1,13 +1,16 @@
 from zoneinfo import ZoneInfo
 
 
-from taxi_manager.infrastructure.vehicle.models import Vehicle
+from taxi_manager.infrastructure.vehicle.models import Vehicle, VehicleDriver
 from taxi_manager.infrastructure.enterprise.models import Enterprise, Manager
-from taxi_manager.raw_application.chat_bot.interfaces import IEnterpriseRepository, IVehicleRepository
+from taxi_manager.raw_application.chat_bot.interfaces import (
+    IEnterpriseRepository,
+    IVehicleRepository,
+)
 
 
 class VehicleRepository(IVehicleRepository):
-    def time_zone(self, car_id): #TODO возвращать в get_by_id
+    def time_zone(self, car_id):  # TODO возвращать в get_by_id
         result = (
             Vehicle.objects.filter(id=car_id)
             .values_list("enterprise__time_zone__code", flat=True)
@@ -27,9 +30,39 @@ class VehicleRepository(IVehicleRepository):
             .values_list("id", flat=True)
             .first()
         )
-    
+
     def get_by_id(self, car_id):
-        return Vehicle.objects.filter(id=car_id).values("id", "number", "enterprise_id").first()
+        return (
+            Vehicle.objects.filter(id=car_id)
+            .values(
+                "id",
+                "number",
+                "enterprise_id",
+                "model__name",
+                "model__id",
+                "model__color",
+                "model__name",
+                "vin",
+                "year_of_manufacture",
+                "mileage",
+                "price",
+                "purchased_at",
+            )
+            .first()
+        )
+    
+    def get_active_driver_id(self, car_id):
+        return (
+            VehicleDriver.objects.filter(vehicle_id=car_id, active=True)
+            .values_list("driver_id", flat=True)
+            .first()
+        )
+    
+    def get_driver_ids(self, car_id):
+        return list(
+            VehicleDriver.objects.filter(vehicle_id=car_id).values_list("driver_id", flat=True)
+            )
+
 
 
 class EnterpriseRepository(IEnterpriseRepository):
@@ -46,14 +79,13 @@ class EnterpriseRepository(IEnterpriseRepository):
                 "id", flat=True
             )
         )
-    
+
     def assigment_manager_ids(self, enterprise_id):
         return list(
             Enterprise.objects.filter(id=enterprise_id).values_list(
                 "manager_users__id", flat=True
             )
         )
-
 
     def vehicle_ids(self, enterprise_id):
         return list(
@@ -66,8 +98,8 @@ class EnterpriseRepository(IEnterpriseRepository):
         return {
             enterprise_id: {"name": name, "time_zone": ZoneInfo(time_zone_code)}
             for enterprise_id, name, time_zone_code in (
-                Enterprise.objects.filter(
-                    id__in=enterprise_ids
-                ).values_list("id", "name", "time_zone__code")
+                Enterprise.objects.filter(id__in=enterprise_ids).values_list(
+                    "id", "name", "time_zone__code"
+                )
             )
         }
