@@ -35,6 +35,7 @@ from datetime import datetime
 
 class TripPointListAPIView(generics.ListAPIView):
     filterset_fields = ["id"]
+
     def get_serializer_class(self):
         response_format = self.request.query_params.get("response_format")
 

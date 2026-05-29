@@ -81,14 +81,16 @@ class VehicleViewSet(viewsets.ModelViewSet):
         enterprise_ids = user.managed_enterprises.values("id")
         vehicles = vehicles.filter(enterprise__in=enterprise_ids)
 
-        vehicles = vehicles.select_related("model").select_related(
-            "enterprise__time_zone"
-        ).annotate(
-        driver_ids=ArrayAgg(
-            "vehicledriver__driver_id",
-            distinct=True,
+        vehicles = (
+            vehicles.select_related("model")
+            .select_related("enterprise__time_zone")
+            .annotate(
+                driver_ids=ArrayAgg(
+                    "vehicledriver__driver_id",
+                    distinct=True,
+                )
+            )
         )
-    )
 
         return vehicles.annotate(
             active_driver_id=Subquery(active_driver), color=F("model__color")
@@ -171,9 +173,6 @@ class ModelDetailAPIView(generics.RetrieveAPIView):
     serializer_class = ModelSerializer
 
 
-
-
-
 # class EnterpriseListAPIView(generics.ListAPIView):
 #     serializer_class = EnterpriseSerializer
 
@@ -195,7 +194,7 @@ class ModelDetailAPIView(generics.RetrieveAPIView):
 
 #     def put(self, request, *args, **kwargs):
 #         return onion_views.enterprise_detail_view_put(request, kwargs["pk"])
-    
+
 #     def delete(self, request, *args, **kwargs):
 #         return onion_views.enterprise_detail_view_delete(request, kwargs["pk"])
 
