@@ -58,7 +58,6 @@ INSTALLED_APPS = [
     "rest_framework_gis",
     "import_export",
     'django_pgwatch',
-    "cachalot",
     "silk",
     # 'dj_rest_auth',
     "taxi_manager.infrastructure.users",
@@ -209,12 +208,11 @@ VK_BOT_GROUP_ID=os.getenv("VK_BOT_GROUP_ID")
 
 TESTING = "test" in sys.argv or "PYTEST_VERSION" in os.environ
 
-CACHALOT_ENABLED = True
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
-        # "LOCATION": "memcached:11211",
-        "LOCATION": "unix:/run/memcached/memcached.sock",
-    }
-}
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+#         # "LOCATION": "memcached:11211",
+#         "LOCATION": "unix:/run/memcached/memcached.sock",
+#     }
+# }

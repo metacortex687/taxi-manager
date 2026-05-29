@@ -264,18 +264,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-cachalot"
-version = "2.9.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/6c/d6/2f4033cc3443b7ce15459247488050cd0b8b56f15a03fcf2650b2483026e/django_cachalot-2.9.0.tar.gz", hash = "sha256:67d3d19a3f6deab7dc5b081b5f78ea926318f64a7b3afb06f28e61d8d31e02b3", size = 76922, upload-time = "2026-01-28T05:23:30.318Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/12/bf/af8ad2aa5a402f278b444ca70729fb12ee96ddb89c19c32a2d7c5189358f/django_cachalot-2.9.0-py3-none-any.whl", hash = "sha256:b80ac4930613a7849988ea772a53598d262a15eaf55e5ec8c78accae7fdd99ff", size = 57814, upload-time = "2026-01-28T05:23:28.741Z" },
-]
-
-[[package]]
 name = "django-filter"
 version = "25.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1199,7 +1187,6 @@ dependencies = [
     { name = "dj-database-url" },
     { name = "django" },
     { name = "django-bootstrap5" },
-    { name = "django-cachalot" },
     { name = "django-filter" },
     { name = "django-import-export" },
     { name = "django-pgwatch" },
@@ -1233,7 +1220,6 @@ requires-dist = [
     { name = "dj-database-url", specifier = ">=3.1.0" },
     { name = "django", specifier = "==6.0" },
     { name = "django-bootstrap5", specifier = ">=26.2" },
-    { name = "django-cachalot", specifier = ">=2.9.0" },
     { name = "django-filter", specifier = ">=25.2" },
     { name = "django-import-export", specifier = ">=4.4.0" },
     { name = "django-pgwatch", specifier = ">=1.0.0" },
