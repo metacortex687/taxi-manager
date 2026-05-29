@@ -1,4 +1,4 @@
-from rest_framework import generics, viewsets
+from rest_framework import generics, mixins, viewsets
 
 
 from taxi_manager.infrastructure.vehicle.models import (
@@ -50,7 +50,12 @@ from . import onion_views
 User = get_user_model()
 
 
-class VehicleViewSet(viewsets.ModelViewSet):
+class VehicleViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   viewsets.GenericViewSet):
     serializer_class = VehicleReadSerializer
     queryset = Vehicle.objects.all()
     # filter_backends = [filters.OrderingFilter]
