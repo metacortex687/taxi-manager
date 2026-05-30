@@ -55,8 +55,11 @@ class IVehicleRepository:
 
 
 class ICacheManager:
-    def get(self, key: str, default=None):
+    def get(self, key: str, default=None) -> any:
         raise NotImplementedError
     
     def set(self, key: str, value: any, timeout=None):
+        raise NotImplementedError
+    
+    def is_missing(self, value: any) -> bool:
         raise NotImplementedError
