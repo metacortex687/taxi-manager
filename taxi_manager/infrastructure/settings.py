@@ -209,8 +209,13 @@ VK_BOT_GROUP_ID=os.getenv("VK_BOT_GROUP_ID")
 
 TESTING = "test" in sys.argv or "PYTEST_VERSION" in os.environ
 
+
+
+#Настрйоки кэша
+CACHE_ENABLED=True
+
 DJANGO_MEMCACHED_LOCATION=os.getenv("DJANGO_MEMCACHED_LOCATION")
-if DJANGO_MEMCACHED_LOCATION:
+if DJANGO_MEMCACHED_LOCATION and CACHE_ENABLED:
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
@@ -220,6 +225,13 @@ if DJANGO_MEMCACHED_LOCATION:
 
         }
     }
+
+if not CACHE_ENABLED:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+    }
+}
 
 
 #Опциональное включение профайлера silk
