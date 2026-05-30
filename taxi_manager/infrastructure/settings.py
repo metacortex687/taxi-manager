@@ -235,9 +235,26 @@ if not CACHE_ENABLED:
 
 
 #Опциональное включение профайлера silk
-PROFILER_SILK_ENBLE = True
+PROFILER_SILK_ENBLE = False
 
 if PROFILER_SILK_ENBLE:
     INSTALLED_APPS = [*INSTALLED_APPS, "silk"]
 
     MIDDLEWARE = ["silk.middleware.SilkyMiddleware", *MIDDLEWARE]
+
+
+#Опциональное включение профайлера DEBUG_TOOLBAR_ENABLE
+DEBUG_TOOLBAR_ENABLE = False
+
+DEBUG_TOOLBAR_ENABLE = DEBUG_TOOLBAR_ENABLE and DEBUG and not TESTING 
+
+if DEBUG_TOOLBAR_ENABLE:
+    INSTALLED_APPS = [
+        *INSTALLED_APPS,
+        "debug_toolbar",
+    ]
+    MIDDLEWARE = [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+        # "debug_toolbar.middleware.show_toolbar_with_docker",
+        *MIDDLEWARE,
+    ]
