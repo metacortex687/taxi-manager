@@ -52,3 +52,11 @@ class IVehicleRepository:
     
     def get_driver_ids(self, car_id):
         raise NotImplementedError
+
+
+class ICacheManager:
+    def get(self, key: str, default=None):
+        raise NotImplementedError
+    
+    def set(self, key: str, value: any, timeout=None):
+        raise NotImplementedError
