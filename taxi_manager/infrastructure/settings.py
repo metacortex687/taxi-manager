@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "taxi_manager.infrastructure.reports",
     "taxi_manager.infrastructure.react_frontend",
     "taxi_manager.infrastructure.vk_bot",
+    "taxi_manager.infrastructure.cache_manager",
 ]
 
 MIDDLEWARE = [
@@ -208,11 +209,14 @@ VK_BOT_GROUP_ID=os.getenv("VK_BOT_GROUP_ID")
 
 TESTING = "test" in sys.argv or "PYTEST_VERSION" in os.environ
 
+DJANGO_MEMCACHED_LOCATION=os.getenv("DJANGO_MEMCACHED_LOCATION")
+if DJANGO_MEMCACHED_LOCATION:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+            "LOCATION": DJANGO_MEMCACHED_LOCATION,
+            # "LOCATION": "memcached:11211",
+            #"LOCATION": "unix:/run/memcached/memcached.sock",
 
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
-#         # "LOCATION": "memcached:11211",
-#         "LOCATION": "unix:/run/memcached/memcached.sock",
-#     }
-# }
+        }
+    }

@@ -16,6 +16,7 @@ services:
       - LOCATIONIQ_KEY=${LOCATIONIQ_KEY}
       - VK_BOT_TOKEN=${VK_BOT_TOKEN}
       - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
+      - DJANGO_MEMCACHED_LOCATION=unix:/run/memcached/memcached.sock
       - PYTHONUNBUFFERED=1
     command: sh -c "make migrate && make collectstatic && make ensure-superuser  && make ensure-demo-data && make run-uwsgi"
     depends_on:
