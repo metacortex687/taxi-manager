@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     "rest_framework_gis",
     "import_export",
     'django_pgwatch',
-    "silk",
+    # "silk",
     # 'dj_rest_auth',
     "taxi_manager.infrastructure.users",
     "taxi_manager.infrastructure.vehicle",
@@ -78,7 +78,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "silk.middleware.SilkyMiddleware",
+    # "silk.middleware.SilkyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     # "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -220,3 +220,12 @@ if DJANGO_MEMCACHED_LOCATION:
 
         }
     }
+
+
+#Опциональное включение профайлера silk
+PROFILER_SILK_ENBLE = True
+
+if PROFILER_SILK_ENBLE:
+    INSTALLED_APPS = [*INSTALLED_APPS, "silk"]
+
+    MIDDLEWARE = ["silk.middleware.SilkyMiddleware", *MIDDLEWARE]

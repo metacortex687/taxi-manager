@@ -26,7 +26,8 @@ urlpatterns = [
     path("site/", include("taxi_manager.infrastructure.simply_site.urls")),    
 ]
 
-urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
+if settings.PROFILER_SILK_ENBLE:
+    urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
 
 urlpatterns += [
     path("", include("taxi_manager.infrastructure.react_frontend.urls")),
