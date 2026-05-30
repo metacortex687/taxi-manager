@@ -29,6 +29,16 @@ class CacheManager(ICacheManager):
         
         return value is self.MISSING
     
+    def clear_if_write_sql(self, sql: str):
+        if not CACHE_ENABLED:
+            return
+
+        sql = sql.strip().lower()
+
+        if sql.startswith(("insert", "update", "delete")):
+            # print("CACHE CLEAR BY SQL:", sql)
+            print("CACHE CLEAR")
+            cache.clear()
 
     
 
