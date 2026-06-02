@@ -1,6 +1,6 @@
 services:
   taxi-manager:
-    # build: .
+    build: .
     image: metacortex687/taxi-manager-dev
     restart: always
     volumes:
@@ -20,12 +20,51 @@ services:
     depends_on:
       db:
         condition: service_healthy 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=200h'  # 8+ дней истории
+      - '--web.enable-lifecycle'
+    ports: 
+      - "9090:9090"
+    volumes: 
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml 
+      - prometheus_data:/prometheus    
   memcached:
     image: memcached
     command:
       - --conn-limit=1024
       - --memory-limit=64
       - --threads=4
+  # vk-bot:
+  #   image: metacortex687/taxi-manager-dev
+  #   restart: always
+  #   environment:
+  #     - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  #     - SECRET_KEY=${DJANGO_SECRET_KEY}
+  #     - VK_BOT_TOKEN=${VK_BOT_TOKEN}
+  #     - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
+  #     - PYTHONUNBUFFERED=1
+  #   command: sh -c "make run-vk-bot"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy  
+  # change-data-listener:
+  #   image: metacortex687/taxi-manager-dev
+  #   restart: always
+  #   environment:
+  #     - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  #     - SECRET_KEY=${DJANGO_SECRET_KEY}
+  #     - VK_BOT_TOKEN=${VK_BOT_TOKEN}
+  #     - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
+  #     - PYTHONUNBUFFERED=1
+  #   command: sh -c "make run-pgwatch-listener"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy  
   db:
     image: postgis/postgis:16-3.5
     restart: always

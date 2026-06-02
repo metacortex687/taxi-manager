@@ -24,6 +24,20 @@ services:
         condition: service_healthy 
       memcached:
         condition: service_started
+      
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=200h'  # 8+ дней истории
+      - '--web.enable-lifecycle'
+    ports: 
+      - "9090:9090"
+    volumes: 
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml 
+      - prometheus_data:/prometheus    
   memcached:
     image: memcached:1.6
     user: root
@@ -95,3 +109,5 @@ volumes:
   static_volume:
   uwsgi_socket:
   memcached_socket:
+  volumes:
+  prometheus_data:
