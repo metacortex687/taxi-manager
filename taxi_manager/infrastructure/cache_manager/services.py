@@ -5,6 +5,7 @@ from taxi_manager.raw_application.chat_bot.interfaces import ICacheManager
 from django.conf import settings
 
 CACHE_ENABLED = settings.CACHE_ENABLED
+AUTO_CLEAR_CACHE_ON_SQL_WRITE = settings.CACHE_ENABLED
 
 class CacheManager(ICacheManager):
     MISSING = object()
@@ -31,6 +32,9 @@ class CacheManager(ICacheManager):
     
     def clear_if_write_sql(self, sql: str):
         if not CACHE_ENABLED:
+            return
+
+        if not AUTO_CLEAR_CACHE_ON_SQL_WRITE:
             return
 
         sql = sql.strip().lower()
