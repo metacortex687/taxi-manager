@@ -222,7 +222,7 @@ DJANGO_MEMCACHED_LOCATION=os.getenv("DJANGO_MEMCACHED_LOCATION")
 if DJANGO_MEMCACHED_LOCATION and CACHE_ENABLED:
     CACHES = {
         "default": {
-            "BACKEND": "django_prometheus.core.cache.backends.memcached.PyMemcacheCache",
+            "BACKEND": "django_prometheus.cache.backends.memcached.PyMemcacheCache",
             "LOCATION": DJANGO_MEMCACHED_LOCATION,
             # "LOCATION": "memcached:11211",
             #"LOCATION": "unix:/run/memcached/memcached.sock",
