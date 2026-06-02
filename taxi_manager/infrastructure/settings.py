@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "rest_framework_gis",
     "import_export",
     'django_pgwatch',
+    "django_prometheus",
     # "silk",
     # 'dj_rest_auth',
     "taxi_manager.infrastructure.users",
@@ -78,6 +79,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     # "silk.middleware.SilkyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     # "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -87,6 +89,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = "taxi_manager.infrastructure.urls"
@@ -115,7 +118,7 @@ WSGI_APPLICATION = "taxi_manager.infrastructure.wsgi.application"
 DATABASES = {
     "default": dj_database_url.config(
         conn_max_age=600,
-        engine="django.contrib.gis.db.backends.postgis",
+        engine="django_prometheus.db.backends.postgis",
         test_options={"NAME": "mytestdatabase"},
     )
 }
@@ -219,7 +222,7 @@ DJANGO_MEMCACHED_LOCATION=os.getenv("DJANGO_MEMCACHED_LOCATION")
 if DJANGO_MEMCACHED_LOCATION and CACHE_ENABLED:
     CACHES = {
         "default": {
-            "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+            "BACKEND": "django_prometheus.core.cache.backends.memcached.PyMemcacheCache",
             "LOCATION": DJANGO_MEMCACHED_LOCATION,
             # "LOCATION": "memcached:11211",
             #"LOCATION": "unix:/run/memcached/memcached.sock",
@@ -259,3 +262,6 @@ if DEBUG_TOOLBAR_ENABLE:
         # "debug_toolbar.middleware.show_toolbar_with_docker",
         *MIDDLEWARE,
     ]
+
+
+PROMETHEUS_EXPORT_MIGRATIONS = False #True для сбора метрик применения миграций

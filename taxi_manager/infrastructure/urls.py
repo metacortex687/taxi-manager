@@ -23,8 +23,10 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("vjs/", include("taxi_manager.infrastructure.vanilla_frontend.urls")),
     path("api/v1/", include("taxi_manager.infrastructure.api_v1.urls")),
-    path("site/", include("taxi_manager.infrastructure.simply_site.urls")),    
+    path("site/", include("taxi_manager.infrastructure.simply_site.urls")), 
+    path("prometheus/", include("django_prometheus.urls")),   
 ]
+
 
 if settings.PROFILER_SILK_ENBLE:
     urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
