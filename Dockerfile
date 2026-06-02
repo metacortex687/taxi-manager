@@ -9,8 +9,24 @@ RUN npm ci
 COPY taxi_manager/infrastructure/react_frontend/ ./
 RUN npm run build
 
+# Python base stage with geo dependencies
+FROM python:3.12-slim AS python-system-deps
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        make \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY Makefile ./
+RUN make install-geo-deps
+
+
 # Build stage
-FROM python:3.12-slim AS builder
+FROM python-system-deps AS builder
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
@@ -18,15 +34,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
         python3-dev \
-        make \
     && rm -rf /var/lib/apt/lists/*
-
-
-
-WORKDIR /app
-
-COPY Makefile ./
-RUN make install-geo-deps
 
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project
@@ -40,26 +48,8 @@ COPY --from=frontend-builder \
     /app/taxi_manager/infrastructure/react_frontend/static/react_frontend/dist
     
 # Runtime stage
-FROM python:3.12-slim
-
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        make \
-    && rm -rf /var/lib/apt/lists/*
-  
-
-WORKDIR /app
-
-COPY Makefile ./
-RUN make install-geo-deps
+FROM python-system-deps AS runtime
 
 COPY --from=builder /app /app
 
-# RUN make collectstatic
-
-# EXPOSE 8000
-
-# CMD ["uv", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
 CMD ["make", "run-gunicorn"]
