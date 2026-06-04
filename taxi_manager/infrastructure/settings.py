@@ -81,6 +81,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusBeforeMiddleware",
+    "taxi_manager.infrastructure.observability.middleware.RequestTraceLoggingMiddleware",
     # "silk.middleware.SilkyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     # "whitenoise.middleware.WhiteNoiseMiddleware",
