@@ -64,6 +64,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - alloy_data:/var/lib/alloy/data
     depends_on:
+      - loki
       - tempo  
 
   tempo:
