@@ -20,7 +20,20 @@ services:
       - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
       - DJANGO_MEMCACHED_LOCATION=unix:/run/memcached/memcached.sock
       - PYTHONUNBUFFERED=1
-    command: sh -c "make migrate && make collectstatic && make ensure-superuser  && make ensure-demo-data && make run-uwsgi"
+      - OTEL_SERVICE_NAME=taxi-manager-django
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_PROPAGATORS=tracecontext,baggage
+      - OTEL_TRACES_SAMPLER=parentbased_traceidratio
+      - OTEL_TRACES_SAMPLER_ARG=1.0
+      - DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings
+      - OTEL_PYTHON_LOG_CORRELATION=true
+      - OTEL_PYTHON_LOG_LEVEL=info
+      - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
+    command: sh -c "make migrate && make collectstatic && make ensure-superuser  && make ensure-demo-data && uv run opentelemetry-instrument make run-uwsgi"
     depends_on:
       db:
         condition: service_healthy 
@@ -51,7 +64,18 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - alloy_data:/var/lib/alloy/data
     depends_on:
-      - loki  
+      - tempo  
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    command:
+      - "-config.file=/etc/tempo.yaml"
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/var/tempo
+    ports:
+      - "127.0.0.1:3200:3200"
 
   prometheus:
     image: prom/prometheus:latest
@@ -73,6 +97,7 @@ services:
     depends_on:
       - prometheus
       - loki
+      - tempo
     ports:
       - "127.0.0.1:9091:3000"
     volumes:
@@ -161,3 +186,4 @@ volumes:
   loki_data:
   alloy_data:
   grafana_data:
+  tempo_data:
