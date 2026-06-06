@@ -34,7 +34,7 @@ services:
     volumes:
       - ./data/logs/nginx/:/var/log/nginx/
       - ./data/goaccess/:/data/
-    сommand:
+    command:
       - /var/log/nginx/access.log
       - --log-format=COMBINED
       - --datetime-format=%d/%b/%Y:%H:%M:%S %z
