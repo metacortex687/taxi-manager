@@ -33,6 +33,11 @@ services:
       - OTEL_PYTHON_LOG_CORRELATION=true
       - OTEL_PYTHON_LOG_LEVEL=info
       - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
+      - PYROSCOPE_ENABLED=true
+      - PYROSCOPE_APPLICATION_NAME=taxi-manager-django
+      - PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
+      - PYROSCOPE_SAMPLE_RATE=100
+      - DEPLOYMENT_ENVIRONMENT=dev
     command: sh -c "make migrate && make collectstatic && make ensure-superuser  && make ensure-demo-data && uv run opentelemetry-instrument make run-uwsgi"
     depends_on:
       db:
@@ -99,6 +104,7 @@ services:
       - prometheus
       - loki
       - tempo
+      - pyroscope
     ports:
       - "127.0.0.1:9091:3000"
     volumes:
