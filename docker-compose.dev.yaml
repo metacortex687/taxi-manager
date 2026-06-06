@@ -35,26 +35,7 @@ services:
       - -o 
       - /data/report.html
       - --real-time-html
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=200h'  # 8+ дней истории
-      - '--web.enable-lifecycle'
-    ports: 
-      - "9090:9090"
-    volumes: 
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml 
-      - prometheus_data:/prometheus    
-  memcached:
-    image: memcached
-    command:
-      - --conn-limit=1024
-      - --memory-limit=64
-      - --threads=4
+ 
   # vk-bot:
   #   image: metacortex687/taxi-manager-dev
   #   restart: always
@@ -113,4 +94,3 @@ volumes:
   pgdata:
   static_volume:
   uwsgi_socket:
-  prometheus_data:
