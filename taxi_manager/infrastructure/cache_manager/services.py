@@ -1,8 +1,12 @@
+import logging
+
 from django.core.cache import cache
 
 from taxi_manager.raw_application.chat_bot.interfaces import ICacheManager
 
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 CACHE_ENABLED = settings.CACHE_ENABLED
 AUTO_CLEAR_CACHE_ON_SQL_WRITE = settings.CACHE_ENABLED
@@ -41,7 +45,8 @@ class CacheManager(ICacheManager):
 
         if sql.startswith(("insert", "update", "delete")):
             # print("CACHE CLEAR BY SQL:", sql)
-            print("CACHE CLEAR")
+            logger.info("CACHE CLEAR")
+
             cache.clear()
 
     
