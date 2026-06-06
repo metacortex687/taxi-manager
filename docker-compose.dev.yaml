@@ -35,14 +35,12 @@ services:
       - ./data/logs/nginx/:/var/log/nginx/
       - ./data/goaccess/:/data/
     command:
-      while true; do
-        goaccess /var/log/nginx/access.log
-        --log-format=COMBINED
-        --date-format=%d/%b/%Y
-        --time-format=%H:%M:%S
-        -o /data/report.html;
-        sleep 10;
-      done
+      - /var/log/nginx/access.log
+      - --log-format=COMBINED
+      - --datetime-format=%d/%b/%Y:%H:%M:%S %z
+      - -o
+      - /data/report.html
+      - --real-time-html
     depends_on:
       init-goaccess-files:
         condition: service_completed_successfully
