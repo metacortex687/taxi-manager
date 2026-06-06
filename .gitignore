@@ -23,3 +23,4 @@ taxi_manager/infrastructure/react_frontend/node_modules/
 taxi_manager/infrastructure/react_frontend/babel.log
 
 staticfiles/
+data/

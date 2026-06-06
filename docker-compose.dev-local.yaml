@@ -140,6 +140,22 @@ services:
       - --conn-limit=1024
       - --memory-limit=64
       - --threads=4
+  goaccess:
+    image: allinurl/goaccess
+    container_name: goaccess
+    ports:
+      - 7890:7890
+    volumes:
+      - ./data/logs/nginx/:/var/log/nginx/
+      - ./data/goaccess/:/data/
+    command:
+      - /var/log/nginx/access.log 
+      - --log-format=COMBINED  
+      - --datetime-format=%d/%b/%Y:%H:%M:%S %z 
+      - -o 
+      - /data/report.html
+      - --real-time-html
+
   # vk-bot:
   #   image: metacortex687/taxi-manager-dev
   #   restart: always
@@ -189,6 +205,8 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - static_volume:/static
       - uwsgi_socket:/run/uwsgi
+      - ./data/logs/nginx/:/var/log/nginx/
+      - ./data/goaccess/:/data/goaccess/:ro
     ports:
       - "127.0.0.1:8080:80"
     depends_on:
