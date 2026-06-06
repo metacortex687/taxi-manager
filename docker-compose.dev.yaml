@@ -112,3 +112,4 @@ volumes:
   pgdata:
   static_volume:
   uwsgi_socket:
+  prometheus_data:
