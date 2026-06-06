@@ -108,8 +108,7 @@ services:
       - "8080:80"
     depends_on:
       - taxi-manager
-      - ./data/logs/nginx/:/var/log/nginx/
-      - ./data/goaccess/:/data/goaccess/:ro
+
 volumes:
   pgdata:
   static_volume:
