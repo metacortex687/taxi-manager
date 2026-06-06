@@ -8,7 +8,7 @@ class ResultStatus(Enum):
 @dataclass(frozen=True)
 class Result:
     status: ResultStatus
-    data: dict
+    data: dict = None
     message: str = ""
 
     @classmethod
