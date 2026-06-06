@@ -19,7 +19,23 @@ services:
     command: sh -c "make migrate && make collectstatic && make ensure-superuser  && make ensure-demo-data && make run-uwsgi"
     depends_on:
       db:
-        condition: service_healthy 
+        condition: service_healthy
+  goaccess:
+    image: allinurl/goaccess
+    container_name: goaccess
+    ports:
+      - 7890:7890
+    volumes:
+      - ./data/logs/nginx/:/var/log/nginx/
+      - ./data/goaccess/:/data/
+    command:
+      - /var/log/nginx/access.log 
+      - --log-format=COMBINED  
+      - --datetime-format=%d/%b/%Y:%H:%M:%S %z 
+      - -o 
+      - /data/report.html
+      - --real-time-html
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -90,6 +106,8 @@ services:
       - "8080:80"
     depends_on:
       - taxi-manager
+      - ./data/logs/nginx/:/var/log/nginx/
+      - ./data/goaccess/:/data/goaccess/:ro
 volumes:
   pgdata:
   static_volume:
