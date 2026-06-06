@@ -102,6 +102,8 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - static_volume:/static
       - uwsgi_socket:/run/uwsgi
+      - ./data/logs/nginx/:/var/log/nginx/
+      - ./data/goaccess/:/data/goaccess/:ro
     ports:
       - "8080:80"
     depends_on:
