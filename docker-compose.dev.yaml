@@ -28,17 +28,15 @@ services:
     volumes:
       - ./data/logs/nginx/:/var/log/nginx/
       - ./data/goaccess/:/data/
-    command: >
-      -c "
-      mkdir -p /var/log/nginx /data &&
-      touch /var/log/nginx/access.log &&
-      goaccess /var/log/nginx/access.log
+    command:
+      - >
+        mkdir -p /var/log/nginx /data &&
+        touch /var/log/nginx/access.log &&
+        exec goaccess /var/log/nginx/access.log
         --log-format=COMBINED
-        --datetime-format='%d/%b/%Y:%H:%M:%S %z'
+        --datetime-format='%d/%b/%Y:%H:%M:%S %z
         -o /data/report.html
         --real-time-html
-      "
- 
   # vk-bot:
   #   image: metacortex687/taxi-manager-dev
   #   restart: always
