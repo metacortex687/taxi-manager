@@ -83,6 +83,14 @@ services:
     ports:
       - "127.0.0.1:3200:3200"
 
+  pyroscope:
+    image: grafana/pyroscope:latest
+    container_name: pyroscope
+    ports:
+      - "127.0.0.1:4040:4040"
+    command:
+      - "server"
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
