@@ -20,6 +20,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  init-goaccess-files:
+    image: busybox:1.36
+    volumes:
+      - ./data/logs/nginx/:/var/log/nginx/
+      - ./data/goaccess/:/data/
+    command: sh -c "mkdir -p /var/log/nginx /data && touch /var/log/nginx/access.log"
   goaccess:
     image: allinurl/goaccess
     container_name: goaccess
@@ -28,15 +34,16 @@ services:
     volumes:
       - ./data/logs/nginx/:/var/log/nginx/
       - ./data/goaccess/:/data/
-    command:
-      - >
-        mkdir -p /var/log/nginx /data &&
-        touch /var/log/nginx/access.log &&
-        exec goaccess /var/log/nginx/access.log
-        --log-format=COMBINED
-        --datetime-format='%d/%b/%Y:%H:%M:%S %z
-        -o /data/report.html
-        --real-time-html
+    ommand:
+      - /var/log/nginx/access.log
+      - --log-format=COMBINED
+      - --datetime-format=%d/%b/%Y:%H:%M:%S %z
+      - -o
+      - /data/report.html
+      - --real-time-html
+    depends_on:
+      init-goaccess-files:
+        condition: service_completed_successfully
   # vk-bot:
   #   image: metacortex687/taxi-manager-dev
   #   restart: always
