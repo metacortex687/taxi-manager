@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "import_export",
     'django_pgwatch',
     "django_prometheus",
+    "django_tasks_db",
     # "silk",
     # 'dj_rest_auth',
     "taxi_manager.infrastructure.users",
@@ -200,7 +201,7 @@ IMPORT_EXPORT_FORMATS = [base_formats.JSON, base_formats.CSV]
 TASKS = {
     "default": {
         # "BACKEND": "django.tasks.backends.immediate.ImmediateBackend",
-        "BACKEND": "taxi_manager.infrastructure.reports.task_backends.ThreadQueueBackend",
+        "BACKEND": "django_tasks_db.DatabaseBackend",
         "QUEUES": ["default", "reports"],
     }
 }
