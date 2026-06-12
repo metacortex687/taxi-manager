@@ -1,9 +1,8 @@
 from django.db import transaction
 
-from taxi_manager.application.unit_of_work import IUnitOfWork  
-  
-  
-class DjangoUnitOfWork(IUnitOfWork):  
+from taxi_manager.application.unit_of_work import IUnitOfWork
 
-    def transaction(self):  
-        return transaction.atomic()  
+
+class DjangoUnitOfWork(IUnitOfWork):
+    def transaction(self):
+        return transaction.atomic()
