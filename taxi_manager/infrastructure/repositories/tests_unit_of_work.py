@@ -75,3 +75,13 @@ class UnitOfWorkTests(TransactionTestCase):
 
         thread.join()
 
+
+    def test_read_only_transaction_does_not_allow_writes(self):
+        uow = DjangoUnitOfWork()
+
+        with self.assertRaises(DatabaseError):
+            with uow.read_only_transaction():
+                self._create_model("new")
+
+        self.assertEqual(Model.objects.count(), 1)
+
