@@ -8,3 +8,6 @@ class IUnitOfWork(Protocol):
 
     def read_only_transaction(self) -> AbstractContextManager:
         pass
+
+    def serializable_transaction(self) -> AbstractContextManager:
+        pass    

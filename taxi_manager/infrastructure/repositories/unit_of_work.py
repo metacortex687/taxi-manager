@@ -1,4 +1,5 @@
-from django.db import transaction
+from contextlib import contextmanager
+from django.db import transaction, connection
 
 from taxi_manager.application.unit_of_work import IUnitOfWork
 
@@ -17,3 +18,14 @@ class DjangoUnitOfWork(IUnitOfWork):
                 )
 
             yield
+
+
+    @contextmanager
+    def serializable_transaction(self):
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE READ WRITE"
+                )
+
+            yield 
