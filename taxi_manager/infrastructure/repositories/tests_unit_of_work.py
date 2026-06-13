@@ -85,6 +85,14 @@ class UnitOfWorkTests(TransactionTestCase):
 
         self.assertEqual(Model.objects.count(), 1)
 
+    def test_serializable_transaction_allows_writes(self):
+        uow = DjangoUnitOfWork()
+
+        with uow.serializable_transaction():
+            self._create_model("new")
+
+        self.assertEqual(Model.objects.count(), 2)
+
     def test_read_only_transaction_allows_parallel_writes(self):
         uow = DjangoUnitOfWork()
         start = threading.Event()
