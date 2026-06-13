@@ -76,6 +76,28 @@ class UnitOfWorkTests(TransactionTestCase):
         thread.join()
 
 
+    def test_serializable_transaction_provide_consistent_snapshot(self):
+        uow = DjangoUnitOfWork()
+        start = threading.Event()
+        done = threading.Event()
+
+        thread = threading.Thread(
+            target=self.create_model_in_thread, args=(start, done, [])
+        )
+        thread.start()
+
+        with uow.serializable_transaction():
+            self.assertEqual(Model.objects.count(), 1)
+
+            start.set()
+            done.wait()
+
+            self.assertEqual(Model.objects.count(), 1)
+
+        thread.join()
+
+        self.assertEqual(Model.objects.count(), 2)
+
     def test_read_only_transaction_does_not_allow_writes(self):
         uow = DjangoUnitOfWork()
 
