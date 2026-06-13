@@ -55,6 +55,22 @@ class UnitOfWorkTests(TransactionTestCase):
         thread.join()
 
 
+    def create_model_in_serializable_thread(self, start, done, errors: list):
+        uow = DjangoUnitOfWork()
+        try:
+            with uow.serializable_transaction():
+                if not start.wait(timeout=5):
+                    raise TimeoutError("Поток не получил сигнал start")
+                
+                self.assertEqual(Model.objects.count(), 1) #без этого не будет ошибки
+
+                self._create_model("new")
+        except BaseException as exc:
+            errors.append(exc)
+        finally:
+            connections.close_all()
+            done.set()
+
     def test_read_only_transaction_provide_consistent_snapshot(self):
         uow = DjangoUnitOfWork()
         start = threading.Event()
@@ -141,3 +157,33 @@ class UnitOfWorkTests(TransactionTestCase):
         self.assertEqual(Model.objects.count(), 2)
 
 
+    def test_serializable_transaction_raises_error_on_conflicting_parallel_write(self):
+        uow = DjangoUnitOfWork()
+        start = threading.Event()
+        done = threading.Event()
+        errors = []
+
+        thread = threading.Thread(
+            target=self.create_model_in_serializable_thread,
+            args=(start, done, errors),
+        )
+        thread.start()
+
+        with self.assertRaisesRegex(
+            OperationalError,
+            "could not serialize access due to read/write dependencies among transactions",
+        ):
+            with uow.serializable_transaction():
+                self.assertEqual(Model.objects.count(), 1)
+
+                start.set()
+                self.assertTrue(done.wait())
+
+                self.assertEqual(Model.objects.count(), 1) #используется снимок на начало транзакции
+
+                self._create_model("new-main2")       
+            
+
+        thread.join()
+
+        self.assertEqual(Model.objects.count(), 2) #одна из транзакций была принята
