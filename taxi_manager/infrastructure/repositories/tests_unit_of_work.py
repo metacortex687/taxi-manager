@@ -85,3 +85,29 @@ class UnitOfWorkTests(TransactionTestCase):
 
         self.assertEqual(Model.objects.count(), 1)
 
+    def test_read_only_transaction_allows_parallel_writes(self):
+        uow = DjangoUnitOfWork()
+        start = threading.Event()
+        done = threading.Event()
+        errors = []
+
+        thread = threading.Thread(
+            target=self.create_model_in_thread,
+            args=(start, done, errors),
+        )
+        thread.start()
+
+        with uow.read_only_transaction():
+            self.assertEqual(Model.objects.count(), 1)
+
+            start.set()
+            self.assertTrue(done.wait())
+
+            self.assertEqual(errors, [])
+            self.assertEqual(Model.objects.count(), 1)
+
+        thread.join()
+
+        self.assertEqual(Model.objects.count(), 2)
+
+
