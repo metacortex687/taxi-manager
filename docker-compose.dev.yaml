@@ -1,6 +1,7 @@
 services:
   taxi-manager:
-    build: .
+    # build: .
+    pull_policy: always
     image: metacortex687/taxi-manager-dev
     restart: always
     volumes:
@@ -22,7 +23,8 @@ services:
         condition: service_healthy
         
   taxi-manager-asgi:
-    build: .
+    # build: .
+    pull_policy: always
     image: metacortex687/taxi-manager-dev
     restart: always
     environment:
@@ -41,7 +43,8 @@ services:
         condition: service_healthy
   
   task-worker:
-    build: .
+    # build: .
+    pull_policy: always
     image: metacortex687/taxi-manager-dev
     restart: always
     environment:
