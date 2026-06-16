@@ -62,13 +62,22 @@ jobs:
               port: ${{ secrets.DEV_HOST_PORT }}
               passphrase: ${{ secrets.DEV_SSH_PASSPHRASE }}
               script: |
+                set -euo pipefail
+                APP_DIR="$HOME/taxi-manager"
+
                 whoami
                 ls -al
-                rm -rf taxi-manager
-                mkdir taxi-manager
-                cd taxi-manager
-                curl -L -o docker-compose.dev.yaml https://raw.githubusercontent.com/metacortex687/taxi-manager/main/docker-compose.dev.yaml
+
+               
+                mkdir -p "$APP_DIR"
+                mkdir -p "$APP_DIR/data/logs/nginx"
+                mkdir -p "$APP_DIR/data/goaccess"
+
+                cd "$APP_DIR"
+
+                curl -fsSL -o docker-compose.dev.yaml https://raw.githubusercontent.com/metacortex687/taxi-manager/main/docker-compose.dev.yaml
                 curl -fsSL -o nginx.conf https://raw.githubusercontent.com/metacortex687/taxi-manager/main/nginx.conf
+
 
                 export POSTGRES_USER="${{ secrets.DEV_POSTGRES_USER }}"
                 export POSTGRES_PASSWORD="${{ secrets.DEV_POSTGRES_PASSWORD }}"
@@ -81,8 +90,10 @@ jobs:
                 export VK_BOT_TOKEN="${{ secrets.VK_BOT_TOKEN }}"
                 export VK_BOT_GROUP_ID="${{ secrets.VK_BOT_GROUP_ID }}"
                 
-                docker compose -f docker-compose.dev.yaml pull taxi-manager
-                docker compose -f docker-compose.dev.yaml up -d --force-recreate
+                docker compose -f docker-compose.dev.yaml pull
+                docker compose -f docker-compose.dev.yaml up -d --no-build --force-recreate --remove-orphans
+
+                docker compose -f docker-compose.dev.yaml ps
 
 
 
