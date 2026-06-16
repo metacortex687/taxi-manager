@@ -20,6 +20,25 @@ services:
     depends_on:
       db:
         condition: service_healthy
+        
+  taxi-manager-asgi:
+    build: .
+    image: metacortex687/taxi-manager-dev
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DJANGO_SUPERUSER_NAME=${DJANGO_SUPERUSER_NAME}
+      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+      - SECRET_KEY=${DJANGO_SECRET_KEY}
+      - LOCATIONIQ_KEY=${LOCATIONIQ_KEY}
+      - VK_BOT_TOKEN=${VK_BOT_TOKEN}
+      - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
+      - PYTHONUNBUFFERED=1
+    command: sh -c "make run-asgi"
+    depends_on:
+      db:
+        condition: service_healthy
   
   task-worker:
     build: .
@@ -110,7 +129,12 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - taxi-manager
+      taxi-manager:
+        condition: service_started
+        restart: true
+      taxi-manager-asgi:
+        condition: service_started
+        restart: true
 
 volumes:
   pgdata:

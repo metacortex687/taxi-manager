@@ -28,7 +28,8 @@ run-gunicorn-dev:
 run-gunicorn:
 	uv run gunicorn taxi_manager.infrastructure.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-class gthread --threads 4 --timeout 120 --access-logfile -
 
-
+run-asgi:
+	uv run gunicorn taxi_manager.infrastructure.asgi:application --workers=2 --worker-class uvicorn_worker.UvicornWorker  --bind 0.0.0.0:8000 --timeout 120 --graceful-timeout 30 --access-logfile - --error-logfile -
 
 ensure-superuser:
 	uv run manage.py ensure_superuser

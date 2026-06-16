@@ -44,6 +44,51 @@ services:
         condition: service_healthy 
       memcached:
         condition: service_started
+  taxi-manager-asgi:
+    build: .
+    image: metacortex687/taxi-manager-dev
+    restart: always
+    labels:
+      logging: "alloy"
+    volumes:
+      - static_volume:/app/staticfiles
+      - memcached_socket:/run/memcached
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}  
+      - DJANGO_SUPERUSER_NAME=${DJANGO_SUPERUSER_NAME}
+      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+      - SECRET_KEY=${DJANGO_SECRET_KEY}
+      - LOCATIONIQ_KEY=${LOCATIONIQ_KEY}
+      - VK_BOT_TOKEN=${VK_BOT_TOKEN}
+      - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
+      - DJANGO_MEMCACHED_LOCATION=unix:/run/memcached/memcached.sock
+      - PYTHONUNBUFFERED=1
+      - OTEL_SERVICE_NAME=taxi-manager-django
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_PROPAGATORS=tracecontext,baggage
+      - OTEL_TRACES_SAMPLER=parentbased_traceidratio
+      - OTEL_TRACES_SAMPLER_ARG=1.0
+      - DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings
+      - OTEL_PYTHON_LOG_CORRELATION=true
+      - OTEL_PYTHON_LOG_LEVEL=info
+      - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
+      - PYROSCOPE_ENABLED=true
+      - PYROSCOPE_APPLICATION_NAME=taxi-manager-django
+      - PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
+      - PYROSCOPE_SAMPLE_RATE=100
+      - DEPLOYMENT_ENVIRONMENT=dev
+    command: sh -c "uv run opentelemetry-instrument make run-asgi"
+    depends_on:
+      db:
+        condition: service_healthy 
+      memcached:
+        condition: service_started
+
   loki:
     image: grafana/loki:latest
     container_name: loki
@@ -221,7 +266,12 @@ services:
     ports:
       - "127.0.0.1:8080:80"
     depends_on:
-      - taxi-manager
+      taxi-manager:
+        condition: service_started
+        restart: true
+      taxi-manager-asgi:
+        condition: service_started
+        restart: true
 volumes:
   pgdata:
   static_volume:
