@@ -10,6 +10,7 @@ from .views.main import (
     DriverDetailAPIView,
     TimeZoneListAPIView,
     VehicleLocationListAPIView,
+    sse_vehicle_location,
 )
 from .views.trip import (
     TripPointListAPIView,
@@ -47,6 +48,7 @@ urlpatterns = [
     path("enterprises/", onion_views.enterprise_list_view),
     path("timezones/", TimeZoneListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/locations/", VehicleLocationListAPIView.as_view()),
+    path("sse/vehicles/<int:vehicle_id>/locations/", sse_vehicle_location),
     path("vehicles/<int:vehicle_id>/trip-points/", TripPointListAPIView.as_view()),
     path("vehicles/<int:vehicle_id>/trips/", TripListAPIView.as_view()),
     path("reports/", include("taxi_manager.infrastructure.reports.urls")),

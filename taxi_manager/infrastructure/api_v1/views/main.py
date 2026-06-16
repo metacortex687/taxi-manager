@@ -1,3 +1,7 @@
+import asyncio
+import json
+
+from django.http import StreamingHttpResponse
 from rest_framework import generics, mixins, viewsets
 
 
@@ -311,3 +315,49 @@ class VehicleLocationListAPIView(generics.ListAPIView):
             return VehileLocationSerializerGeoJson
 
         return VehileLocationSerializer
+
+
+async def sse_vehicle_location(request,vehicle_id):
+    async def content():
+        print("SSE started", vehicle_id)
+        yield ": connected\n\n"
+
+        last_id = None
+
+        while True:
+            queryset = (
+                VehicleLocation.objects
+                .filter(vehicle_id=vehicle_id)
+                .order_by("id")
+            )
+
+            if last_id is not None:
+                queryset = queryset.filter(id__gt=last_id)
+
+            vl = await queryset.afirst()
+
+            if vl is None:
+                yield ": alive\n\n"
+
+            if vl is not None:
+                last_id = vl.id
+
+                data = {
+                    "lat": vl.location.y,
+                    "lng": vl.location.x,
+                }
+
+                yield f"data: {json.dumps(data)}\n\n"
+
+            await asyncio.sleep(3)
+
+
+            
+
+    response = StreamingHttpResponse(content(), content_type="text/event-stream; charset=utf-8")
+
+    response["Cache-Control"] = "no-cache"
+    response["X-Accel-Buffering"] = "no"
+
+    return response
+    
