@@ -51,6 +51,8 @@ function VehiclesPage() {
                                 Редактировать
                             </Link>
 
+                            {" | "}
+
                             <Link to={routes.vehicleTracking.url(vehicle.id)}>
                                 Отслеживать
                             </Link>
