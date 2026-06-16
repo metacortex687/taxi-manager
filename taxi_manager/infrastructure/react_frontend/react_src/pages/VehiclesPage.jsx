@@ -46,7 +46,15 @@ function VehiclesPage() {
                         <td>{vehicle.price}</td>
                         <td>{vehicle.number}</td>
                         <td>{vehicle.vin}</td>
-                        <td><Link to={routes.vehicleEdit.url(vehicle.id)}> Редактировать </Link></td>
+                        <td>
+                            <Link to={routes.vehicleEdit.url(vehicle.id)}>
+                                Редактировать
+                            </Link>
+
+                            <Link to={routes.vehicleTracking.url(vehicle.id)}>
+                                Отслеживать
+                            </Link>
+                        </td>
                     </tr>
                 ))}
 

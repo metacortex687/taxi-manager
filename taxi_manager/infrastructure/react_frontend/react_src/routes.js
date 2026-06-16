@@ -58,6 +58,11 @@ const routes = {
         url: (vehicle_id) => `/vehicles/${vehicle_id}/edit/`,
         api: (vehicle_id) => `/api/v1/vehicles/${vehicle_id}/`,
     },
+    vehicleTracking: {
+        path: "/vehicles/:vehicle_id/tracking/",
+        url: (vehicle_id) => `/vehicles/${vehicle_id}/tracking/`,
+        api: (vehicle_id) => `/api/v1/sse/vehicles/${vehicle_id}/locations/`,
+    },
     trips: {
         link_name: "Маршруты",
         path: "/vehicles/:vehicle_id/trips/",

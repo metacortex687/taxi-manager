@@ -13,6 +13,7 @@ import TripsImportPage from "./pages/TripsImportPage"
 import TripsPage from "./pages/TripsPage"
 import ReportsPage from "./pages/ReportsPage"
 import ReportPage from "./pages/ReportPage"
+import VehicleTrackingPage from "./pages/VehicleTrackingPage"
 
 import RequireAuth from "./auth/RequireAuth"
 
@@ -64,7 +65,8 @@ function App() {
                     <Route path={routes.report.path} element={<ReportPage />} />
                     <Route path={routes.enterpriseEdit.path} element={<EnterpriseEditPage />} /> 
                     <Route path={routes.vehicles.path} element={<VehiclesPage/>} /> 
-                    <Route path={routes.vehicleEdit.path} element={<VehicleEditPage/>} />                     
+                    <Route path={routes.vehicleEdit.path} element={<VehicleEditPage/>} />
+                    <Route path={routes.vehicleTracking.path} element={<VehicleTrackingPage />} />                     
                     <Route path={routes.trips.export.path} element={<TripsExportPage/>} />
                     <Route path={routes.trips.import.path} element={<TripsImportPage />} /> 
                     <Route path={routes.trips.path} element={<TripsPage />} />     
