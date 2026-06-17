@@ -11,7 +11,7 @@ import {
 import "leaflet/dist/leaflet.css"
 import routes from "../routes"
 
-const markerVehicleUrl = "/static/react_frontend/img/marker-green-end.png"
+const markerVehicleUrl = "/static/react_frontend/img/marker-green-start.png"
 
 const DEFAULT_CENTER = [55.5159391, 37.3020111]
 const DEFAULT_ZOOM = 15
