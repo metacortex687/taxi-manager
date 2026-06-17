@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react"
 import L from "leaflet"
-import { MapContainer, Marker, Polyline, TileLayer, useMap } from "react-leaflet"
+import {
+  MapContainer,
+  Marker,
+  Polyline,
+  TileLayer,
+  useMap,
+  useMapEvents,
+} from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import routes from "../routes"
 
@@ -18,19 +25,32 @@ const vehicleMarkerIcon = L.icon({
   shadowSize: [41, 41],
 })
 
-function MoveMapToPosition({ position }) {
+function MoveMapToPosition({ position, autoFollow }) {
   const map = useMap()
 
   useEffect(() => {
-    if (position) {
-      map.setView(position, DEFAULT_ZOOM)
+    if (position && autoFollow) {
+      map.panTo(position)
     }
-  }, [map, position])
+  }, [map, position, autoFollow])
 
   return null
 }
 
-function VehicleRealtimePath({ vehicleId }) {
+function DisableAutoFollowOnUserMove({ setAutoFollow }) {
+  useMapEvents({
+    dragstart() {
+      setAutoFollow(false)
+    },
+    zoomstart() {
+      setAutoFollow(false)
+    },
+  })
+
+  return null
+}
+
+function VehicleRealtimePath({ vehicleId, autoFollow }) {
   const [points, setPoints] = useState([])
 
   useEffect(() => {
@@ -62,7 +82,10 @@ function VehicleRealtimePath({ vehicleId }) {
 
   return (
     <>
-      <MoveMapToPosition position={currentPosition} />
+      <MoveMapToPosition
+        position={currentPosition}
+        autoFollow={autoFollow}
+      />
 
       {points.length > 1 && (
         <Polyline positions={points} />
@@ -79,6 +102,8 @@ function VehicleRealtimePath({ vehicleId }) {
 }
 
 function VehicleRealtimeMap({ vehicleId }) {
+  const [autoFollow, setAutoFollow] = useState(true)
+
   return (
     <MapContainer
       center={DEFAULT_CENTER}
@@ -91,7 +116,12 @@ function VehicleRealtimeMap({ vehicleId }) {
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      <VehicleRealtimePath vehicleId={vehicleId} />
+      <DisableAutoFollowOnUserMove setAutoFollow={setAutoFollow} />
+
+      <VehicleRealtimePath
+        vehicleId={vehicleId}
+        autoFollow={autoFollow}
+      />
     </MapContainer>
   )
 }
