@@ -20,7 +20,7 @@ services:
       - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
       - DJANGO_MEMCACHED_LOCATION=unix:/run/memcached/memcached.sock
       - PYTHONUNBUFFERED=1
-      - OTEL_SERVICE_NAME=taxi-manager-django
+      - OTEL_SERVICE_NAME=taxi-manager-django-wsgi
       - OTEL_TRACES_EXPORTER=otlp
       - OTEL_METRICS_EXPORTER=none
       - OTEL_LOGS_EXPORTER=none
@@ -64,7 +64,7 @@ services:
       - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
       - DJANGO_MEMCACHED_LOCATION=unix:/run/memcached/memcached.sock
       - PYTHONUNBUFFERED=1
-      - OTEL_SERVICE_NAME=taxi-manager-django
+      - OTEL_SERVICE_NAME=taxi-manager-django-asgi
       - OTEL_TRACES_EXPORTER=otlp
       - OTEL_METRICS_EXPORTER=none
       - OTEL_LOGS_EXPORTER=none
