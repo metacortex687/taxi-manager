@@ -191,6 +191,7 @@ ADDRESS_PROVIDER = {
     "URL": "https://us1.locationiq.com/v1/reverse",
     "DELAY_REQUEST": 0.1,
     "KEY": os.getenv("LOCATIONIQ_KEY"),
+    "FALLBACK_RADIUS_M": 50,
 }
 
 
