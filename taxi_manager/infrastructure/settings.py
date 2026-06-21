@@ -202,7 +202,7 @@ TASKS = {
     "default": {
         # "BACKEND": "django.tasks.backends.immediate.ImmediateBackend",
         "BACKEND": "django_tasks_db.DatabaseBackend",
-        "QUEUES": ["default", "reports"],
+        "QUEUES": ["default", "reports", "geocoding"],
     }
 }
 

@@ -56,9 +56,13 @@ class TripSerializer(serializers.Serializer):
         return super().to_representation(instance)
 
     def get_start_point(self, obj):
+        if obj.start_point is None:
+            return None
+
         address = obj.start_address
-        if address is None and obj.near_start_address is not None:
-            address = f"(~{round(obj.near_start_address_distance.m)} м) {obj.near_start_address}"
+
+        if address is None:
+            address = "загружается"
 
         return {
             "lat": obj.start_point.y,
@@ -67,11 +71,13 @@ class TripSerializer(serializers.Serializer):
         }
 
     def get_end_point(self, obj):
+        if obj.end_point is None:
+            return None
+
         address = obj.end_address
-        if address is None and obj.near_end_address is not None:
-            address = (
-                f"(~{round(obj.near_end_address_distance.m)} м) {obj.near_end_address}"
-            )
+
+        if address is None:
+            address = "загружается"
 
         return {
             "lat": obj.end_point.y,

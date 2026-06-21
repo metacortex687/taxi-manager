@@ -4,6 +4,8 @@ from taxi_manager.infrastructure.enterprise.models import Enterprise
 from taxi_manager.infrastructure.geo_tracking.models import VehicleLocation, Trip
 from taxi_manager.infrastructure.geocoding.models import GeoAddress
 
+from taxi_manager.infrastructure.geocoding import tasks as geocoding_tasks
+
 from taxi_manager.infrastructure.exchange.services import (
     EnterprisePeriodExchangeService,
 )
@@ -166,14 +168,25 @@ class TripListAPIView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         point_need_load_address = []
-        point_need_load_address.extend(
-            [v.start_point for v in self.get_queryset() if v.start_address is None]
-        )
-        point_need_load_address.extend(
-            [v.end_point for v in self.get_queryset() if v.end_address is None]
-        )
+        for trip in self.get_queryset():
+            if trip.start_point is not None and trip.start_address is None:
+                point_need_load_address.append(
+                    {
+                        "lon": trip.start_point.x,
+                        "lat": trip.start_point.y,
+                    }
+                )
 
-        GeoAddress.load_address_for_points(point_need_load_address)
+            if trip.end_point is not None and trip.end_address is None:
+                point_need_load_address.append(
+                    {
+                        "lon": trip.end_point.x,
+                        "lat": trip.end_point.y,
+                    }
+                )
+
+        if point_need_load_address:
+            geocoding_tasks.load_geo_addresses.enqueue(point_need_load_address)
 
         return super().list(request, *args, **kwargs)
 
