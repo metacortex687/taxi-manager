@@ -20,6 +20,7 @@ services:
       - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
       - DJANGO_MEMCACHED_LOCATION=unix:/run/memcached/memcached.sock
       - PYTHONUNBUFFERED=1
+
       - OTEL_SERVICE_NAME=taxi-manager-django-wsgi
       - OTEL_TRACES_EXPORTER=otlp
       - OTEL_METRICS_EXPORTER=none
@@ -33,17 +34,20 @@ services:
       - OTEL_PYTHON_LOG_CORRELATION=true
       - OTEL_PYTHON_LOG_LEVEL=info
       - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
+
       - PYROSCOPE_ENABLED=true
       - PYROSCOPE_APPLICATION_NAME=taxi-manager-django
-      - PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
+      - PYROSCOPE_SERVER_ADDRESS=http://alloy:9999
       - PYROSCOPE_SAMPLE_RATE=100
       - DEPLOYMENT_ENVIRONMENT=dev
-    command: sh -c "make migrate && make collectstatic && make ensure-superuser  && make ensure-demo-data && uv run opentelemetry-instrument make run-uwsgi"
+
+    command: sh -c "make migrate && make collectstatic && make ensure-superuser && make ensure-demo-data && uv run opentelemetry-instrument make run-uwsgi"
     depends_on:
       db:
-        condition: service_healthy 
+        condition: service_healthy
       memcached:
         condition: service_started
+
   taxi-manager-asgi:
     build: .
     image: metacortex687/taxi-manager-dev
@@ -64,6 +68,7 @@ services:
       - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
       - DJANGO_MEMCACHED_LOCATION=unix:/run/memcached/memcached.sock
       - PYTHONUNBUFFERED=1
+
       - OTEL_SERVICE_NAME=taxi-manager-django-asgi
       - OTEL_TRACES_EXPORTER=otlp
       - OTEL_METRICS_EXPORTER=none
@@ -77,45 +82,20 @@ services:
       - OTEL_PYTHON_LOG_CORRELATION=true
       - OTEL_PYTHON_LOG_LEVEL=info
       - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
+
       - PYROSCOPE_ENABLED=true
       - PYROSCOPE_APPLICATION_NAME=taxi-manager-django
-      - PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
+      - PYROSCOPE_SERVER_ADDRESS=http://alloy:9999
       - PYROSCOPE_SAMPLE_RATE=100
       - DEPLOYMENT_ENVIRONMENT=dev
+
     command: sh -c "uv run opentelemetry-instrument make run-asgi"
     depends_on:
       db:
-        condition: service_healthy 
+        condition: service_healthy
       memcached:
         condition: service_started
 
-  loki:
-    image: grafana/loki:latest
-    container_name: loki
-    command: -config.file=/etc/loki/loki-config.yaml
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./loki-config.yaml:/etc/loki/loki-config.yaml:ro
-      - loki_data:/loki
-      
-  alloy:
-    image: grafana/alloy:latest
-    container_name: alloy
-    command:
-      - run
-      - /etc/alloy/config.alloy
-      - --server.http.listen-addr=0.0.0.0:12345
-      - --storage.path=/var/lib/alloy/data
-    ports:
-      - "12345:12345"
-    volumes:
-      - ./config.alloy:/etc/alloy/config.alloy:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - alloy_data:/var/lib/alloy/data
-    depends_on:
-      - loki
-      - tempo  
   task-worker:
     build: .
     image: metacortex687/taxi-manager-dev
@@ -144,65 +124,38 @@ services:
 
       - PYROSCOPE_ENABLED=true
       - PYROSCOPE_APPLICATION_NAME=taxi-manager-task-worker
-      - PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
+      - PYROSCOPE_SERVER_ADDRESS=http://alloy:9999
       - PYROSCOPE_SAMPLE_RATE=100
       - DEPLOYMENT_ENVIRONMENT=dev
+
     command: sh -c "uv run opentelemetry-instrument python manage.py db_worker --queue-name reports,geocoding,default"
     depends_on:
       db:
         condition: service_healthy
-  tempo:
-    image: grafana/tempo:latest
-    container_name: tempo
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
     command:
-      - "-config.file=/etc/tempo.yaml"
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+    ports:
+      - "127.0.0.1:12345:12345"
     volumes:
-      - ./tempo.yaml:/etc/tempo.yaml:ro
-      - tempo_data:/var/tempo
-    ports:
-      - "127.0.0.1:3200:3200"
-
-  pyroscope:
-    image: grafana/pyroscope:latest
-    container_name: pyroscope
-    ports:
-      - "127.0.0.1:4040:4040"
-    command:
-      - "server"
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=200h'  # 8+ дней истории
-      - '--web.enable-lifecycle'
-    ports: 
-      - "127.0.0.1:9090:9090"
-    volumes: 
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml 
-      - prometheus_data:/prometheus 
-
-  grafana:
-    image: grafana/grafana
-    user: root
-    depends_on:
-      - prometheus
-      - loki
-      - tempo
-      - pyroscope
-    ports:
-      - "127.0.0.1:9091:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
-      - ./grafana/dashboards:/var/lib/grafana/dashboards
-    container_name: grafana
-    hostname: grafana
-    restart: unless-stopped
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy_data:/var/lib/alloy/data
     environment:
-      TZ: "Europe/Moscow"
+      - LOKI_URL=${LOKI_URL:-http://loki:3100/loki/api/v1/push}
+      - TEMPO_ENDPOINT=${TEMPO_ENDPOINT:-tempo:4317}
+      - PYROSCOPE_URL=${PYROSCOPE_URL:-http://pyroscope:4040}
+      - PROMETHEUS_REMOTE_WRITE_URL=${PROMETHEUS_REMOTE_WRITE_URL:-http://prometheus:9090/api/v1/write}
+      - DEPLOYMENT_ENVIRONMENT=${DEPLOYMENT_ENVIRONMENT:-dev}
+    networks:
+      - default
+      - observability
 
   memcached:
     image: memcached:1.6
@@ -219,13 +172,14 @@ services:
       - --conn-limit=1024
       - --memory-limit=64
       - --threads=4
+
   goaccess:
     image: allinurl/goaccess
     container_name: goaccess
     ports:
       - 7890:7890
     volumes:
-      - ./data/logs/nginx/:/var/log/nginx/
+      - ./data/logs/nginx/:/var/log/nginx/:ro
       - ./data/goaccess/:/data/
     command:
       - /var/log/nginx/access.log 
@@ -295,13 +249,15 @@ services:
       taxi-manager-asgi:
         condition: service_started
         restart: true
+
+networks:
+  observability:
+    name: observability_net
+    external: true
+
 volumes:
   pgdata:
   static_volume:
   uwsgi_socket:
   memcached_socket:
-  prometheus_data:
-  loki_data:
   alloy_data:
-  grafana_data:
-  tempo_data:

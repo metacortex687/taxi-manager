@@ -1,0 +1,86 @@
+services:
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    command: -config.file=/etc/loki/loki-config.yaml
+    ports:
+      - "${LOKI_BIND_ADDR:-127.0.0.1}:3100:3100"
+    volumes:
+      - ./loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - loki_data:/loki
+    networks:
+      - observability
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    command:
+      - "-config.file=/etc/tempo.yaml"
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/var/tempo
+    ports:
+      - "${TEMPO_HTTP_BIND_ADDR:-127.0.0.1}:3200:3200"
+      - "${TEMPO_OTLP_GRPC_BIND_ADDR:-127.0.0.1}:4317:4317"
+    networks:
+      - observability
+
+  pyroscope:
+    image: grafana/pyroscope:latest
+    container_name: pyroscope
+    command:
+      - "server"
+    ports:
+      - "${PYROSCOPE_BIND_ADDR:-127.0.0.1}:4040:4040"
+    networks:
+      - observability
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+      - '--web.enable-remote-write-receiver'
+    ports:
+      - "${PROMETHEUS_BIND_ADDR:-127.0.0.1}:9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - observability
+
+  grafana:
+    image: grafana/grafana
+    user: root
+    container_name: grafana
+    hostname: grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+      - pyroscope
+    ports:
+      - "${GRAFANA_BIND_ADDR:-127.0.0.1}:9091:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      TZ: "Europe/Moscow"
+    networks:
+      - observability
+
+networks:
+  observability:
+    name: observability_net
+    external: true
+
+volumes:
+  prometheus_data:
+  loki_data:
+  grafana_data:
+  tempo_data:

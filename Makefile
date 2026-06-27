@@ -41,10 +41,13 @@ demo-up:
 	docker compose -f docker-compose.demo.yaml up --build
 
 dev-up:
+	docker compose -f docker-compose.dev-local.observability.yaml up -d
 	docker compose -f docker-compose.dev-local.yaml up --build
+	
 
 dev-down:
 	docker compose -f docker-compose.dev-local.yaml down
+	docker compose -f docker-compose.dev-local.observability.yaml down
 
 demo-down:
 	docker compose -f docker-compose.demo.yaml down
