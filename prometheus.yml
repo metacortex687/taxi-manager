@@ -8,9 +8,3 @@ scrape_configs:
       - targets:
         - "localhost:9090"
 
-  - job_name: "taxi-manager"
-    scrape_interval: 15s
-    metrics_path: /prometheus/metrics
-    static_configs:
-     - targets:
-        - "nginx:80"
