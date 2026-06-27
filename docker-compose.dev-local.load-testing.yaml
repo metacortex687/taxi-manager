@@ -1,0 +1,22 @@
+services:
+  load-generator:
+    image: grafana/k6:latest
+    container_name: load-generator
+    user: root
+    env_file:
+      - .load-testing.env
+    volumes:
+      - ./performance:/scripts:ro
+      - ./performance/results:/results
+    command:
+      - run
+      - --summary-export
+      - /results/summary.json
+      - /scripts/load_test.js
+    networks:
+      - load_testing_target
+
+networks:
+  load_testing_target:
+    name: taxi_manager_load_testing_net
+    external: true

@@ -242,6 +242,9 @@ services:
       - ./data/goaccess/:/data/goaccess/:ro
     ports:
       - "127.0.0.1:8080:80"
+    networks:
+      - default
+      - load_testing_target 
     depends_on:
       taxi-manager:
         condition: service_started
@@ -253,6 +256,9 @@ services:
 networks:
   observability:
     name: observability_net
+    external: true
+  load_testing_target:
+    name: taxi_manager_load_testing_net
     external: true
 
 volumes:

@@ -24,3 +24,5 @@ taxi_manager/infrastructure/react_frontend/babel.log
 
 staticfiles/
 data/
+performance/results/summary.json
+.load-testing.env
