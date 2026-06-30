@@ -159,6 +159,7 @@ services:
     networks:
       - default
       - observability
+      - load_testing_target
 
   memcached:
     image: memcached:1.6
