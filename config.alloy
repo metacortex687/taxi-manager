@@ -122,3 +122,32 @@ prometheus.receive_http "k6" {
   forward_to = [prometheus.remote_write.prometheus.receiver]
 }
 
+prometheus.exporter.unix "host" {
+  rootfs_path = "/host/root"
+  procfs_path = "/host/proc"
+  sysfs_path  = "/host/sys"
+}
+
+discovery.relabel "host" {
+  targets = prometheus.exporter.unix.host.targets
+
+  rule {
+    target_label = "job"
+    replacement  = "host"
+  }
+
+  rule {
+    target_label = "env"
+    replacement  = sys.env("DEPLOYMENT_ENVIRONMENT")
+  }
+}
+
+prometheus.scrape "host" {
+  targets = discovery.relabel.host.output
+
+  scrape_interval = "5s"
+  scrape_timeout  = "4s"
+
+  forward_to = [prometheus.remote_write.prometheus.receiver]
+}
+
