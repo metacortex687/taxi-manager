@@ -58,7 +58,10 @@ otelcol.receiver.otlp "apps" {
   }
 
   output {
-    traces = [otelcol.processor.batch.tempo.input]
+    traces = [
+      otelcol.processor.batch.tempo.input,
+      otelcol.connector.spanmetrics.default.input,
+    ]
   }
 }
 
@@ -76,6 +79,58 @@ otelcol.exporter.otlp "tempo" {
       insecure = true
     }
   }
+}
+
+otelcol.connector.spanmetrics "default" {
+  namespace = "traces_spanmetrics"
+
+  aggregation_temporality = "CUMULATIVE"
+  metrics_flush_interval  = "15s"
+
+  dimension {
+    name = "http.route"
+  }
+
+  dimension {
+    name = "http.method"
+  }
+
+  dimension {
+    name = "http.status_code"
+  }
+
+  dimension {
+    name = "db.system"
+  }
+
+  histogram {
+    unit = "s"
+
+    explicit {
+      buckets = [
+        "1ms",
+        "2ms",
+        "5ms",
+        "10ms",
+        "20ms",
+        "50ms",
+        "100ms",
+        "250ms",
+        "500ms",
+        "1s",
+        "2s",
+        "5s",
+      ]
+    }
+  }
+
+  output {
+    metrics = [otelcol.exporter.prometheus.spanmetrics.input]
+  }
+}
+
+otelcol.exporter.prometheus "spanmetrics" {
+  forward_to = [prometheus.remote_write.prometheus.receiver]
 }
 
 pyroscope.receive_http "apps" {
