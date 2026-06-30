@@ -151,3 +151,16 @@ prometheus.scrape "host" {
   forward_to = [prometheus.remote_write.prometheus.receiver]
 }
 
+prometheus.scrape "cadvisor" {
+  targets = [{
+    __address__ = "cadvisor:8080",
+    job         = "cadvisor",
+    env         = sys.env("DEPLOYMENT_ENVIRONMENT"),
+  }]
+
+  scrape_interval = "5s"
+  scrape_timeout  = "4s"
+  
+  forward_to      = [prometheus.remote_write.prometheus.receiver]
+}
+
