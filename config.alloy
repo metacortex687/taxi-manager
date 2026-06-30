@@ -101,7 +101,9 @@ prometheus.scrape "django" {
     env             = sys.env("DEPLOYMENT_ENVIRONMENT"),
   }]
 
-  scrape_interval = "15s"
+  scrape_interval = "5s"
+  scrape_timeout  = "4s"
+  
   forward_to      = [prometheus.remote_write.prometheus.receiver]
 }
 
