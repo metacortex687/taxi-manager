@@ -3,6 +3,8 @@ import time
 
 from opentelemetry import trace
 
+from taxi_manager.infrastructure.observability.tracing import trace_span
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,3 +51,16 @@ class RequestTraceLoggingMiddleware:
         )
 
         return response
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        view_class = getattr(view_func, "view_class", None)
+
+        with trace_span(
+            "RequestTraceLoggingMiddleware.process_view",
+            stage="middleware",
+            attrs={
+                "view.function": getattr(view_func, "__qualname__", str(view_func)),
+                "view.class": view_class.__name__ if view_class else "",
+            },
+        ):
+            return None
