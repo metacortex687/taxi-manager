@@ -112,3 +112,13 @@ prometheus.remote_write "prometheus" {
     url = sys.env("PROMETHEUS_REMOTE_WRITE_URL")
   }
 }
+
+prometheus.receive_http "k6" {
+  http {
+    listen_address = "0.0.0.0"
+    listen_port    = 9998
+  }
+
+  forward_to = [prometheus.remote_write.prometheus.receiver]
+}
+
