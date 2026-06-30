@@ -147,6 +147,9 @@ services:
       - ./config.alloy:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - alloy_data:/var/lib/alloy/data
+      - /:/host/root:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
     environment:
       - LOKI_URL=${LOKI_URL:-http://loki:3100/loki/api/v1/push}
       - TEMPO_ENDPOINT=${TEMPO_ENDPOINT:-tempo:4317}
