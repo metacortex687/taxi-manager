@@ -49,6 +49,16 @@ class TripPointSerializerGeoJSON(GeoFeatureModelSerializer):
         geo_field = "route"
         fields = ("trip",)
 
+class TripPointSerializerGeoJSONFast(serializers.Serializer):
+    @trace_method("TripPointSerializerGeoJSONFast.to_representation", stage="serialize")
+    def to_representation(self, instance):
+        feature = instance.geojson_feature
+
+        if isinstance(feature, str):
+            return json.loads(feature)
+
+        return feature
+
 
 class TripSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)

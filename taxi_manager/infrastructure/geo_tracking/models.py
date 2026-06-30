@@ -1,5 +1,5 @@
 from django.contrib.gis.db import models
-from django.db.models import OuterRef, Subquery
+from django.db.models import F, OuterRef, Subquery, Value
 from django.db.models.functions import Cast
 
 from django.contrib.gis.db.models import GeometryField
@@ -39,6 +39,14 @@ class VehicleLocation(models.Model):
 
     objects = VehicleLocationQuerySet.as_manager()
 
+class STAsGeoJSON(models.Func):
+    function = "ST_AsGeoJSON"
+    output_field = models.TextField()
+
+
+class JsonbBuildObject(models.Func):
+    function = "jsonb_build_object"
+    output_field = models.JSONField()
 
 class TripQuerySet(models.QuerySet):
     def filter_period(self, period_from, period_to):
@@ -49,10 +57,10 @@ class TripQuerySet(models.QuerySet):
 
     def filter_vehicle(self, vehicle):
         return self.filter(vehicle=vehicle)
-    
+
     def filter_vehicles(self, vehicle_ids):
         return self.filter(vehicle__in=vehicle_ids)
-    
+
     def annotate_path(self):
         path_subquery = (
             VehicleLocation.objects.filter(
@@ -72,6 +80,54 @@ class TripQuerySet(models.QuerySet):
             path=Subquery(
                 path_subquery,
                 output_field=GeometryField(srid=4326),
+            )
+        )
+
+   
+    def annotate_geojson_feature(self):
+        route_geojson_subquery = (
+            VehicleLocation.objects.filter(
+                vehicle=OuterRef("vehicle"),
+                tracked_at__gte=OuterRef("started_at"),
+                tracked_at__lt=OuterRef("ended_at"),
+            )
+            .order_by()
+            .values("vehicle")
+            .annotate(
+                route_geojson=Cast(
+                    STAsGeoJSON(
+                        MakeLine(
+                            Cast(
+                                "location",
+                                output_field=GeometryField(srid=4326),
+                            )
+                        )
+                    ),
+                    output_field=models.JSONField(),
+                )
+            )
+            .values("route_geojson")[:1]
+        )
+
+        return (
+            self.annotate(
+                route_geojson=Subquery(
+                    route_geojson_subquery,
+                    output_field=models.JSONField(),
+                )
+            )
+            .annotate(
+                geojson_feature=JsonbBuildObject(
+                    Value("type"),
+                    Value("Feature"),
+                    Value("geometry"),
+                    F("route_geojson"),
+                    Value("properties"),
+                    JsonbBuildObject(
+                        Value("trip"),
+                        F("id"),
+                    ),
+                )
             )
         )
 

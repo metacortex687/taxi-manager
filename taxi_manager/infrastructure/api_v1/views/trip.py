@@ -12,6 +12,7 @@ from taxi_manager.infrastructure.exchange.services import (
 
 from ..serializers.trip import (
     TripPointSerializer,
+    TripPointSerializerGeoJSONFast,
     TripSerializer,
     TripPointSerializerGeoJSON,
 )
@@ -43,6 +44,9 @@ class TripPointListAPIView(generics.ListAPIView):
 
         if response_format == "geojson":
             return TripPointSerializerGeoJSON
+        
+        if response_format == "geojson_fast":
+            return TripPointSerializerGeoJSONFast
 
         return TripPointSerializer
 
@@ -69,6 +73,11 @@ class TripPointListAPIView(generics.ListAPIView):
 
         if filter_data_to:
             queryset = queryset.filter(ended_at__lte=filter_data_to)
+
+        response_format = self.request.query_params.get("response_format")
+
+        if response_format == "geojson_fast":
+            return queryset.annotate_geojson_feature()
 
         return queryset.annotate_path()
 
