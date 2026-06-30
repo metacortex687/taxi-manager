@@ -51,6 +51,13 @@ dev-down:
 	docker compose -f docker-compose.dev-local.yaml down
 	docker compose -f docker-compose.dev-local.observability.yaml down
 
+perf-dev:
+	docker compose -f docker-compose.dev-local.load-testing.yaml run --rm \
+		--entrypoint k6 \
+		load-generator run \
+		-o experimental-prometheus-rw \
+		/scripts/load_test_rps_ladder_simple.js
+
 demo-down:
 	docker compose -f docker-compose.demo.yaml down
 
