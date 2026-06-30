@@ -18,7 +18,6 @@ jobs:
           username: ${{ secrets.OBS_HOST_USER }}
           key: ${{ secrets.OBS_HOST_SSH_PRIVATE_KEY }}
           port: ${{ secrets.OBS_HOST_PORT }}
-          passphrase: ${{ secrets.OBS_SSH_PASSPHRASE }}
           envs: GF_SECURITY_ADMIN_USER,GF_SECURITY_ADMIN_PASSWORD
           script: |
             set -euo pipefail
