@@ -28,7 +28,7 @@ class RequestTraceLoggingMiddleware:
         start = time.perf_counter()
 
         with trace_span("RequestTraceLoggingMiddleware.__call__", stage="middleware"):
-        response = self.get_response(request)
+            response = self.get_response(request)
 
         elapsed_ms = (time.perf_counter() - start) * 1000
 
