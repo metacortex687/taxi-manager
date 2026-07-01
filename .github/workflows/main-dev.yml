@@ -60,7 +60,7 @@ jobs:
               username: ${{ secrets.DEV_HOST_USER }}
               key: ${{ secrets.DEV_HOST_SSH_PRIVATE_KEY }}
               port: ${{ secrets.DEV_HOST_PORT }}
-              passphrase: ${{ secrets.DEV_SSH_PASSPHRASE }}
+              # passphrase: ${{ secrets.DEV_SSH_PASSPHRASE }}
               script: |
                 set -euo pipefail
                 APP_DIR="$HOME/taxi-manager"
