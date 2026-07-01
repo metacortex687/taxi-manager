@@ -8,6 +8,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare observability directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.OBS_HOST_IP }}
+          username: ${{ secrets.OBS_HOST_USER }}
+          key: ${{ secrets.OBS_HOST_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.OBS_HOST_PORT }}
+          script: |
+            mkdir -p "$HOME/observability"
+            mkdir -p "$HOME/observability/grafana/provisioning/datasources"
+            mkdir -p "$HOME/observability/grafana/dashboards"
+
+      - name: Copy observability files
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.OBS_HOST_IP }}
+          username: ${{ secrets.OBS_HOST_USER }}
+          key: ${{ secrets.OBS_HOST_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.OBS_HOST_PORT }}
+          source: "docker-compose.dev.observability.yaml,tempo.yaml,prometheus.yml,loki-config.yaml,loki.yml,config.alloy,grafana/provisioning/datasources"
+          target: "observability"
+
       - name: Deploy observability stack
         uses: appleboy/ssh-action@v1
         env:
@@ -24,8 +49,6 @@ jobs:
             set -euo pipefail
 
             OBS_DIR="$HOME/observability"
-            mkdir -p "$OBS_DIR/grafana/provisioning/datasources"
-            mkdir -p "$OBS_DIR/grafana/dashboards"
             cd "$OBS_DIR"
 
             if ! command -v docker >/dev/null 2>&1; then
@@ -40,211 +63,6 @@ jobs:
               DOCKER="sudo docker"
             fi
 
-            cat > docker-compose.observability-cloud.yaml <<'EOF'
-            services:
-              loki:
-                image: grafana/loki:latest
-                container_name: loki
-                restart: unless-stopped
-                command: -config.file=/etc/loki/loki-config.yaml
-                ports:
-                  - "${LOKI_BIND_ADDR:-0.0.0.0}:3100:3100"
-                volumes:
-                  - ./loki-config.yaml:/etc/loki/loki-config.yaml:ro
-                  - loki_data:/loki
-                networks:
-                  - observability
-
-              tempo:
-                image: grafana/tempo:latest
-                container_name: tempo
-                restart: unless-stopped
-                command:
-                  - "-config.file=/etc/tempo.yaml"
-                volumes:
-                  - ./tempo.yaml:/etc/tempo.yaml:ro
-                  - tempo_data:/var/tempo
-                ports:
-                  - "${TEMPO_OTLP_GRPC_BIND_ADDR:-0.0.0.0}:4317:4317"
-                  - "${TEMPO_OTLP_HTTP_BIND_ADDR:-0.0.0.0}:4318:4318"
-                  - "${TEMPO_HTTP_BIND_ADDR:-127.0.0.1}:3200:3200"
-                networks:
-                  - observability
-
-              prometheus:
-                image: prom/prometheus:latest
-                container_name: prometheus
-                restart: unless-stopped
-                command:
-                  - '--config.file=/etc/prometheus/prometheus.yml'
-                  - '--storage.tsdb.path=/prometheus'
-                  - '--storage.tsdb.retention.time=200h'
-                  - '--web.enable-lifecycle'
-                  - '--web.enable-remote-write-receiver'
-                ports:
-                  - "${PROMETHEUS_BIND_ADDR:-0.0.0.0}:9090:9090"
-                volumes:
-                  - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-                  - prometheus_data:/prometheus
-                networks:
-                  - observability
-
-              grafana:
-                image: grafana/grafana:latest
-                user: root
-                container_name: grafana
-                hostname: grafana
-                restart: unless-stopped
-                depends_on:
-                  - prometheus
-                  - loki
-                  - tempo
-                ports:
-                  - "${GRAFANA_BIND_ADDR:-0.0.0.0}:9091:3000"
-                volumes:
-                  - grafana_data:/var/lib/grafana
-                  - ./grafana/provisioning/:/etc/grafana/provisioning/
-                  - ./grafana/dashboards:/var/lib/grafana/dashboards
-                environment:
-                  TZ: "Asia/Almaty"
-                  GF_SECURITY_ADMIN_USER: ${OBS_GRAFANA_ADMIN_USER:-admin}
-                  GF_SECURITY_ADMIN_PASSWORD: ${OBS_GRAFANA_ADMIN_PASSWORD:-admin}
-                networks:
-                  - observability
-
-            networks:
-              observability:
-                name: observability_net
-
-            volumes:
-              prometheus_data:
-              loki_data:
-              grafana_data:
-              tempo_data:
-            EOF
-
-            cat > prometheus.yml <<'EOF'
-            global:
-              scrape_interval: 15s
-              evaluation_interval: 15s
-
-            scrape_configs:
-              - job_name: prometheus
-                static_configs:
-                  - targets: ["prometheus:9090"]
-
-              - job_name: loki
-                static_configs:
-                  - targets: ["loki:3100"]
-
-              - job_name: tempo
-                static_configs:
-                  - targets: ["tempo:3200"]
-            EOF
-
-            cat > tempo.yaml <<'EOF'
-            server:
-              http_listen_port: 3200
-
-            distributor:
-              receivers:
-                otlp:
-                  protocols:
-                    grpc:
-                      endpoint: 0.0.0.0:4317
-                    http:
-                      endpoint: 0.0.0.0:4318
-
-            storage:
-              trace:
-                backend: local
-                wal:
-                  path: /var/tempo/wal
-                local:
-                  path: /var/tempo/blocks
-
-            compactor:
-              compaction:
-                block_retention: 200h
-            EOF
-
-            cat > loki-config.yaml <<'EOF'
-            auth_enabled: false
-
-            server:
-              http_listen_port: 3100
-
-            common:
-              path_prefix: /loki
-              storage:
-                filesystem:
-                  chunks_directory: /loki/chunks
-                  rules_directory: /loki/rules
-              replication_factor: 1
-              ring:
-                kvstore:
-                  store: inmemory
-
-            schema_config:
-              configs:
-                - from: 2024-04-01
-                  store: tsdb
-                  object_store: filesystem
-                  schema: v13
-                  index:
-                    prefix: index_
-                    period: 24h
-
-            limits_config:
-              allow_structured_metadata: true
-              volume_enabled: true
-
-            analytics:
-              reporting_enabled: false
-            EOF
-
-            cat > grafana/provisioning/datasources/datasources.yml <<'EOF'
-            apiVersion: 1
-
-            datasources:
-              - name: Prometheus
-                uid: Prometheus
-                type: prometheus
-                access: proxy
-                url: http://prometheus:9090
-                isDefault: true
-                editable: true
-
-              - name: Loki
-                uid: Loki
-                type: loki
-                access: proxy
-                url: http://loki:3100
-                editable: true
-
-              - name: Tempo
-                uid: Tempo
-                type: tempo
-                access: proxy
-                url: http://tempo:3200
-                editable: true
-                jsonData:
-                  httpMethod: GET
-                  nodeGraph:
-                    enabled: true
-                  tracesToLogsV2:
-                    datasourceUid: Loki
-                    spanStartTimeShift: -5m
-                    spanEndTimeShift: 5m
-                    filterByTraceID: true
-                  tracesToMetrics:
-                    datasourceUid: Prometheus
-                    spanStartTimeShift: -5m
-                    spanEndTimeShift: 5m
-                  serviceMap:
-                    datasourceUid: Prometheus
-            EOF
-
             cat > .env <<EOF
             GRAFANA_BIND_ADDR=0.0.0.0
             PROMETHEUS_BIND_ADDR=0.0.0.0
@@ -252,16 +70,36 @@ jobs:
             TEMPO_OTLP_GRPC_BIND_ADDR=0.0.0.0
             TEMPO_OTLP_HTTP_BIND_ADDR=0.0.0.0
             TEMPO_HTTP_BIND_ADDR=127.0.0.1
+            PYROSCOPE_BIND_ADDR=0.0.0.0
             OBS_GRAFANA_ADMIN_USER=${OBS_GRAFANA_ADMIN_USER}
             OBS_GRAFANA_ADMIN_PASSWORD=${OBS_GRAFANA_ADMIN_PASSWORD}
             EOF
 
-            $DOCKER compose -f docker-compose.observability-cloud.yaml pull
-            $DOCKER compose -f docker-compose.observability-cloud.yaml up -d --force-recreate --remove-orphans
-            $DOCKER compose -f docker-compose.observability-cloud.yaml ps
+            $DOCKER compose -f docker-compose.dev.observability.yaml pull
+            $DOCKER compose -f docker-compose.dev.observability.yaml up -d --force-recreate --remove-orphans
+            $DOCKER compose -f docker-compose.dev.observability.yaml ps
 
             echo "Checking readiness..."
-            curl -fsS http://127.0.0.1:9090/-/ready
-            curl -fsS http://127.0.0.1:3100/ready
-            curl -fsS http://127.0.0.1:3200/ready
+
+            for url in \
+              http://127.0.0.1:9090/-/ready \
+              http://127.0.0.1:3100/ready \
+              http://127.0.0.1:3200/ready
+            do
+              echo "Waiting for $url"
+
+              for i in {1..30}; do
+                if curl -fsS "$url" >/dev/null; then
+                  echo "Ready: $url"
+                  break
+                fi
+
+                if [ "$i" -eq 30 ]; then
+                  echo "Service is not ready: $url"
+                  exit 1
+                fi
+
+                sleep 2
+              done
+            done
             BASH
