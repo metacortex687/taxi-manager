@@ -4,11 +4,13 @@ services:
     pull_policy: always
     image: metacortex687/taxi-manager-dev
     restart: always
+    labels:
+      logging: "alloy"
     volumes:
       - static_volume:/app/staticfiles
       - uwsgi_socket:/run/uwsgi
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}  
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - DJANGO_SUPERUSER_NAME=${DJANGO_SUPERUSER_NAME}
       - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
@@ -17,16 +19,39 @@ services:
       - VK_BOT_TOKEN=${VK_BOT_TOKEN}
       - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
       - PYTHONUNBUFFERED=1
-    command: sh -c "make migrate && make collectstatic && make ensure-superuser  && make ensure-demo-data && make run-uwsgi"
+
+      - OTEL_SERVICE_NAME=taxi-manager-django-wsgi
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_PROPAGATORS=tracecontext,baggage
+      - OTEL_TRACES_SAMPLER=parentbased_traceidratio
+      - OTEL_TRACES_SAMPLER_ARG=1.0
+      - DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings
+      - OTEL_PYTHON_LOG_CORRELATION=true
+      - OTEL_PYTHON_LOG_LEVEL=info
+      - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
+
+      - PYROSCOPE_ENABLED=true
+      - PYROSCOPE_APPLICATION_NAME=taxi-manager-django
+      - PYROSCOPE_SERVER_ADDRESS=http://alloy:9999
+      - PYROSCOPE_SAMPLE_RATE=100
+      - DEPLOYMENT_ENVIRONMENT=${DEPLOYMENT_ENVIRONMENT:-dev}
+
+    command: sh -c "make migrate && make collectstatic && make ensure-superuser && make ensure-demo-data && uv run opentelemetry-instrument make run-uwsgi"
     depends_on:
       db:
         condition: service_healthy
-        
+
   taxi-manager-asgi:
     # build: .
     pull_policy: always
     image: metacortex687/taxi-manager-dev
     restart: always
+    labels:
+      logging: "alloy"
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - DJANGO_SUPERUSER_NAME=${DJANGO_SUPERUSER_NAME}
@@ -37,32 +62,116 @@ services:
       - VK_BOT_TOKEN=${VK_BOT_TOKEN}
       - VK_BOT_GROUP_ID=${VK_BOT_GROUP_ID}
       - PYTHONUNBUFFERED=1
-    command: sh -c "make run-asgi"
+
+      - OTEL_SERVICE_NAME=taxi-manager-django-asgi
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_PROPAGATORS=tracecontext,baggage
+      - OTEL_TRACES_SAMPLER=parentbased_traceidratio
+      - OTEL_TRACES_SAMPLER_ARG=1.0
+      - DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings
+      - OTEL_PYTHON_LOG_CORRELATION=true
+      - OTEL_PYTHON_LOG_LEVEL=info
+      - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
+
+      - PYROSCOPE_ENABLED=true
+      - PYROSCOPE_APPLICATION_NAME=taxi-manager-django
+      - PYROSCOPE_SERVER_ADDRESS=http://alloy:9999
+      - PYROSCOPE_SAMPLE_RATE=100
+      - DEPLOYMENT_ENVIRONMENT=${DEPLOYMENT_ENVIRONMENT:-dev}
+
+    command: sh -c "uv run opentelemetry-instrument make run-asgi"
     depends_on:
       db:
         condition: service_healthy
-  
+
   task-worker:
     # build: .
     pull_policy: always
     image: metacortex687/taxi-manager-dev
     restart: always
+    labels:
+      logging: "alloy"
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - LOCATIONIQ_KEY=${LOCATIONIQ_KEY}
       - PYTHONUNBUFFERED=1
-    command: sh -c "uv run python manage.py db_worker --queue-name reports,geocoding,default"
+
+      - OTEL_SERVICE_NAME=taxi-manager-task-worker
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_PROPAGATORS=tracecontext,baggage
+      - OTEL_TRACES_SAMPLER=parentbased_traceidratio
+      - OTEL_TRACES_SAMPLER_ARG=1.0
+      - DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings
+      - OTEL_PYTHON_LOG_CORRELATION=true
+      - OTEL_PYTHON_LOG_LEVEL=info
+      - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
+
+      - PYROSCOPE_ENABLED=true
+      - PYROSCOPE_APPLICATION_NAME=taxi-manager-task-worker
+      - PYROSCOPE_SERVER_ADDRESS=http://alloy:9999
+      - PYROSCOPE_SAMPLE_RATE=100
+      - DEPLOYMENT_ENVIRONMENT=${DEPLOYMENT_ENVIRONMENT:-dev}
+
+    command: sh -c "uv run opentelemetry-instrument python manage.py db_worker --queue-name reports,geocoding,default"
     depends_on:
       db:
         condition: service_healthy
-        
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    restart: unless-stopped
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+    ports:
+      - "127.0.0.1:12345:12345"
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy_data:/var/lib/alloy/data
+      - /:/host/root:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    environment:
+      - LOKI_URL=${LOKI_URL}
+      - TEMPO_ENDPOINT=${TEMPO_ENDPOINT}
+      - PYROSCOPE_URL=${PYROSCOPE_URL}
+      - PROMETHEUS_REMOTE_WRITE_URL=${PROMETHEUS_REMOTE_WRITE_URL}
+      - DEPLOYMENT_ENVIRONMENT=${DEPLOYMENT_ENVIRONMENT:-dev}
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+
   init-goaccess-files:
     image: busybox:1.36
     volumes:
       - ./data/logs/nginx/:/var/log/nginx/
       - ./data/goaccess/:/data/
     command: sh -c "mkdir -p /var/log/nginx /data && touch /var/log/nginx/access.log"
+
   goaccess:
     image: allinurl/goaccess
     container_name: goaccess
@@ -106,7 +215,7 @@ services:
   #   command: sh -c "make run-pgwatch-listener"
   #   depends_on:
   #     db:
-  #       condition: service_healthy  
+  # 
   db:
     image: postgis/postgis:16-3.5
     restart: always
@@ -116,14 +225,16 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
-
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
+
   nginx:
     image: nginx
+    labels:
+      logging: "alloy"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - static_volume:/static
@@ -144,3 +255,4 @@ volumes:
   pgdata:
   static_volume:
   uwsgi_socket:
+  alloy_data:

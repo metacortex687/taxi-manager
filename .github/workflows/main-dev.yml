@@ -1,8 +1,11 @@
 name: main-dev
+
 on: push
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     services:
       db:
         image: postgis/postgis:16-3.5
@@ -12,13 +15,14 @@ jobs:
           POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
+
     env:
       DJANGO_SUPERUSER_NAME: admin
-      DJANGO_SUPERUSER_EMAIL: admin@example.com 
+      DJANGO_SUPERUSER_EMAIL: admin@example.com
       DJANGO_SUPERUSER_PASSWORD: admin
       SECRET_KEY: change-me
       PYTHONUNBUFFERED: 1
-      DATABASE_URL: postgis://postgres:postgres@localhost:5432/taxi_manager  
+      DATABASE_URL: postgis://postgres:postgres@localhost:5432/taxi_manager
       LOCATIONIQ_KEY: ${{ secrets.LOCATIONIQ_KEY }}
 
     steps:
@@ -56,47 +60,49 @@ jobs:
       - name: Deploy using an SSH key
         uses: appleboy/ssh-action@v1
         with:
-              host: ${{ secrets.DEV_HOST_IP }}
-              username: ${{ secrets.DEV_HOST_USER }}
-              key: ${{ secrets.DEV_HOST_SSH_PRIVATE_KEY }}
-              port: ${{ secrets.DEV_HOST_PORT }}
-              # passphrase: ${{ secrets.DEV_SSH_PASSPHRASE }}
-              script: |
-                bash -se <<'BASH'
-                set -euo pipefail
-                APP_DIR="$HOME/taxi-manager"
+          host: ${{ secrets.DEV_HOST_IP }}
+          username: ${{ secrets.DEV_HOST_USER }}
+          key: ${{ secrets.DEV_HOST_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.DEV_HOST_PORT }}
+          # passphrase: ${{ secrets.DEV_SSH_PASSPHRASE }}
+          script: |
+            bash -se <<'BASH'
+            set -euo pipefail
 
-                whoami
-                ls -al
+            APP_DIR="$HOME/taxi-manager"
 
-                mkdir -p "$APP_DIR"
-                mkdir -p "$APP_DIR/data/logs/nginx"
-                mkdir -p "$APP_DIR/data/goaccess"
+            whoami
+            ls -al
 
-                cd "$APP_DIR"
+            mkdir -p "$APP_DIR"
+            mkdir -p "$APP_DIR/data/logs/nginx"
+            mkdir -p "$APP_DIR/data/goaccess"
 
-                curl -fsSL -o docker-compose.dev.yaml https://raw.githubusercontent.com/metacortex687/taxi-manager/main/docker-compose.dev.yaml
-                curl -fsSL -o nginx.conf https://raw.githubusercontent.com/metacortex687/taxi-manager/main/nginx.conf
+            cd "$APP_DIR"
 
-                export POSTGRES_USER="${{ secrets.DEV_POSTGRES_USER }}"
-                export POSTGRES_PASSWORD="${{ secrets.DEV_POSTGRES_PASSWORD }}"
-                export POSTGRES_DB="${{ secrets.DEV_POSTGRES_DB }}"
-                export DJANGO_SUPERUSER_NAME="${{ secrets.DEV_DJANGO_SUPERUSER_NAME }}"
-                export DJANGO_SUPERUSER_EMAIL="${{ secrets.DEV_DJANGO_SUPERUSER_EMAIL }}"
-                export DJANGO_SUPERUSER_PASSWORD="${{ secrets.DEV_DJANGO_SUPERUSER_PASSWORD }}"
-                export DJANGO_SECRET_KEY="${{ secrets.DEV_DJANGO_SECRET_KEY }}"
-                export LOCATIONIQ_KEY="${{ secrets.LOCATIONIQ_KEY }}"
-                export VK_BOT_TOKEN="${{ secrets.VK_BOT_TOKEN }}"
-                export VK_BOT_GROUP_ID="${{ secrets.VK_BOT_GROUP_ID }}"
+            curl -fsSL -o docker-compose.dev.yaml https://raw.githubusercontent.com/metacortex687/taxi-manager/main/docker-compose.dev.yaml
+            curl -fsSL -o nginx.conf https://raw.githubusercontent.com/metacortex687/taxi-manager/main/nginx.conf
+            curl -fsSL -o config.alloy https://raw.githubusercontent.com/metacortex687/taxi-manager/main/config.alloy
 
-                docker compose -f docker-compose.dev.yaml pull
-                docker compose -f docker-compose.dev.yaml up -d --no-build --force-recreate --remove-orphans
+            export POSTGRES_USER="${{ secrets.DEV_POSTGRES_USER }}"
+            export POSTGRES_PASSWORD="${{ secrets.DEV_POSTGRES_PASSWORD }}"
+            export POSTGRES_DB="${{ secrets.DEV_POSTGRES_DB }}"
+            export DJANGO_SUPERUSER_NAME="${{ secrets.DEV_DJANGO_SUPERUSER_NAME }}"
+            export DJANGO_SUPERUSER_EMAIL="${{ secrets.DEV_DJANGO_SUPERUSER_EMAIL }}"
+            export DJANGO_SUPERUSER_PASSWORD="${{ secrets.DEV_DJANGO_SUPERUSER_PASSWORD }}"
+            export DJANGO_SECRET_KEY="${{ secrets.DEV_DJANGO_SECRET_KEY }}"
+            export LOCATIONIQ_KEY="${{ secrets.LOCATIONIQ_KEY }}"
+            export VK_BOT_TOKEN="${{ secrets.VK_BOT_TOKEN }}"
+            export VK_BOT_GROUP_ID="${{ secrets.VK_BOT_GROUP_ID }}"
 
-                docker compose -f docker-compose.dev.yaml ps
-                BASH
+            export DEPLOYMENT_ENVIRONMENT="dev"
+            export LOKI_URL="http://${{ secrets.OBS_HOST_IP }}:3100/loki/api/v1/push"
+            export TEMPO_ENDPOINT="${{ secrets.OBS_HOST_IP }}:4317"
+            export PYROSCOPE_URL="http://${{ secrets.OBS_HOST_IP }}:4040"
+            export PROMETHEUS_REMOTE_WRITE_URL="http://${{ secrets.OBS_HOST_IP }}:9090/api/v1/write"
 
+            docker compose -f docker-compose.dev.yaml pull
+            docker compose -f docker-compose.dev.yaml up -d --no-build --force-recreate --remove-orphans
 
-
-
-
-      
+            docker compose -f docker-compose.dev.yaml ps
+            BASH
