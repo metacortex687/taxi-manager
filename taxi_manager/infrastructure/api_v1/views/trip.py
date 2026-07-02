@@ -1,3 +1,5 @@
+from django.db import connection
+
 from taxi_manager.infrastructure.observability.tracing import trace_span
 from taxi_manager.infrastructure.vehicle.models import Vehicle
 from taxi_manager.infrastructure.enterprise.models import Enterprise
@@ -102,12 +104,30 @@ class TripPointListAPIView(generics.ListAPIView):
 
             if response_format == "geojson_fast":
                 with trace_span(
-                    "TripPointListAPIView.geojson_fast_values",
-                    stage="db_fetch",
+                    "TripPointListAPIView.geojson_fast_sql_compile",
+                    stage="db_compile",
                 ):
-                    features = list(
-                        queryset.values_list("geojson_feature", flat=True)
-                    )
+                    values_queryset = queryset.values_list("geojson_feature", flat=True)
+                    sql, params = values_queryset.query.sql_with_params()
+
+                with connection.cursor() as cursor:
+                    with trace_span(
+                        "TripPointListAPIView.geojson_fast_execute",
+                        stage="db_execute",
+                    ):
+                        cursor.execute(sql, params)
+
+                    with trace_span(
+                        "TripPointListAPIView.geojson_fast_fetch_decode",
+                        stage="db_fetch",
+                    ):
+                        rows = cursor.fetchall()
+
+                with trace_span(
+                    "TripPointListAPIView.geojson_fast_extract_features",
+                    stage="python",
+                ):
+                    features = [row[0] for row in rows]
 
                 with trace_span(
                     "TripPointListAPIView.rows_count",
