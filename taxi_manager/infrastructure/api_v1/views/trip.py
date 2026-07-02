@@ -50,15 +50,11 @@ class TripPointListAPIView(generics.ListAPIView):
 
         if response_format == "geojson":
             return TripPointSerializerGeoJSON
-        
-        if response_format == "geojson_fast":
-            return TripPointSerializerGeoJSONFast
 
         return TripPointSerializer
 
     def get_queryset(self):
         vehicle_id = self.kwargs.get("vehicle_id")
-        vehicle = Vehicle.objects.get(pk=vehicle_id)
 
         filter_data_from = None
         if self.request.query_params.get("from"):
@@ -72,7 +68,7 @@ class TripPointListAPIView(generics.ListAPIView):
                 self.request.query_params.get("to").replace("Z", "+00:00")
             )
 
-        queryset = Trip.objects.filter(vehicle=vehicle)
+        queryset = Trip.objects.filter(vehicle_id=vehicle_id)
 
         if filter_data_from:
             queryset = queryset.filter(started_at__gte=filter_data_from)
@@ -86,7 +82,7 @@ class TripPointListAPIView(generics.ListAPIView):
             return queryset.annotate_geojson_feature()
 
         return queryset.annotate_path()
-    
+
     def list(self, request, *args, **kwargs):
         with trace_span(
             "TripPointListAPIView.list",
@@ -104,30 +100,14 @@ class TripPointListAPIView(generics.ListAPIView):
 
             if response_format == "geojson_fast":
                 with trace_span(
-                    "TripPointListAPIView.geojson_fast_sql_compile",
-                    stage="db_compile",
+                    "TripPointListAPIView.geojson_fast_values",
+                    stage="db_fetch",
                 ):
-                    values_queryset = queryset.values_list("geojson_feature", flat=True)
-                    sql, params = values_queryset.query.sql_with_params()
-
-                with connection.cursor() as cursor:
-                    with trace_span(
-                        "TripPointListAPIView.geojson_fast_execute",
-                        stage="db_execute",
-                    ):
-                        cursor.execute(sql, params)
-
-                    with trace_span(
-                        "TripPointListAPIView.geojson_fast_fetch_decode",
-                        stage="db_fetch",
-                    ):
-                        rows = cursor.fetchall()
-
-                with trace_span(
-                    "TripPointListAPIView.geojson_fast_extract_features",
-                    stage="python",
-                ):
-                    features = [row[0] for row in rows]
+                    features = [
+                        feature
+                        for feature in queryset.values_list("geojson_feature", flat=True)
+                        if feature is not None
+                    ]
 
                 with trace_span(
                     "TripPointListAPIView.rows_count",
