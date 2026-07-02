@@ -5,6 +5,11 @@ services:
     user: root
     env_file:
       - .load-testing.env
+    environment:
+      TIME_UNIT: "1s"
+      K6_PROMETHEUS_RW_SERVER_URL: "http://alloy:9998/api/v1/metrics/write"
+      K6_PROMETHEUS_RW_TREND_STATS: "avg,p(50),p(90),p(95),p(99),min,max"
+      K6_PROMETHEUS_RW_PUSH_INTERVAL: "1s"
     volumes:
       - ./performance:/scripts:ro
       - ./performance/results:/results
