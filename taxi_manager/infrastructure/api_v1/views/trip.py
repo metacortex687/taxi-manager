@@ -1,5 +1,6 @@
 from django.db import connection
 
+from taxi_manager.infrastructure.cache_manager.services import CacheManager
 from taxi_manager.infrastructure.observability.tracing import trace_span
 from taxi_manager.infrastructure.vehicle.models import Vehicle
 from taxi_manager.infrastructure.enterprise.models import Enterprise
@@ -40,6 +41,9 @@ import io
 
 from datetime import datetime
 
+cache_manager = CacheManager()
+
+TRIP_POINTS_GEOJSON_FAST_CACHE_TIMEOUT_SECONDS = 60
 
 class TripPointListAPIView(generics.ListAPIView):
     filterset_fields = ["id"]
@@ -99,6 +103,32 @@ class TripPointListAPIView(generics.ListAPIView):
             response_format = request.query_params.get("response_format")
 
             if response_format == "geojson_fast":
+                vehicle_id = kwargs.get("vehicle_id")
+                trip_id = request.query_params.get("id", "")
+                cache_key = f"trip_points:geojson_fast:{vehicle_id}:{trip_id}"
+
+                with trace_span(
+                    "TripPointListAPIView.geojson_fast_cache_get",
+                    stage="cache",
+                    attrs={"cache.key": cache_key},
+                ):
+                    cached_payload = cache_manager.get(cache_key)
+
+                if not cache_manager.is_missing(cached_payload):
+                    with trace_span(
+                        "TripPointListAPIView.geojson_fast_cache_hit",
+                        stage="cache",
+                        attrs={"cache.key": cache_key},
+                    ):
+                        return Response(cached_payload)
+
+                with trace_span(
+                    "TripPointListAPIView.geojson_fast_cache_miss",
+                    stage="cache",
+                    attrs={"cache.key": cache_key},
+                ):
+                    pass
+
                 with trace_span(
                     "TripPointListAPIView.geojson_fast_values",
                     stage="db_fetch",
@@ -116,13 +146,26 @@ class TripPointListAPIView(generics.ListAPIView):
                 ):
                     pass
 
+                payload = {
+                    "results": {
+                        "type": "FeatureCollection",
+                        "features": features,
+                    }
+                }
+
+                with trace_span(
+                    "TripPointListAPIView.geojson_fast_cache_set",
+                    stage="cache",
+                    attrs={"cache.key": cache_key},
+                ):
+                    cache_manager.set(
+                        cache_key,
+                        payload,
+                        timeout=TRIP_POINTS_GEOJSON_FAST_CACHE_TIMEOUT_SECONDS,
+                    )
+
                 with trace_span("TripPointListAPIView.response_create", stage="response"):
-                    return Response({
-                        "results": {
-                            "type": "FeatureCollection",
-                            "features": features,
-                        }
-                    })
+                    return Response(payload)
 
             with trace_span("TripPointListAPIView.queryset_evaluate", stage="db_fetch"):
                 rows = list(queryset)
