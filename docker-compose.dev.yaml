@@ -34,7 +34,7 @@ services:
       - OTEL_PYTHON_LOG_LEVEL=info
       - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
 
-      - PYROSCOPE_ENABLED=true
+      - PYROSCOPE_ENABLED=false
       - PYROSCOPE_APPLICATION_NAME=taxi-manager-django
       - PYROSCOPE_SERVER_ADDRESS=http://alloy:9999
       - PYROSCOPE_SAMPLE_RATE=100
@@ -77,7 +77,7 @@ services:
       - OTEL_PYTHON_LOG_LEVEL=info
       - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
 
-      - PYROSCOPE_ENABLED=true
+      - PYROSCOPE_ENABLED=false
       - PYROSCOPE_APPLICATION_NAME=taxi-manager-django
       - PYROSCOPE_SERVER_ADDRESS=http://alloy:9999
       - PYROSCOPE_SAMPLE_RATE=100
@@ -115,7 +115,7 @@ services:
       - OTEL_PYTHON_LOG_LEVEL=info
       - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
 
-      - PYROSCOPE_ENABLED=true
+      - PYROSCOPE_ENABLED=false
       - PYROSCOPE_APPLICATION_NAME=taxi-manager-task-worker
       - PYROSCOPE_SERVER_ADDRESS=http://alloy:9999
       - PYROSCOPE_SAMPLE_RATE=100
