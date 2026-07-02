@@ -41,6 +41,7 @@ from datetime import datetime
 
 class TripPointListAPIView(generics.ListAPIView):
     filterset_fields = ["id"]
+    pagination_class = None
 
     def get_serializer_class(self):
         response_format = self.request.query_params.get("response_format")
@@ -97,26 +98,6 @@ class TripPointListAPIView(generics.ListAPIView):
             with trace_span("TripPointListAPIView.get_queryset", stage="view"):
                 queryset = self.filter_queryset(self.get_queryset())
 
-            with trace_span("TripPointListAPIView.paginate_queryset", stage="pagination"):
-                page = self.paginate_queryset(queryset)
-
-            if page is not None:
-                with trace_span(
-                    "TripPointListAPIView.rows_count",
-                    stage="debug",
-                    attrs={"rows.count": len(page)},
-                ):
-                    pass
-
-                with trace_span("TripPointListAPIView.serializer_init", stage="serialize"):
-                    serializer = self.get_serializer(page, many=True)
-
-                with trace_span("TripPointListAPIView.serializer_data", stage="serialize"):
-                    data = serializer.data
-
-                with trace_span("TripPointListAPIView.response_create", stage="response"):
-                    return self.get_paginated_response(data)
-
             with trace_span("TripPointListAPIView.queryset_evaluate", stage="db_fetch"):
                 rows = list(queryset)
 
@@ -134,7 +115,7 @@ class TripPointListAPIView(generics.ListAPIView):
                 data = serializer.data
 
             with trace_span("TripPointListAPIView.response_create", stage="response"):
-                return Response(data)
+                return Response({"results": data})
 
 class TripListAPIView(generics.ListAPIView):
     serializer_class = TripSerializer
