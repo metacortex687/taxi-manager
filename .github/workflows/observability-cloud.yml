@@ -11,9 +11,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Prepare load testing env template
-        run: cp .load-testing.env .load-testing.env.default
-
       - name: Prepare observability directory
         uses: appleboy/ssh-action@v1
         with:
@@ -142,7 +139,7 @@ jobs:
 
             if [ ! -f .load-testing.env ]; then
               cp .load-testing.env.default .load-testing.env
-              echo ".load-testing.env created from repository default."
+              echo ".load-testing.env created from .load-testing.env.default."
             else
               echo ".load-testing.env already exists; keeping cloud-local load testing settings."
             fi
