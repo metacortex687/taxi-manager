@@ -1,0 +1,29 @@
+services:
+  load-generator:
+    image: grafana/k6:latest
+    container_name: load-generator
+    user: root
+
+    depends_on:
+      - prometheus
+
+    env_file:
+      - .load-testing.env
+
+    environment:
+      TIME_UNIT: "1s"
+      K6_PROMETHEUS_RW_SERVER_URL: "http://prometheus:9090/api/v1/write"
+      K6_PROMETHEUS_RW_TREND_STATS: "avg,p(50),p(90),p(95),p(99),min,max"
+      K6_PROMETHEUS_RW_PUSH_INTERVAL: "1s"
+
+    volumes:
+      - ./performance:/scripts:ro
+      - ./performance/results:/results
+
+    command:
+      - run
+      - -o
+      - experimental-prometheus-rw
+      - --summary-export
+      - /results/summary.json
+      - /scripts/load_test_rps_ladder_simple.js
