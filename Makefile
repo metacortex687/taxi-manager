@@ -58,6 +58,12 @@ perf-dev:
 		-o experimental-prometheus-rw \
 		/scripts/load_test_rps_ladder_simple.js
 
+perf-f-observ:
+	docker compose \
+		-f docker-compose.dev.observability.yaml \
+		-f docker-compose.dev.observability.load-testing.yaml \
+		run --rm load-generator
+
 demo-down:
 	docker compose -f docker-compose.demo.yaml down
 
