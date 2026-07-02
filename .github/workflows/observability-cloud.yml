@@ -11,6 +11,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Prepare load testing env template
+        run: cp .load-testing.env .load-testing.env.default
+
       - name: Prepare observability directory
         uses: appleboy/ssh-action@v1
         with:
@@ -22,6 +25,7 @@ jobs:
             mkdir -p "$HOME/observability"
             mkdir -p "$HOME/observability/grafana/provisioning/datasources"
             mkdir -p "$HOME/observability/grafana/dashboards"
+            mkdir -p "$HOME/observability/performance/results"
 
       - name: Copy observability files
         uses: appleboy/scp-action@v1
@@ -31,6 +35,16 @@ jobs:
           key: ${{ secrets.OBS_HOST_SSH_PRIVATE_KEY }}
           port: ${{ secrets.OBS_HOST_PORT }}
           source: "docker-compose.dev.observability.yaml,tempo.yaml,prometheus.yml,loki-config.yaml,loki.yml,config.alloy,grafana/provisioning/datasources"
+          target: "observability"
+
+      - name: Copy load generator files
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.OBS_HOST_IP }}
+          username: ${{ secrets.OBS_HOST_USER }}
+          key: ${{ secrets.OBS_HOST_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.OBS_HOST_PORT }}
+          source: "Makefile,docker-compose.dev.observability.load-testing.yaml,.load-testing.env.default,performance/load_test_rps_ladder_simple.js"
           target: "observability"
 
       - name: Deploy observability stack
@@ -102,4 +116,48 @@ jobs:
                 sleep 2
               done
             done
+            BASH
+
+      - name: Deploy load generator
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.OBS_HOST_IP }}
+          username: ${{ secrets.OBS_HOST_USER }}
+          key: ${{ secrets.OBS_HOST_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.OBS_HOST_PORT }}
+          script: |
+            bash -se <<'BASH'
+            set -euo pipefail
+
+            OBS_DIR="$HOME/observability"
+            cd "$OBS_DIR"
+
+            if docker ps >/dev/null 2>&1; then
+              DOCKER="docker"
+            else
+              DOCKER="sudo docker"
+            fi
+
+            mkdir -p performance/results
+
+            if [ ! -f .load-testing.env ]; then
+              cp .load-testing.env.default .load-testing.env
+              echo ".load-testing.env created from repository default."
+            else
+              echo ".load-testing.env already exists; keeping cloud-local load testing settings."
+            fi
+
+            $DOCKER compose \
+              -f docker-compose.dev.observability.yaml \
+              -f docker-compose.dev.observability.load-testing.yaml \
+              config >/dev/null
+
+            $DOCKER compose \
+              -f docker-compose.dev.observability.yaml \
+              -f docker-compose.dev.observability.load-testing.yaml \
+              pull load-generator
+
+            echo "Load generator deployed."
+            echo "Run it manually with:"
+            echo "cd ~/observability && make perf-f-observ"
             BASH
