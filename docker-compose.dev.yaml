@@ -144,6 +144,7 @@ services:
       - /:/host/root:ro
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
+      - ./data/logs/nginx/:/var/log/nginx/:ro
     environment:
       - LOKI_URL=${LOKI_URL}
       - TEMPO_ENDPOINT=${TEMPO_ENDPOINT}

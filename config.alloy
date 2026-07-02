@@ -219,3 +219,37 @@ prometheus.scrape "cadvisor" {
   forward_to      = [prometheus.remote_write.prometheus.receiver]
 }
 
+
+local.file_match "nginx_access" {
+  path_targets = [{
+    __path__   = "/var/log/nginx/access.log",
+    service    = "nginx",
+    container  = "taxi-manager-nginx-1",
+    log_type   = "access",
+    env        = sys.env("DEPLOYMENT_ENVIRONMENT"),
+  }]
+
+  sync_period = "5s"
+}
+
+loki.source.file "nginx_access" {
+  targets    = local.file_match.nginx_access.targets
+  forward_to = [loki.write.local.receiver]
+}
+
+local.file_match "nginx_error" {
+  path_targets = [{
+    __path__   = "/var/log/nginx/error.log",
+    service    = "nginx",
+    container  = "taxi-manager-nginx-1",
+    log_type   = "error",
+    env        = sys.env("DEPLOYMENT_ENVIRONMENT"),
+  }]
+
+  sync_period = "5s"
+}
+
+loki.source.file "nginx_error" {
+  targets    = local.file_match.nginx_error.targets
+  forward_to = [loki.write.local.receiver]
+}
