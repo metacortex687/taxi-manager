@@ -1,3 +1,4 @@
+from taxi_manager.infrastructure.observability.tracing import trace_span
 from taxi_manager.infrastructure.vehicle.models import Vehicle
 from taxi_manager.infrastructure.enterprise.models import Enterprise
 
@@ -28,6 +29,8 @@ from django.db.models import OuterRef, Subquery, F, Q, ExpressionWrapper
 from django.db.models.functions import Cast
 
 from django.http import FileResponse
+
+from rest_framework.response import Response
 
 from zipfile import ZipFile, ZIP_DEFLATED
 import json
@@ -80,6 +83,38 @@ class TripPointListAPIView(generics.ListAPIView):
             return queryset.annotate_geojson_feature()
 
         return queryset.annotate_path()
+    
+    def list(self, request, *args, **kwargs):
+        with trace_span(
+            "TripPointListAPIView.list",
+            stage="view",
+            attrs={
+                "vehicle_id": kwargs.get("vehicle_id"),
+                "response_format": request.query_params.get("response_format", ""),
+                "trip_id": request.query_params.get("id", ""),
+            },
+        ):
+            with trace_span("TripPointListAPIView.get_queryset", stage="view"):
+                queryset = self.filter_queryset(self.get_queryset())
+
+            with trace_span("TripPointListAPIView.queryset_evaluate", stage="db_fetch"):
+                rows = list(queryset)
+
+            with trace_span(
+                "TripPointListAPIView.rows_count",
+                stage="debug",
+                attrs={"rows.count": len(rows)},
+            ):
+                pass
+
+            with trace_span("TripPointListAPIView.serializer_init", stage="serialize"):
+                serializer = self.get_serializer(rows, many=True)
+
+            with trace_span("TripPointListAPIView.serializer_data", stage="serialize"):
+                data = serializer.data
+
+            with trace_span("TripPointListAPIView.response_create", stage="response"):
+                return Response(data)
 
 
 class TripListAPIView(generics.ListAPIView):
