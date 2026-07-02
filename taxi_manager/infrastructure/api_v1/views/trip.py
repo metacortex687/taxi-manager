@@ -98,6 +98,32 @@ class TripPointListAPIView(generics.ListAPIView):
             with trace_span("TripPointListAPIView.get_queryset", stage="view"):
                 queryset = self.filter_queryset(self.get_queryset())
 
+            response_format = request.query_params.get("response_format")
+
+            if response_format == "geojson_fast":
+                with trace_span(
+                    "TripPointListAPIView.geojson_fast_values",
+                    stage="db_fetch",
+                ):
+                    features = list(
+                        queryset.values_list("geojson_feature", flat=True)
+                    )
+
+                with trace_span(
+                    "TripPointListAPIView.rows_count",
+                    stage="debug",
+                    attrs={"rows.count": len(features)},
+                ):
+                    pass
+
+                with trace_span("TripPointListAPIView.response_create", stage="response"):
+                    return Response({
+                        "results": {
+                            "type": "FeatureCollection",
+                            "features": features,
+                        }
+                    })
+
             with trace_span("TripPointListAPIView.queryset_evaluate", stage="db_fetch"):
                 rows = list(queryset)
 
