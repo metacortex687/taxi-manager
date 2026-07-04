@@ -15,7 +15,7 @@ const READ_DURATION_SECONDS = 60;
 const DELETE_DURATION_SECONDS = 60;
 
 const WAIT_BEFORE_READ_SECONDS = 60;
-const WAIT_BEFORE_DELETE_SECONDS = 1 * 60;
+const WAIT_BEFORE_DELETE_SECONDS = 60;
 
 const PRE_ALLOCATED_VUS = 20;
 const MAX_VUS = 100;
@@ -55,6 +55,7 @@ for (const rate of WRITE_RATES) {
 
   scenarioMeta[name] = {
     operationType: 'write',
+    rate,
     offset: writeOffset,
     limit: capacity,
   };
@@ -72,6 +73,7 @@ for (const rate of READ_RATES) {
 
   scenarioMeta[name] = {
     operationType: 'read',
+    rate,
   };
 
   scenarios[name] = scenario('read', rate, READ_DURATION_SECONDS, startTimeSeconds);
@@ -89,6 +91,7 @@ for (const rate of DELETE_RATES) {
 
   scenarioMeta[name] = {
     operationType: 'delete',
+    rate,
     offset: deleteOffset,
     limit: capacity,
   };
@@ -150,7 +153,7 @@ export default function () {
   }
 
   if (meta.operationType === 'read') {
-    readModel();
+    readModel(meta);
     return;
   }
 
@@ -185,7 +188,7 @@ function createModel(meta) {
     }),
     {
       headers: jsonHeaders(),
-      tags: measureTags('write', 'create_model', MODEL_CREATE_NAME),
+      tags: measureTags(meta, 'create_model', MODEL_CREATE_NAME),
     },
   );
 
@@ -194,7 +197,7 @@ function createModel(meta) {
   });
 }
 
-function readModel() {
+function readModel(meta) {
   if (readModelIds === null) {
     readModelIds = shuffleIds(loadPerfModelIds('read'));
   }
@@ -210,7 +213,7 @@ function readModel() {
     `${MODEL_URL}${modelId}/`,
     {
       headers: authHeaders(),
-      tags: measureTags('read', 'read_model', MODEL_DETAIL_READ_NAME),
+      tags: measureTags(meta, 'read_model', MODEL_DETAIL_READ_NAME),
     },
   );
 
@@ -237,7 +240,7 @@ function deleteModel(meta) {
     null,
     {
       headers: authHeaders(),
-      tags: measureTags('delete', 'delete_model', MODEL_DETAIL_DELETE_NAME),
+      tags: measureTags(meta, 'delete_model', MODEL_DETAIL_DELETE_NAME),
     },
   );
 
@@ -322,13 +325,14 @@ function scenario(operationType, rate, durationSeconds, startTimeSeconds) {
   };
 }
 
-function measureTags(operationType, operation, name) {
+function measureTags(meta, operation, name) {
   return {
     name,
     experiment: EXPERIMENT,
     endpoint: ENDPOINT,
     phase: 'measure',
-    operation_type: operationType,
+    operation_type: meta.operationType,
+    target_rps: String(meta.rate),
     operation,
   };
 }
@@ -391,8 +395,4 @@ function requiredEnv(name) {
   }
 
   return value;
-}
-
-function sum(values) {
-  return values.reduce((total, value) => total + value, 0);
 }
