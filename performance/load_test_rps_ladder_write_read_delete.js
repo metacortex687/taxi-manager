@@ -6,9 +6,9 @@ import exec from 'k6/execution';
 // Настройки теста
 // ========================
 
-const WRITE_RATES = [50, 100, 150, 200, 240, 260, 280, 300];
-const READ_RATES = [50, 100, 120, 150, 180, 200, 210, 240];
-const DELETE_RATES = [10, 20, 50, 80, 100, 120];
+const WRITE_RATES = [50, 100, 150, 180, 200, 240, 280, 350];
+const READ_RATES = [50, 100, 120, 150, 180, 200, 240];
+const DELETE_RATES = [10, 20, 50, 80, 100];
 // const WRITE_RATES = [10, 20,];
 // const READ_RATES = [10, 20,];
 // const DELETE_RATES = [10, 20,];
@@ -20,8 +20,8 @@ const DELETE_DURATION_SECONDS = 61;
 const WAIT_BEFORE_READ_SECONDS = 60;
 const WAIT_BEFORE_DELETE_SECONDS = 60;
 
-const PRE_ALLOCATED_VUS = 20;
-const MAX_VUS = 100;
+const PRE_ALLOCATED_VUS = 50;
+const MAX_VUS = 150;
 
 const EXPERIMENT = 'models_write_read_delete_ladder';
 const ENDPOINT = 'models';
