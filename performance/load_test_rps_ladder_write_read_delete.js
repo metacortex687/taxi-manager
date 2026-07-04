@@ -38,6 +38,7 @@ const MODEL_LIST_NAME = 'GET /api/v1/models/';
 const MODEL_CREATE_NAME = 'POST /api/v1/models/';
 const MODEL_DETAIL_READ_NAME = 'GET /api/v1/models/:id/';
 const MODEL_DETAIL_DELETE_NAME = 'DELETE /api/v1/models/:id/';
+const MODEL_DELETE_TEST_DATA_NAME = 'DELETE /api/v1/models/delete-test-data/';
 
 let readModelIds = null;
 let deleteModelIds = null;
@@ -131,18 +132,24 @@ export const options = {
 // ========================
 
 export function setup() {
-  const ids = loadPerfModelIds('setup');
+  const response = http.del(
+    MODEL_DELETE_TEST_DATA_URL,
+    null,
+    {
+      headers: authHeaders(),
+      tags: setupTags('delete_test_data', MODEL_DELETE_TEST_DATA_NAME),
+    },
+  );
 
-  if (ids.length === 0) {
-    console.log(`Старые записи ${MODEL_NAME_PREFIX} не найдены.`);
-    return;
+  const cleanupOk = check(response, {
+    'delete test data status is 200': (r) => r.status === 200,
+  });
+
+  if (!cleanupOk) {
+    fail(`Не удалось очистить тестовые данные ${MODEL_NAME_PREFIX}. Status: ${response.status}. Body: ${response.body}`);
   }
 
-  console.log(`Найдены старые записи ${MODEL_NAME_PREFIX}: ${ids.length}. Удаляю перед тестом.`);
-
-  deleteModels(ids);
-
-  console.log(`Удалено старых записей ${MODEL_NAME_PREFIX}: ${ids.length}.`);
+  console.log(`Очистка тестовых данных ${MODEL_NAME_PREFIX}: ${response.body}`);
 }
 
 // ========================
