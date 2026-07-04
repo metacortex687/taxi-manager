@@ -45,7 +45,7 @@ demo-up:
 dev-up:
 	docker network inspect observability_net >/dev/null 2>&1 || docker network create observability_net
 	docker network inspect taxi_manager_load_testing_net >/dev/null 2>&1 || docker network create taxi_manager_load_testing_net
-	docker compose -f docker-compose.dev-local.observability.yaml up -d
+	docker compose -f docker-compose.dev-local.observability.yaml up -d --force-recreate
 	docker compose -f docker-compose.dev-local.yaml up -d --build
 	
 
