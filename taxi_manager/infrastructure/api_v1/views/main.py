@@ -54,12 +54,14 @@ from . import onion_views
 User = get_user_model()
 
 
-class VehicleViewSet(mixins.CreateModelMixin,
-                   mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin,
-                   mixins.ListModelMixin,
-                   viewsets.GenericViewSet):
+class VehicleViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     serializer_class = VehicleReadSerializer
     queryset = Vehicle.objects.all()
     # filter_backends = [filters.OrderingFilter]
@@ -168,6 +170,7 @@ class VehicleViewSet(mixins.CreateModelMixin,
 
     def retrieve(self, request, *args, **kwargs):
         return onion_views.vehicle_detail_view_get(request, kwargs["pk"])
+
     # @action(detail=False, methods=["GET"], url_path="TEST", url_name="TTTTEST")
     # def vehicles_of_driver(self, request):
     #     print("vehicles_of_driver(self, request):")
@@ -317,7 +320,7 @@ class VehicleLocationListAPIView(generics.ListAPIView):
         return VehileLocationSerializer
 
 
-async def sse_vehicle_location(request,vehicle_id):
+async def sse_vehicle_location(request, vehicle_id):
     async def content():
         print("SSE started", vehicle_id)
         yield ": connected\n\n"
@@ -325,10 +328,8 @@ async def sse_vehicle_location(request,vehicle_id):
         last_id = None
 
         while True:
-            queryset = (
-                VehicleLocation.objects
-                .filter(vehicle_id=vehicle_id)
-                .order_by("id")
+            queryset = VehicleLocation.objects.filter(vehicle_id=vehicle_id).order_by(
+                "id"
             )
 
             if last_id is not None:
@@ -351,13 +352,11 @@ async def sse_vehicle_location(request,vehicle_id):
 
             await asyncio.sleep(3)
 
-
-            
-
-    response = StreamingHttpResponse(content(), content_type="text/event-stream; charset=utf-8")
+    response = StreamingHttpResponse(
+        content(), content_type="text/event-stream; charset=utf-8"
+    )
 
     response["Cache-Control"] = "no-cache"
     response["X-Accel-Buffering"] = "no"
 
     return response
-    
