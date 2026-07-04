@@ -1,5 +1,7 @@
 .PHONY: start-vite docker-build run-dev collectstatic migrate build
 
+K6_SCRIPT ?= load_test_rps_ladder_simple.js
+
 start-vite:
 	echo "Starting Vite watcher..."
 	cd /home/taxi-manager/taxi_manager/infrastructure/react_frontend && npm run dev -- --host 0.0.0.0
@@ -56,13 +58,17 @@ perf-dev:
 		--entrypoint k6 \
 		load-generator run \
 		-o experimental-prometheus-rw \
-		/scripts/load_test_rps_ladder_simple.js
+		/scripts/$(K6_SCRIPT)
 
 perf-f-observ:
 	docker compose \
 		-f docker-compose.dev.observability.yaml \
 		-f docker-compose.dev.observability.load-testing.yaml \
-		run --rm load-generator
+		run --rm load-generator \
+		run \
+		-o experimental-prometheus-rw \
+		--summary-export /results/summary.json \
+		/scripts/$(K6_SCRIPT)
 
 demo-down:
 	docker compose -f docker-compose.demo.yaml down
