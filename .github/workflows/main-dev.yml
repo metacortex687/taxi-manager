@@ -105,4 +105,22 @@ jobs:
             docker compose -f docker-compose.dev.yaml up -d --no-build --force-recreate --remove-orphans
 
             docker compose -f docker-compose.dev.yaml ps
+
+            echo "Disk usage before cleanup:"
+            df -h
+            docker system df || true
+
+            # Safe cleanup: do not remove Docker volumes, because PostgreSQL data can live there.
+            sudo -n journalctl --vacuum-size=200M || true
+            sudo -n apt-get clean || true
+            sudo -n find /var/lib/docker/containers/ -name "*-json.log" -exec truncate -s 0 {} \; || true
+
+            docker builder prune -af || true
+            docker image prune -af || true
+            docker container prune -f || true
+            docker network prune -f || true
+
+            echo "Disk usage after cleanup:"
+            df -h
+            docker system df || true
             BASH
