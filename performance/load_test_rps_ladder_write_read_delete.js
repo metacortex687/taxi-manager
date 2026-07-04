@@ -39,6 +39,7 @@ const MODEL_CREATE_NAME = 'POST /api/v1/models/';
 const MODEL_DETAIL_READ_NAME = 'GET /api/v1/models/:id/';
 const MODEL_DETAIL_DELETE_NAME = 'DELETE /api/v1/models/:id/';
 
+const MODEL_DELETE_TEST_DATA_URL = `${MODEL_URL}delete-test-data/`;
 
 let readModelIds = null;
 let deleteModelIds = null;
@@ -137,7 +138,6 @@ export function setup() {
     null,
     {
       headers: authHeaders(),
-      tags: setupTags('delete_test_data', MODEL_DELETE_TEST_DATA_NAME),
     },
   );
 
