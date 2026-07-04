@@ -10,6 +10,7 @@ from .views.main import (
     DriverDetailAPIView,
     TimeZoneListAPIView,
     VehicleLocationListAPIView,
+    delete_test_models,
     sse_vehicle_location,
 )
 from .views.trip import (
@@ -30,7 +31,9 @@ urlpatterns = [
     path("drivers/<int:pk>/", DriverDetailAPIView.as_view()),
     path("drivers/", DriverListAPIView.as_view()),
     path("models/", ModelListAPIView.as_view()),
+    path("models/delete-test-data/", delete_test_models),
     path("models/<int:pk>/", ModelDetailAPIView.as_view()),
+    
     path(
         "enterprises/<int:enterprise_id>/vehicles/",
         VehicleViewSet.as_view({"get": "list"}),

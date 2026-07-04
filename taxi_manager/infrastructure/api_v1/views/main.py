@@ -180,12 +180,25 @@ class ModelListAPIView(generics.ListCreateAPIView):
     queryset = Model.objects.all()
     serializer_class = ModelSerializer
     filterset_fields = ["name"]
+    pagination_class = None
 
 
 class ModelDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = Model.objects.all()
     serializer_class = ModelSerializer
 
+@api_view(["DELETE"])
+def delete_test_models(request):
+    deleted_count, deleted_by_model = Model.objects.filter(
+        name__startswith="perf_test_model_"
+    ).delete()
+
+    return Response(
+        {
+            "deleted_count": deleted_count,
+            "deleted_by_model": deleted_by_model,
+        }
+    )
 
 # class EnterpriseListAPIView(generics.ListAPIView):
 #     serializer_class = EnterpriseSerializer
