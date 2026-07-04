@@ -300,9 +300,32 @@ function loadPerfModelIds(operationType) {
         : supportTags(operationType, 'load_model_ids', MODEL_LIST_NAME),
     });
 
-    check(response, {
+    const ok = check(response, {
       'load ids status is 200': (r) => r.status === 200,
     });
+
+    if (!ok) {
+      fail(
+        `Не удалось загрузить id моделей. ` +
+        `operationType=${operationType}, ` +
+        `status=${response.status}, ` +
+        `url=${url}, ` +
+        `body=${String(response.body).slice(0, 500)}`
+      );
+    }
+
+    const contentType = response.headers['Content-Type'] || '';
+
+    if (!contentType.includes('application/json')) {
+      fail(
+        `Ожидался JSON при загрузке id моделей, но пришел другой ответ. ` +
+        `operationType=${operationType}, ` +
+        `status=${response.status}, ` +
+        `contentType=${contentType}, ` +
+        `url=${url}, ` +
+        `body=${String(response.body).slice(0, 500)}`
+      );
+    }
 
     const data = response.json();
     const results = Array.isArray(data) ? data : data.results || [];
