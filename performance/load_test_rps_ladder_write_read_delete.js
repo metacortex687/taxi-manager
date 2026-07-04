@@ -106,6 +106,8 @@ for (const rate of DELETE_RATES) {
 }
 
 export const options = {
+  setupTimeout: '20m',
+  teardownTimeout: '5m',
   scenarios,
 
   summaryTrendStats: [
