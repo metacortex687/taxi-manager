@@ -21,7 +21,7 @@ const WAIT_BEFORE_READ_SECONDS = 60;
 const WAIT_BEFORE_DELETE_SECONDS = 60;
 
 const PRE_ALLOCATED_VUS = 50;
-const MAX_VUS = 150;
+const MAX_VUS = 200;
 
 const EXPERIMENT = 'models_write_read_delete_ladder';
 const ENDPOINT = 'models';
