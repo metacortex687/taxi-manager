@@ -180,7 +180,7 @@ class ModelListAPIView(generics.ListCreateAPIView):
     queryset = Model.objects.all()
     serializer_class = ModelSerializer
     filterset_fields = ["name"]
-    pagination_class = None
+    # pagination_class = None
 
 
 class ModelDetailAPIView(generics.RetrieveDestroyAPIView):
