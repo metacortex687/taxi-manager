@@ -6,16 +6,19 @@ import exec from 'k6/execution';
 // Настройки теста
 // ========================
 
-const WRITE_RATES = [10, 20, 50, 80, 100, 120, 150, 180, 200, 210, 240];
-const READ_RATES = [10, 20, 50, 80, 100, 120, 150, 180, 200, 210, 240];
-const DELETE_RATES = [10, 20, 50, 80, 100, 120, 150, 180, 200, 210, 240];
+// const WRITE_RATES = [50, 100, 150, 180, 200, 210, 240, 260];
+// const READ_RATES = [10, 20, 50, 80, 100, 120, 150, 180, 200, 210, 240];
+// const DELETE_RATES = [10, 20, 50, 80, 100, 120, 150, 180, 200, 210, 240];
+const WRITE_RATES = [10, 20,];
+const READ_RATES = [10, 20,];
+const DELETE_RATES = [10, 20,];
 
-const WRITE_DURATION_SECONDS = 60;
-const READ_DURATION_SECONDS = 60;
-const DELETE_DURATION_SECONDS = 60;
+const WRITE_DURATION_SECONDS = 61;
+const READ_DURATION_SECONDS = 61;
+const DELETE_DURATION_SECONDS = 61;
 
-const WAIT_BEFORE_READ_SECONDS = 60;
-const WAIT_BEFORE_DELETE_SECONDS = 60;
+const WAIT_BEFORE_READ_SECONDS = 20;
+const WAIT_BEFORE_DELETE_SECONDS = 20;
 
 const PRE_ALLOCATED_VUS = 20;
 const MAX_VUS = 100;
