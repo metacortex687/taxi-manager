@@ -870,6 +870,11 @@ class BaseAuthTestCase(TestCase):
             headers={"Authorization": f"Token {self.get_token(user)}"},
         )
 
+    def client_delete(self, url, user):
+        return self.client.delete(
+            url,
+            headers={"Authorization": f"Token {self.get_token(user)}"},
+        )
 
 class TripPointAPITest(BaseAuthTestCase):
     def setUp(self):
@@ -1317,3 +1322,97 @@ class ReportsTest(BaseAuthTestCase):
         self.assertIn("result", data)
         self.assertTrue(len(data["result"]) > 0)
         self.assertAlmostEqual(0.22, data["result"][0]["mileage"], delta=0.01)
+
+
+class ModelAPITest(BaseAuthTestCase):
+    def setUp(self):
+        password = "secret"
+
+        self.manager1 = self.create_user(
+            username="manager1",
+            email="manager1@mail.com",
+            password=password,
+        )
+
+    def create_model(self, name):
+        response = self.client_post(
+            "/api/v1/models/",
+            self.manager1,
+            data={
+                "name": name,
+                "type": "PCR",
+                "number_of_seats": 5,
+                "tank_capacity_l": 20,
+                "load_capacity_kg": 500,
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["name"], name)
+
+        return response.data
+
+    def get_models(self):
+        response = self.client_get("/api/v1/models/", self.manager1)
+
+        self.assertEqual(response.status_code, 200)
+
+        return response.data["results"]
+
+    def delete_model(self, model_id):
+        response = self.client_delete(
+            f"/api/v1/models/{model_id}/",
+            self.manager1,
+        )
+
+        self.assertEqual(response.status_code, 204)
+
+    def test_create_list_delete_selected_delete_all_models(self):
+        [
+            self.create_model(f"test_{number}")
+            for number in range(1, 6)
+        ]
+
+        expected_names = {
+            "test_1",
+            "test_2",
+            "test_3",
+            "test_4",
+            "test_5",
+        }
+
+        models = self.get_models()
+
+        self.assertEqual(
+            expected_names,
+            {model["name"] for model in models},
+        )
+
+        models_by_name = {
+            model["name"]: model
+            for model in models
+        }
+
+        names_to_delete = {"test_2", "test_4"}
+
+        for name in names_to_delete:
+            self.delete_model(models_by_name[name]["id"])
+
+        models = self.get_models()
+
+        self.assertEqual(
+            {"test_1", "test_3", "test_5"},
+            {model["name"] for model in models},
+        )
+
+        self.assertFalse(
+            names_to_delete & {model["name"] for model in models}
+        )
+
+        for model in models:
+            self.delete_model(model["id"])
+
+        models = self.get_models()
+
+        self.assertEqual([], models)
+        self.assertFalse(Model.objects.filter(name__startswith="test_").exists())

@@ -176,13 +176,13 @@ class VehicleViewSet(
     #     print("vehicles_of_driver(self, request):")
 
 
-class ModelListAPIView(generics.ListAPIView):
+class ModelListAPIView(generics.ListCreateAPIView):
     queryset = Model.objects.all()
     serializer_class = ModelSerializer
     filterset_fields = ["name"]
 
 
-class ModelDetailAPIView(generics.RetrieveAPIView):
+class ModelDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = Model.objects.all()
     serializer_class = ModelSerializer
 
