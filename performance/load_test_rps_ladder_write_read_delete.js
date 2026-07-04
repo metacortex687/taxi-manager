@@ -1,0 +1,398 @@
+import http from 'k6/http';
+import { check, fail } from 'k6';
+import exec from 'k6/execution';
+
+// ========================
+// Настройки теста
+// ========================
+
+const WRITE_RATES = [10, 20, 50, 80, 100, 120, 150, 180, 200, 210, 240];
+const READ_RATES = [10, 20, 50, 80, 100, 120, 150, 180, 200, 210, 240];
+const DELETE_RATES = [10, 20, 50, 80, 100, 120, 150, 180, 200, 210, 240];
+
+const WRITE_DURATION_SECONDS = 60;
+const READ_DURATION_SECONDS = 60;
+const DELETE_DURATION_SECONDS = 60;
+
+const WAIT_BEFORE_READ_SECONDS = 60;
+const WAIT_BEFORE_DELETE_SECONDS = 1 * 60;
+
+const PRE_ALLOCATED_VUS = 20;
+const MAX_VUS = 100;
+
+const EXPERIMENT = 'models_write_read_delete_ladder';
+const ENDPOINT = 'models';
+
+const MODEL_PATH = '/api/v1/models/';
+const MODEL_NAME_PREFIX = 'perf_test_model_';
+
+const BASE_URL = requiredEnv('TARGET_BASE_URL');
+const AUTH_TOKEN = requiredEnv('AUTH_TOKEN');
+
+const MODEL_URL = `${BASE_URL}${MODEL_PATH}`;
+
+const MODEL_LIST_NAME = 'GET /api/v1/models/';
+const MODEL_CREATE_NAME = 'POST /api/v1/models/';
+const MODEL_DETAIL_READ_NAME = 'GET /api/v1/models/:id/';
+const MODEL_DETAIL_DELETE_NAME = 'DELETE /api/v1/models/:id/';
+
+let readModelIds = null;
+let deleteModelIds = null;
+
+// ========================
+// Сценарии k6
+// ========================
+
+const scenarios = {};
+const scenarioMeta = {};
+
+let startTimeSeconds = 0;
+let writeOffset = 0;
+
+for (const rate of WRITE_RATES) {
+  const name = `write_${rate}_rps`;
+  const capacity = rate * WRITE_DURATION_SECONDS;
+
+  scenarioMeta[name] = {
+    operationType: 'write',
+    offset: writeOffset,
+    limit: capacity,
+  };
+
+  scenarios[name] = scenario('write', rate, WRITE_DURATION_SECONDS, startTimeSeconds);
+
+  startTimeSeconds += WRITE_DURATION_SECONDS;
+  writeOffset += capacity;
+}
+
+startTimeSeconds += WAIT_BEFORE_READ_SECONDS;
+
+for (const rate of READ_RATES) {
+  const name = `read_${rate}_rps`;
+
+  scenarioMeta[name] = {
+    operationType: 'read',
+  };
+
+  scenarios[name] = scenario('read', rate, READ_DURATION_SECONDS, startTimeSeconds);
+
+  startTimeSeconds += READ_DURATION_SECONDS;
+}
+
+startTimeSeconds += WAIT_BEFORE_DELETE_SECONDS;
+
+let deleteOffset = 0;
+
+for (const rate of DELETE_RATES) {
+  const name = `delete_${rate}_rps`;
+  const capacity = rate * DELETE_DURATION_SECONDS;
+
+  scenarioMeta[name] = {
+    operationType: 'delete',
+    offset: deleteOffset,
+    limit: capacity,
+  };
+
+  scenarios[name] = scenario('delete', rate, DELETE_DURATION_SECONDS, startTimeSeconds);
+
+  startTimeSeconds += DELETE_DURATION_SECONDS;
+  deleteOffset += capacity;
+}
+
+export const options = {
+  scenarios,
+
+  summaryTrendStats: [
+    'avg',
+    'min',
+    'med',
+    'p(50)',
+    'p(90)',
+    'p(95)',
+    'p(99)',
+    'max',
+  ],
+
+  thresholds: {
+    http_req_failed: ['rate<0.05'],
+  },
+};
+
+// ========================
+// Проверка перед стартом
+// ========================
+
+export function setup() {
+  const ids = loadPerfModelIds('setup');
+
+  if (ids.length === 0) {
+    console.log(`Старые записи ${MODEL_NAME_PREFIX} не найдены.`);
+    return;
+  }
+
+  console.log(`Найдены старые записи ${MODEL_NAME_PREFIX}: ${ids.length}. Удаляю перед тестом.`);
+
+  deleteModels(ids);
+
+  console.log(`Удалено старых записей ${MODEL_NAME_PREFIX}: ${ids.length}.`);
+}
+
+// ========================
+// Основная функция
+// ========================
+
+export default function () {
+  const meta = scenarioMeta[exec.scenario.name];
+
+  if (meta.operationType === 'write') {
+    createModel(meta);
+    return;
+  }
+
+  if (meta.operationType === 'read') {
+    readModel();
+    return;
+  }
+
+  if (meta.operationType === 'delete') {
+    deleteModel(meta);
+    return;
+  }
+}
+
+// ========================
+// Операции
+// ========================
+
+function createModel(meta) {
+  const iteration = exec.scenario.iterationInTest;
+
+  if (iteration >= meta.limit) {
+    return;
+  }
+
+  const modelNumber = meta.offset + iteration + 1;
+  const name = `${MODEL_NAME_PREFIX}${modelNumber}`;
+
+  const response = http.post(
+    MODEL_URL,
+    JSON.stringify({
+      name,
+      type: 'PCR',
+      number_of_seats: 5,
+      tank_capacity_l: 20,
+      load_capacity_kg: 500,
+    }),
+    {
+      headers: jsonHeaders(),
+      tags: measureTags('write', 'create_model', MODEL_CREATE_NAME),
+    },
+  );
+
+  check(response, {
+    'create status is 201': (r) => r.status === 201,
+  });
+}
+
+function readModel() {
+  if (readModelIds === null) {
+    readModelIds = shuffleIds(loadPerfModelIds('read'));
+  }
+
+  if (readModelIds.length === 0) {
+    fail(`Не найдены записи ${MODEL_NAME_PREFIX} для чтения.`);
+  }
+
+  const index = exec.scenario.iterationInTest % readModelIds.length;
+  const modelId = readModelIds[index];
+
+  const response = http.get(
+    `${MODEL_URL}${modelId}/`,
+    {
+      headers: authHeaders(),
+      tags: measureTags('read', 'read_model', MODEL_DETAIL_READ_NAME),
+    },
+  );
+
+  check(response, {
+    'read status is 200': (r) => r.status === 200,
+  });
+}
+
+function deleteModel(meta) {
+  if (deleteModelIds === null) {
+    deleteModelIds = shuffleIds(loadPerfModelIds('delete'));
+  }
+
+  const iteration = meta.offset + exec.scenario.iterationInTest;
+
+  if (iteration >= deleteModelIds.length) {
+    return;
+  }
+
+  const modelId = deleteModelIds[iteration];
+
+  const response = http.del(
+    `${MODEL_URL}${modelId}/`,
+    null,
+    {
+      headers: authHeaders(),
+      tags: measureTags('delete', 'delete_model', MODEL_DETAIL_DELETE_NAME),
+    },
+  );
+
+  check(response, {
+    'delete status is 204': (r) => r.status === 204,
+  });
+}
+
+function deleteModels(ids) {
+  for (const modelId of ids) {
+    const response = http.del(
+      `${MODEL_URL}${modelId}/`,
+      null,
+      {
+        headers: authHeaders(),
+        tags: setupTags('delete_old_model', MODEL_DETAIL_DELETE_NAME),
+      },
+    );
+
+    check(response, {
+      'delete old model status is 204': (r) => r.status === 204,
+    });
+  }
+}
+
+// ========================
+// Получение созданных id
+// ========================
+
+function loadPerfModelIds(operationType) {
+  const ids = [];
+  let url = MODEL_URL;
+
+  while (url) {
+    const response = http.get(url, {
+      headers: authHeaders(),
+      tags: operationType === 'setup'
+        ? setupTags('load_model_ids', MODEL_LIST_NAME)
+        : supportTags(operationType, 'load_model_ids', MODEL_LIST_NAME),
+    });
+
+    check(response, {
+      'load ids status is 200': (r) => r.status === 200,
+    });
+
+    const data = response.json();
+    const results = Array.isArray(data) ? data : data.results || [];
+
+    for (const model of results) {
+      if (String(model.name).startsWith(MODEL_NAME_PREFIX)) {
+        ids.push(model.id);
+      }
+    }
+
+    url = data.next || null;
+  }
+
+  return ids;
+}
+
+// ========================
+// Вспомогательные функции
+// ========================
+
+function scenario(operationType, rate, durationSeconds, startTimeSeconds) {
+  return {
+    executor: 'constant-arrival-rate',
+    rate,
+    timeUnit: '1s',
+    duration: `${durationSeconds}s`,
+    preAllocatedVUs: PRE_ALLOCATED_VUS,
+    maxVUs: MAX_VUS,
+    startTime: `${startTimeSeconds}s`,
+    gracefulStop: '0s',
+    tags: {
+      experiment: EXPERIMENT,
+      endpoint: ENDPOINT,
+      phase: 'measure',
+      operation_type: operationType,
+      target_rps: String(rate),
+    },
+  };
+}
+
+function measureTags(operationType, operation, name) {
+  return {
+    name,
+    experiment: EXPERIMENT,
+    endpoint: ENDPOINT,
+    phase: 'measure',
+    operation_type: operationType,
+    operation,
+  };
+}
+
+function supportTags(operationType, operation, name) {
+  return {
+    name,
+    experiment: EXPERIMENT,
+    endpoint: ENDPOINT,
+    phase: 'support',
+    operation_type: 'support',
+    support_for_operation_type: operationType,
+    operation,
+  };
+}
+
+function setupTags(operation, name) {
+  return {
+    name,
+    experiment: EXPERIMENT,
+    endpoint: ENDPOINT,
+    phase: 'setup',
+    operation_type: 'setup',
+    operation,
+  };
+}
+
+function shuffleIds(ids) {
+  const result = [...ids];
+
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = result[i];
+
+    result[i] = result[j];
+    result[j] = temp;
+  }
+
+  return result;
+}
+
+function authHeaders() {
+  return {
+    Authorization: `Token ${AUTH_TOKEN}`,
+  };
+}
+
+function jsonHeaders() {
+  return {
+    ...authHeaders(),
+    'Content-Type': 'application/json',
+  };
+}
+
+function requiredEnv(name) {
+  const value = __ENV[name];
+
+  if (value === undefined || value.trim() === '') {
+    throw new Error(`Required environment variable ${name} is not set`);
+  }
+
+  return value;
+}
+
+function sum(values) {
+  return values.reduce((total, value) => total + value, 0);
+}
