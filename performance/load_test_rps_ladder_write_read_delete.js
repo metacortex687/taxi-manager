@@ -6,7 +6,7 @@ import exec from 'k6/execution';
 // Настройки теста
 // ========================
 
-const WRITE_RATES = [50, 100, 150, 180, 200, 210, 240, 260];
+const WRITE_RATES = [50, 100, 150, 200, 240, 260, 280, 300];
 const READ_RATES = [50, 100, 120, 150, 180, 200, 210, 240];
 const DELETE_RATES = [10, 20, 50, 80, 100, 120];
 // const WRITE_RATES = [10, 20,];
