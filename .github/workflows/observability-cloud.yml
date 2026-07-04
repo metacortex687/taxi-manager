@@ -42,7 +42,7 @@ jobs:
           username: ${{ secrets.OBS_HOST_USER }}
           key: ${{ secrets.OBS_HOST_SSH_PRIVATE_KEY }}
           port: ${{ secrets.OBS_HOST_PORT }}
-          source: "Makefile,docker-compose.dev.observability.load-testing.yaml,.load-testing.env.default,performance/load_test_rps_ladder_simple.js"
+          source: "Makefile,docker-compose.dev.observability.load-testing.yaml,.load-testing.env.default,performance/*.js"
           target: "observability"
 
       - name: Deploy observability stack
