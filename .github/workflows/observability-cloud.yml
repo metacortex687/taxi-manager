@@ -1,7 +1,8 @@
 name: observability-cloud
 
-on: push
-  # workflow_dispatch:
+on: 
+  workflow_dispatch:
+  # push:
 
 jobs:
   deploy:
