@@ -253,7 +253,9 @@ function deleteModel(meta) {
 }
 
 function deleteModels(ids) {
-  for (const modelId of ids) {
+  for (let index = 0; index < ids.length; index += 1) {
+    const modelId = ids[index];
+
     const response = http.del(
       `${MODEL_URL}${modelId}/`,
       null,
@@ -266,6 +268,10 @@ function deleteModels(ids) {
     check(response, {
       'delete old model status is 204': (r) => r.status === 204,
     });
+
+    if ((index + 1) % 500 === 0) {
+      console.log(`Удалено старых записей: ${index + 1}/${ids.length}`);
+    }
   }
 }
 
