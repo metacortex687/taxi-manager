@@ -54,10 +54,13 @@ dev-down:
 	docker compose -f docker-compose.dev-local.observability.yaml down
 
 perf-dev:
-	docker compose -f docker-compose.dev-local.load-testing.yaml run --rm \
-		--entrypoint k6 \
-		load-generator run \
+	docker compose \
+		-f docker-compose.dev.observability.yaml \
+		-f docker-compose.dev.observability.load-testing.yaml \
+		run --rm load-generator \
+		run \
 		-o experimental-prometheus-rw \
+		--summary-export /results/summary.json \
 		/scripts/$(K6_SCRIPT)
 
 perf-f-observ:
