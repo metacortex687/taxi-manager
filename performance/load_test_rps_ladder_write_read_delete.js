@@ -245,9 +245,7 @@ function deleteModel(meta) {
     return;
   }
 
-  const modelId = deleteModelIds[iteration];
-
-  const response = http.del(
+   const response = http.del(
     `${MODEL_URL}delete-test-data/`,
     null,
     {
