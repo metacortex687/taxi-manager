@@ -157,6 +157,10 @@ services:
     container_name: cadvisor
     restart: unless-stopped
     privileged: true
+    pid: host
+    command:
+      - --enable_metrics=cpu,memory,network,disk,diskIO,process
+      - --docker_only=true
     devices:
       - /dev/kmsg:/dev/kmsg
     volumes:
