@@ -271,6 +271,13 @@ services:
       taxi-manager-asgi:
         condition: service_started
         restart: true
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.4.2
+    command:
+      - --nginx.scrape-uri=http://nginx/nginx_status
+    depends_on:
+      - nginx
+    restart: unless-stopped
 
 networks:
   observability:

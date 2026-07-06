@@ -253,3 +253,18 @@ loki.source.file "nginx_error" {
   targets    = local.file_match.nginx_error.targets
   forward_to = [loki.write.local.receiver]
 }
+
+prometheus.scrape "nginx" {
+  targets = [{
+    __address__ = "nginx-exporter:9113",
+    job = "nginx",
+  }]
+
+  scrape_interval = "5s"
+  scrape_timeout  = "4s"
+
+  forward_to = [
+    prometheus.remote_write.prometheus.receiver,
+  ]
+}
+

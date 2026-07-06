@@ -172,7 +172,15 @@ services:
       - ./data/logs/nginx/:/var/log/nginx/
       - ./data/goaccess/:/data/
     command: sh -c "mkdir -p /var/log/nginx /data && touch /var/log/nginx/access.log"
-
+  
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.4.2
+    command:
+      - --nginx.scrape-uri=http://nginx/nginx_status
+    depends_on:
+      - nginx
+    restart: unless-stopped
+    
   goaccess:
     image: allinurl/goaccess
     container_name: goaccess
