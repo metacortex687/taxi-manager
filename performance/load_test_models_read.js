@@ -14,7 +14,7 @@ import {
 
 const EXPERIMENT = 'models_read_ladder';
 
-const READ_RATES = [50,];
+const READ_RATES = [50,100,150,200,250];
 const DURATION_SECONDS = 61;
 
 const PRE_ALLOCATED_VUS = 50;

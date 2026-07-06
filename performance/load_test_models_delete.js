@@ -15,7 +15,7 @@ import {
 
 const EXPERIMENT = 'models_delete_ladder';
 
-const DELETE_RATES = [10,];
+const DELETE_RATES = [10,100,150,200,250];
 const DURATION_SECONDS = 61;
 
 const PRE_ALLOCATED_VUS = 50;
