@@ -156,10 +156,6 @@ services:
       - PYROSCOPE_URL=${PYROSCOPE_URL:-http://pyroscope:4040}
       - PROMETHEUS_REMOTE_WRITE_URL=${PROMETHEUS_REMOTE_WRITE_URL:-http://prometheus:9090/api/v1/write}
       - DEPLOYMENT_ENVIRONMENT=${DEPLOYMENT_ENVIRONMENT:-dev}
-    networks:
-      - default
-      - observability
-      - load_testing_target
 
   memcached:
     image: memcached:1.6
@@ -263,9 +259,6 @@ services:
       - ./data/goaccess/:/data/goaccess/:ro
     ports:
       - "127.0.0.1:8080:80"
-    networks:
-      - default
-      - load_testing_target 
     depends_on:
       taxi-manager:
         condition: service_started
@@ -281,13 +274,6 @@ services:
       - nginx
     restart: unless-stopped
 
-networks:
-  observability:
-    name: observability_net
-    external: true
-  load_testing_target:
-    name: taxi_manager_load_testing_net
-    external: true
 
 volumes:
   pgdata:
