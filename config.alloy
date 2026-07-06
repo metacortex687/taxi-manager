@@ -268,3 +268,49 @@ prometheus.scrape "nginx" {
   ]
 }
 
+prometheus.exporter.process "processes" {
+  procfs_path = "/host/proc"
+
+  gather_smaps        = false
+  track_threads       = false
+  track_children      = true
+  recheck_on_scrape   = true
+  remove_empty_groups = true
+
+  matcher {
+    name = "{{.Comm}}"
+    comm = [
+      "nginx",
+      "uwsgi",
+      "python",
+      "postgres",
+      "memcached",
+      "prometheus",
+      "alloy",
+      "cadvisor",
+    ]
+  }
+}
+
+discovery.relabel "processes" {
+  targets = prometheus.exporter.process.processes.targets
+
+  rule {
+    target_label = "job"
+    replacement  = "processes"
+  }
+
+  rule {
+    target_label = "env"
+    replacement  = sys.env("DEPLOYMENT_ENVIRONMENT")
+  }
+}
+
+prometheus.scrape "processes" {
+  targets = discovery.relabel.processes.output
+
+  scrape_interval = "5s"
+  scrape_timeout  = "4s"
+
+  forward_to = [prometheus.remote_write.prometheus.receiver]
+}
