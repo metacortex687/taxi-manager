@@ -55,8 +55,8 @@ dev-down:
 
 perf-dev:
 	docker compose \
-		-f docker-compose.dev.observability.yaml \
-		-f docker-compose.dev.observability.load-testing.yaml \
+		-f docker-compose.dev-local.observability.yaml \
+		-f docker-compose.dev-local.load-testing.yaml \
 		run --rm load-generator \
 		run \
 		-o experimental-prometheus-rw \
