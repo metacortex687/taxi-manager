@@ -28,15 +28,5 @@ services:
       - /results/summary.json
       - /scripts/load_test_rps_ladder_simple.js
 
-    networks:
-      - load_testing_target
-      - observability
 
-networks:
-  load_testing_target:
-    name: taxi_manager_load_testing_net
-    external: true
 
-  observability:
-    name: observability_net
-    external: true

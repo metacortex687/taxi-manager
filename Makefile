@@ -55,7 +55,9 @@ dev-down:
 
 perf-dev:
 	docker compose \
+		-p taxi-manager \
 		-f docker-compose.dev-local.observability.yaml \
+		-f docker-compose.dev-local.yaml \
 		-f docker-compose.dev-local.load-testing.yaml \
 		run --rm load-generator \
 		run \
