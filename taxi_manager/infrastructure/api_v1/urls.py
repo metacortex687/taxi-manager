@@ -1,5 +1,9 @@
 from django.urls import path, include, re_path
 
+from taxi_manager.infrastructure.api_v1.views.views_async import async_model_detail_view, async_model_list_create_view
+
+
+
 from .views import onion_views
 
 from .views.main import (
@@ -33,6 +37,8 @@ urlpatterns = [
     path("models/", ModelListAPIView.as_view()),
     path("models/delete-test-data/", delete_test_models),
     path("models/<int:pk>/", ModelDetailAPIView.as_view()),
+    path("async/models/", async_model_list_create_view),
+    path("async/models/<int:pk>/", async_model_detail_view),
     
     path(
         "enterprises/<int:enterprise_id>/vehicles/",
