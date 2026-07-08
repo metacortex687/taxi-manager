@@ -30,7 +30,7 @@ services:
       - OTEL_PROPAGATORS=tracecontext,baggage
       - OTEL_TRACES_SAMPLER=parentbased_traceidratio
       - OTEL_TRACES_SAMPLER_ARG=1.0
-      - DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings
+      - DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings_wsgi
       - OTEL_PYTHON_LOG_CORRELATION=true
       - OTEL_PYTHON_LOG_LEVEL=info
       - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
@@ -78,7 +78,7 @@ services:
       - OTEL_PROPAGATORS=tracecontext,baggage
       - OTEL_TRACES_SAMPLER=parentbased_traceidratio
       - OTEL_TRACES_SAMPLER_ARG=1.0
-      - DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings
+      - DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings_asgi
       - OTEL_PYTHON_LOG_CORRELATION=true
       - OTEL_PYTHON_LOG_LEVEL=info
       - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
@@ -117,7 +117,7 @@ services:
       - OTEL_PROPAGATORS=tracecontext,baggage
       - OTEL_TRACES_SAMPLER=parentbased_traceidratio
       - OTEL_TRACES_SAMPLER_ARG=1.0
-      - DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings
+      - DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings_wsgi
       - OTEL_PYTHON_LOG_CORRELATION=true
       - OTEL_PYTHON_LOG_LEVEL=info
       - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
