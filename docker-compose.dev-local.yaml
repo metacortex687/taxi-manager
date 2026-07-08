@@ -133,6 +133,22 @@ services:
       pgbouncer:
         condition: service_healthy
 
+  rust-api:
+    build:
+      context: ./rust-api
+    restart: unless-stopped
+    labels:
+      logging: "alloy"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/taxi_manager?sslmode=disable
+      RUST_LOG: info
+      RUST_API_BIND: 0.0.0.0:8080
+      RUST_API_DB_MAX_CONNECTIONS: 10
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+    expose:
+      - "8080"
   alloy:
     image: grafana/alloy:latest
     container_name: alloy
