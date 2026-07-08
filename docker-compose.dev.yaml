@@ -10,7 +10,7 @@ services:
       - static_volume:/app/staticfiles
       - uwsgi_socket:/run/uwsgi
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
       - DJANGO_SUPERUSER_NAME=${DJANGO_SUPERUSER_NAME}
       - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
@@ -42,7 +42,7 @@ services:
 
     command: sh -c "make migrate && make collectstatic && make ensure-superuser && make ensure-demo-data && uv run opentelemetry-instrument make run-uwsgi"
     depends_on:
-      db:
+      pgbouncer:
         condition: service_healthy
 
   taxi-manager-asgi:
@@ -53,7 +53,7 @@ services:
     labels:
       logging: "alloy"
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
       - DJANGO_SUPERUSER_NAME=${DJANGO_SUPERUSER_NAME}
       - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
@@ -85,7 +85,7 @@ services:
 
     command: sh -c "uv run opentelemetry-instrument make run-asgi"
     depends_on:
-      db:
+      pgbouncer:
         condition: service_healthy
 
   task-worker:
@@ -96,7 +96,7 @@ services:
     labels:
       logging: "alloy"
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - LOCATIONIQ_KEY=${LOCATIONIQ_KEY}
       - PYTHONUNBUFFERED=1
@@ -123,7 +123,7 @@ services:
 
     command: sh -c "uv run opentelemetry-instrument python manage.py db_worker --queue-name reports,geocoding,default"
     depends_on:
-      db:
+      pgbouncer:
         condition: service_healthy
 
   alloy:
@@ -230,6 +230,37 @@ services:
   #   depends_on:
   #     db:
   # 
+  pgbouncer:
+    image: edoburu/pgbouncer:v1.25.2-p0
+    restart: unless-stopped
+    labels:
+      logging: "alloy"
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - AUTH_TYPE=scram-sha-256
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=1000
+      - DEFAULT_POOL_SIZE=50
+      - RESERVE_POOL_SIZE=20
+      - RESERVE_POOL_TIMEOUT=3
+      - SERVER_IDLE_TIMEOUT=300
+    depends_on:
+      db:
+        condition: service_healthy        
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   db:
     image: postgis/postgis:16-3.5
     restart: always
