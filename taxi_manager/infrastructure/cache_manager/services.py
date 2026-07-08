@@ -9,7 +9,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 CACHE_ENABLED = settings.CACHE_ENABLED
-AUTO_CLEAR_CACHE_ON_SQL_WRITE = settings.CACHE_ENABLED
+AUTO_CLEAR_CACHE_ON_SQL_WRITE = settings.AUTO_CLEAR_CACHE_ON_SQL_WRITE
 
 class CacheManager(ICacheManager):
     MISSING = object()
