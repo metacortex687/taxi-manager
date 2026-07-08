@@ -4,7 +4,11 @@ import { check, fail } from 'k6';
 export const MODEL_PREFIX = 'perf_test_model_';
 
 export const BASE_URL = requiredEnv('TARGET_BASE_URL').replace(/\/+$/, '');
-export const MODEL_URL = `${BASE_URL}/api/v1/models/`;
+
+export const MODEL_SYNC_URL = `${BASE_URL}/api/v1/models/`;
+export const MODEL_ASYNC_URL = `${BASE_URL}/api/v1/async/models/`;
+
+export const MODEL_URL = MODEL_ASYNC_URL;
 export const AUTH_TOKEN = requiredEnv('AUTH_TOKEN');
 
 export const SUMMARY_TREND_STATS = [
@@ -84,13 +88,21 @@ export function setupTags(experiment, operation, name) {
 }
 
 export function deleteTestData(experiment) {
+  console.log(`!!!! Путь: ${MODEL_SYNC_URL}delete-test-data/`);
   const response = http.del(
-    `${MODEL_URL}delete-test-data/`,
+    `${MODEL_SYNC_URL}delete-test-data/`,
     null,
     {
       headers: authHeaders(),
       tags: setupTags(experiment, 'delete_test_data', 'DELETE /api/v1/models/delete-test-data/'),
     },
+  );
+
+  console.log(
+    `DEBUG delete-test-data: ` +
+    `url=${MODEL_SYNC_URL}delete-test-data/, ` +
+    `status=${response.status}, ` +
+    `body=${String(response.body).slice(0, 500)}`,
   );
 
   const ok = check(response, {
@@ -110,7 +122,7 @@ export function deleteTestData(experiment) {
 
 export function loadModelIdsByHeavyList(experiment) {
   const ids = [];
-  let url = MODEL_URL;
+  let url = MODEL_SYNC_URL;
   let page = 0;
 
   while (url) {
