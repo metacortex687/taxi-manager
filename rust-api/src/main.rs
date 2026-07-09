@@ -1,32 +1,17 @@
 mod batch_models;
+mod batch_models_read;
+mod batch_models_write;
 
 use actix_web::{
     get, post,
     web::{Data, Json, Path},
     App, HttpResponse, HttpServer, Responder,
 };
-use batch_models::{create_model_batch, start_batch_worker};
-use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgPoolOptions, FromRow, PgPool};
+use batch_models::{CreateModelRequest, ModelResponse};
+use batch_models_read::{get_model_batch, start_read_batch_worker};
+use batch_models_write::{create_model_batch, start_batch_worker};
+use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::env;
-
-#[derive(Debug, Deserialize)]
-struct CreateModelRequest {
-    name: Option<String>,
-
-    #[serde(rename = "type")]
-    type_: Option<String>,
-
-    number_of_seats: Option<i32>,
-    tank_capacity_l: Option<i32>,
-    load_capacity_kg: Option<i32>,
-}
-
-#[derive(Debug, Serialize, FromRow)]
-struct ModelResponse {
-    id: i64,
-    name: String,
-}
 
 #[get("/healthz")]
 async fn healthz() -> impl Responder {
@@ -68,54 +53,9 @@ async fn create_model(
     pool: Data<PgPool>,
     payload: Json<CreateModelRequest>,
 ) -> actix_web::Result<HttpResponse> {
-    let name = match payload.name.as_deref() {
-        Some(name) if !name.trim().is_empty() => name.trim().to_string(),
-        _ => {
-            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
-                "name": ["This field is required."]
-            })));
-        }
-    };
-
-    let type_ = match payload.type_.as_deref() {
-        Some("PCR") | Some("BUS") | Some("LRR") => payload.type_.clone().unwrap(),
-        Some(_) => {
-            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
-                "type": ["Expected one of: PCR, BUS, LRR."]
-            })));
-        }
-        None => {
-            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
-                "type": ["This field is required."]
-            })));
-        }
-    };
-
-    let number_of_seats = match payload.number_of_seats {
-        Some(value) => value,
-        None => {
-            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
-                "number_of_seats": ["This field is required."]
-            })));
-        }
-    };
-
-    let tank_capacity_l = match payload.tank_capacity_l {
-        Some(value) => value,
-        None => {
-            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
-                "tank_capacity_l": ["This field is required."]
-            })));
-        }
-    };
-
-    let load_capacity_kg = match payload.load_capacity_kg {
-        Some(value) => value,
-        None => {
-            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
-                "load_capacity_kg": ["This field is required."]
-            })));
-        }
+    let new_model = match payload.into_inner().into_new_model() {
+        Ok(new_model) => new_model,
+        Err(response) => return Ok(response),
     };
 
     let model = sqlx::query_as::<_, ModelResponse>(
@@ -134,11 +74,11 @@ async fn create_model(
         RETURNING id::bigint AS id, name
         "#,
     )
-    .bind(name)
-    .bind(type_)
-    .bind(number_of_seats)
-    .bind(tank_capacity_l)
-    .bind(load_capacity_kg)
+    .bind(new_model.name)
+    .bind(new_model.type_)
+    .bind(new_model.number_of_seats)
+    .bind(new_model.tank_capacity_l)
+    .bind(new_model.load_capacity_kg)
     .fetch_one(pool.get_ref())
     .await
     .map_err(|error| {
@@ -165,30 +105,41 @@ async fn main() -> std::io::Result<()> {
     let bind_addr = env::var("RUST_API_BIND")
         .unwrap_or_else(|_| "0.0.0.0:8080".to_string());
 
-    let max_connections = env::var("RUST_API_DB_MAX_CONNECTIONS")
-        .ok()
-        .and_then(|value| value.parse::<u32>().ok())
-        .unwrap_or(10);
+    let max_connections = env_u32("RUST_API_DB_MAX_CONNECTIONS", 10);
+    let workers = env_usize("RUST_API_WORKERS", 3);
 
-    let workers = env::var("RUST_API_WORKERS")
-        .ok()
-        .and_then(|value| value.parse::<usize>().ok())
-        .unwrap_or(3);
+    let write_batch_size = env_usize_with_fallback(
+        "RUST_API_WRITE_BATCH_SIZE",
+        "RUST_API_BATCH_SIZE",
+        100,
+    );
+    let read_batch_size = env_usize_with_fallback(
+        "RUST_API_READ_BATCH_SIZE",
+        "RUST_API_BATCH_SIZE",
+        500,
+    );
 
-    let batch_size = env::var("RUST_API_BATCH_SIZE")
-        .ok()
-        .and_then(|value| value.parse::<usize>().ok())
-        .unwrap_or(100);
+    let write_batch_flush_interval_ms = env_u64_with_fallback(
+        "RUST_API_WRITE_BATCH_FLUSH_INTERVAL_MS",
+        "RUST_API_BATCH_FLUSH_INTERVAL_MS",
+        50,
+    );
+    let read_batch_flush_interval_ms = env_u64_with_fallback(
+        "RUST_API_READ_BATCH_FLUSH_INTERVAL_MS",
+        "RUST_API_BATCH_FLUSH_INTERVAL_MS",
+        50,
+    );
 
-    let batch_flush_interval_ms = env::var("RUST_API_BATCH_FLUSH_INTERVAL_MS")
-        .ok()
-        .and_then(|value| value.parse::<u64>().ok())
-        .unwrap_or(50);
-
-    let batch_queue_capacity = env::var("RUST_API_BATCH_QUEUE_CAPACITY")
-        .ok()
-        .and_then(|value| value.parse::<usize>().ok())
-        .unwrap_or(10_000);
+    let write_batch_queue_capacity = env_usize_with_fallback(
+        "RUST_API_WRITE_BATCH_QUEUE_CAPACITY",
+        "RUST_API_BATCH_QUEUE_CAPACITY",
+        10_000,
+    );
+    let read_batch_queue_capacity = env_usize_with_fallback(
+        "RUST_API_READ_BATCH_QUEUE_CAPACITY",
+        "RUST_API_BATCH_QUEUE_CAPACITY",
+        10_000,
+    );
 
     let pool = PgPoolOptions::new()
         .max_connections(max_connections)
@@ -198,26 +149,73 @@ async fn main() -> std::io::Result<()> {
 
     let batch_inserter = start_batch_worker(
         pool.clone(),
-        batch_size,
-        batch_flush_interval_ms,
-        batch_queue_capacity,
+        write_batch_size,
+        write_batch_flush_interval_ms,
+        write_batch_queue_capacity,
+    );
+
+    let batch_reader = start_read_batch_worker(
+        pool.clone(),
+        read_batch_size,
+        read_batch_flush_interval_ms,
+        read_batch_queue_capacity,
     );
 
     log::info!(
-        "starting rust-api on {bind_addr}, workers={workers}, batch_size={batch_size}, batch_flush_interval_ms={batch_flush_interval_ms}, batch_queue_capacity={batch_queue_capacity}"
+        "starting rust-api on {bind_addr}, workers={workers}, db_max_connections={max_connections}, write_batch_size={write_batch_size}, write_batch_flush_interval_ms={write_batch_flush_interval_ms}, write_batch_queue_capacity={write_batch_queue_capacity}, read_batch_size={read_batch_size}, read_batch_flush_interval_ms={read_batch_flush_interval_ms}, read_batch_queue_capacity={read_batch_queue_capacity}"
     );
 
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(pool.clone()))
             .app_data(Data::new(batch_inserter.clone()))
+            .app_data(Data::new(batch_reader.clone()))
             .service(healthz)
             .service(get_model_by_id)
             .service(create_model)
             .service(create_model_batch)
+            .service(get_model_batch)
     })
     .workers(workers)
     .bind(bind_addr)?
     .run()
     .await
+}
+
+fn env_usize(name: &str, default: usize) -> usize {
+    env::var(name)
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(default)
+}
+
+fn env_u32(name: &str, default: u32) -> u32 {
+    env::var(name)
+        .ok()
+        .and_then(|value| value.parse::<u32>().ok())
+        .unwrap_or(default)
+}
+
+fn env_usize_with_fallback(name: &str, fallback_name: &str, default: usize) -> usize {
+    env::var(name)
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .or_else(|| {
+            env::var(fallback_name)
+                .ok()
+                .and_then(|value| value.parse::<usize>().ok())
+        })
+        .unwrap_or(default)
+}
+
+fn env_u64_with_fallback(name: &str, fallback_name: &str, default: u64) -> u64 {
+    env::var(name)
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .or_else(|| {
+            env::var(fallback_name)
+                .ok()
+                .and_then(|value| value.parse::<u64>().ok())
+        })
+        .unwrap_or(default)
 }
