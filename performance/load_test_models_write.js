@@ -15,7 +15,7 @@ import {
 
 const EXPERIMENT = 'models_write_ladder';
 
-const WRITE_RATES = [50,100,150,200,250];
+const WRITE_RATES = [150,300,450,600,750,900,1050];
 const DURATION_SECONDS = 61;
 
 const PRE_ALLOCATED_VUS = 50;
