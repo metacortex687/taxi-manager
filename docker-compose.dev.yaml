@@ -126,8 +126,8 @@ services:
       pgbouncer:
         condition: service_healthy
   rust-api:
-    build:
-      context: ./rust-api
+    image: metacortex687/taxi-manager-rust-api-dev:latest
+    pull_policy: always
     restart: unless-stopped
     labels:
       logging: "alloy"

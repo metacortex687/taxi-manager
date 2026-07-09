@@ -53,11 +53,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Build and push
+      - name: Build and push Django app
         uses: docker/build-push-action@v7
         with:
           push: true
           tags: metacortex687/taxi-manager-dev:latest
+
+      - name: Build and push Rust API
+        uses: docker/build-push-action@v7
+        with:
+          context: ./rust-api
+          file: ./rust-api/Dockerfile
+          push: true
+          tags: metacortex687/taxi-manager-rust-api-dev:latest
 
       - name: Deploy using an SSH key
         uses: appleboy/ssh-action@v1
