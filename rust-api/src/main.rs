@@ -2,7 +2,7 @@ mod batch_models;
 
 use actix_web::{
     get, post,
-    web::{Data, Json},
+    web::{Data, Json, Path},
     App, HttpResponse, HttpServer, Responder,
 };
 use batch_models::{create_model_batch, start_batch_worker};
@@ -33,6 +33,34 @@ async fn healthz() -> impl Responder {
     HttpResponse::Ok().json(serde_json::json!({
         "status": "ok"
     }))
+}
+
+#[get("/models/{id}/")]
+async fn get_model_by_id(
+    pool: Data<PgPool>,
+    id: Path<i64>,
+) -> actix_web::Result<HttpResponse> {
+    let model = sqlx::query_as::<_, ModelResponse>(
+        r#"
+        SELECT id::bigint AS id, name
+        FROM vehicle_model
+        WHERE id = $1
+        "#,
+    )
+    .bind(id.into_inner())
+    .fetch_optional(pool.get_ref())
+    .await
+    .map_err(|error| {
+        log::error!("failed to get model by id: {error}");
+        actix_web::error::ErrorInternalServerError("failed to get model")
+    })?;
+
+    match model {
+        Some(model) => Ok(HttpResponse::Ok().json(model)),
+        None => Ok(HttpResponse::NotFound().json(serde_json::json!({
+            "detail": "Not found."
+        }))),
+    }
 }
 
 #[post("/models/")]
@@ -184,6 +212,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(Data::new(pool.clone()))
             .app_data(Data::new(batch_inserter.clone()))
             .service(healthz)
+            .service(get_model_by_id)
             .service(create_model)
             .service(create_model_batch)
     })
