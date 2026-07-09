@@ -2,12 +2,13 @@ import http from 'k6/http';
 import { check, fail } from 'k6';
 
 export const MODEL_PREFIX = 'perf_test_model_';
+export const MODEL_IDS_READ_LIMIT = 10000;
 
 export const BASE_URL = requiredEnv('TARGET_BASE_URL').replace(/\/+$/, '');
 
 export const MODEL_SYNC_URL = `${BASE_URL}/api/v1/models/`;
 export const MODEL_ASYNC_URL = `${BASE_URL}/api/v1/rust/models/batch-queue/`;
-// export const MODEL_ASYNC_URL = `${BASE_URL}/api/v1/rust/models/`;
+//export const MODEL_ASYNC_URL = `${BASE_URL}/api/v1/rust/models/`;
 
 export const MODEL_URL = MODEL_ASYNC_URL;
 export const AUTH_TOKEN = requiredEnv('AUTH_TOKEN');
@@ -170,10 +171,19 @@ export function loadModelIdsByHeavyList(experiment) {
     for (const model of results) {
       if (String(model.name).startsWith(MODEL_PREFIX)) {
         ids.push(model.id);
+
+        if (ids.length >= MODEL_IDS_READ_LIMIT) {
+          break;
+        }
       }
     }
 
     console.log(`Прочитана страница моделей: page=${page}, найдено ids=${ids.length}`);
+
+    if (ids.length >= MODEL_IDS_READ_LIMIT) {
+      console.log(`Достигнут лимит чтения ids: limit=${MODEL_IDS_READ_LIMIT}`);
+      break;
+    }
 
     url = Array.isArray(data) ? null : data.next || null;
   }
