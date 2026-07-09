@@ -1,8 +1,11 @@
+mod batch_models;
+
 use actix_web::{
     get, post,
-    web::{self, Data, Json},
+    web::{Data, Json},
     App, HttpResponse, HttpServer, Responder,
 };
+use batch_models::{create_model_batch, start_batch_worker};
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, FromRow, PgPool};
 use std::env;
@@ -15,19 +18,14 @@ struct CreateModelRequest {
     type_: Option<String>,
 
     number_of_seats: Option<i32>,
-    tank_capacity_l: Option<f64>,
-    load_capacity_kg: Option<f64>,
+    tank_capacity_l: Option<i32>,
+    load_capacity_kg: Option<i32>,
 }
 
 #[derive(Debug, Serialize, FromRow)]
 struct ModelResponse {
     id: i64,
     name: String,
-}
-
-#[derive(Debug, Serialize)]
-struct ValidationError {
-    detail: String,
 }
 
 #[get("/healthz")]
@@ -51,6 +49,20 @@ async fn create_model(
         }
     };
 
+    let type_ = match payload.type_.as_deref() {
+        Some("PCR") | Some("BUS") | Some("LRR") => payload.type_.clone().unwrap(),
+        Some(_) => {
+            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+                "type": ["Expected one of: PCR, BUS, LRR."]
+            })));
+        }
+        None => {
+            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+                "type": ["This field is required."]
+            })));
+        }
+    };
+
     let number_of_seats = match payload.number_of_seats {
         Some(value) => value,
         None => {
@@ -60,7 +72,23 @@ async fn create_model(
         }
     };
 
-    let type_ = payload.type_.clone().unwrap_or_default();
+    let tank_capacity_l = match payload.tank_capacity_l {
+        Some(value) => value,
+        None => {
+            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+                "tank_capacity_l": ["This field is required."]
+            })));
+        }
+    };
+
+    let load_capacity_kg = match payload.load_capacity_kg {
+        Some(value) => value,
+        None => {
+            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+                "load_capacity_kg": ["This field is required."]
+            })));
+        }
+    };
 
     let model = sqlx::query_as::<_, ModelResponse>(
         r#"
@@ -81,14 +109,20 @@ async fn create_model(
     .bind(name)
     .bind(type_)
     .bind(number_of_seats)
-    .bind(payload.tank_capacity_l)
-    .bind(payload.load_capacity_kg)
+    .bind(tank_capacity_l)
+    .bind(load_capacity_kg)
     .fetch_one(pool.get_ref())
     .await
     .map_err(|error| {
         log::error!("failed to create model: {error}");
         actix_web::error::ErrorInternalServerError("failed to create model")
     })?;
+
+    log::info!(
+        "rust-api created model: id={}, name={}",
+        model.id,
+        model.name
+    );
 
     Ok(HttpResponse::Created().json(model))
 }
@@ -108,20 +142,52 @@ async fn main() -> std::io::Result<()> {
         .and_then(|value| value.parse::<u32>().ok())
         .unwrap_or(10);
 
+    let workers = env::var("RUST_API_WORKERS")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(3);
+
+    let batch_size = env::var("RUST_API_BATCH_SIZE")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(100);
+
+    let batch_flush_interval_ms = env::var("RUST_API_BATCH_FLUSH_INTERVAL_MS")
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .unwrap_or(50);
+
+    let batch_queue_capacity = env::var("RUST_API_BATCH_QUEUE_CAPACITY")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(10_000);
+
     let pool = PgPoolOptions::new()
         .max_connections(max_connections)
         .connect(&database_url)
         .await
         .expect("failed to connect to database");
 
-    log::info!("starting rust-api on {bind_addr}");
+    let batch_inserter = start_batch_worker(
+        pool.clone(),
+        batch_size,
+        batch_flush_interval_ms,
+        batch_queue_capacity,
+    );
+
+    log::info!(
+        "starting rust-api on {bind_addr}, workers={workers}, batch_size={batch_size}, batch_flush_interval_ms={batch_flush_interval_ms}, batch_queue_capacity={batch_queue_capacity}"
+    );
 
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(pool.clone()))
+            .app_data(Data::new(batch_inserter.clone()))
             .service(healthz)
             .service(create_model)
+            .service(create_model_batch)
     })
+    .workers(workers)
     .bind(bind_addr)?
     .run()
     .await
