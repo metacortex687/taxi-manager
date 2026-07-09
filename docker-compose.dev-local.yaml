@@ -295,6 +295,26 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  
+  varnish:
+    image: varnish:stable
+    restart: unless-stopped
+    labels:
+      logging: "alloy"
+    volumes:
+      - ./varnish/default.vcl:/etc/varnish/default.vcl:ro
+    tmpfs:
+      - /var/lib/varnish:exec
+    environment:
+      - VARNISH_SIZE=512M
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      nginx:
+        condition: service_started
+
+
   nginx:
     image: nginx
     labels:
@@ -306,7 +326,7 @@ services:
       - ./data/logs/nginx/:/var/log/nginx/
       - ./data/goaccess/:/data/goaccess/:ro
     ports:
-      - "127.0.0.1:8080:80"
+      - "127.0.0.1:8081:80"
     depends_on:
       taxi-manager:
         condition: service_started
