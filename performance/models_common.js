@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { check, fail } from 'k6';
 
 export const MODEL_PREFIX = 'perf_test_model_';
-export const MODEL_IDS_READ_LIMIT = 10000;
+export const MODEL_IDS_READ_LIMIT = 10;
 
 export const BASE_URL = requiredEnv('TARGET_BASE_URL').replace(/\/+$/, '');
 
