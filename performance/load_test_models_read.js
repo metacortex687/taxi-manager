@@ -72,15 +72,15 @@ export default function (data) {
   const modelId = data.ids[index];
   const cycle = Math.floor(exec.scenario.iterationInTest / data.ids.length) + 1;
   
-  if (index === 0) {
-    console.log(
-        `Начался цикл чтения ids: ` +
-        `scenario=${exec.scenario.name}, ` +
-        `target_rps=${meta.rate}, ` +
-        `cycle=${cycle}, ` +
-        `ids_count=${data.ids.length}`,
-    );
-  }
+  // if (index === 0) {
+  //   console.log(
+  //       `Начался цикл чтения ids: ` +
+  //       `scenario=${exec.scenario.name}, ` +
+  //       `target_rps=${meta.rate}, ` +
+  //       `cycle=${cycle}, ` +
+  //       `ids_count=${data.ids.length}`,
+  //   );
+  // }
 
   const response = http.get(
     `${MODEL_URL}${modelId}/`,
@@ -88,7 +88,7 @@ export default function (data) {
       headers: authHeaders(),
       tags: {
         ...measureTags(EXPERIMENT, 'read', meta.rate, 'read_model', 'GET /api/v1/models/:id/'),
-        cycle: String(cycle),
+        // cycle: String(cycle),
     },
     },
   );
