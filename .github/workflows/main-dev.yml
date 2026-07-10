@@ -95,12 +95,16 @@ jobs:
             mkdir -p "$APP_DIR"
             mkdir -p "$APP_DIR/data/logs/nginx"
             mkdir -p "$APP_DIR/data/goaccess"
+            mkdir -p "$APP_DIR/varnish"
 
             cd "$APP_DIR"
 
             curl -fsSL -o docker-compose.dev.yaml https://raw.githubusercontent.com/metacortex687/taxi-manager/main/docker-compose.dev.yaml
             curl -fsSL -o nginx.conf https://raw.githubusercontent.com/metacortex687/taxi-manager/main/nginx.conf
             curl -fsSL -o config.alloy https://raw.githubusercontent.com/metacortex687/taxi-manager/main/config.alloy
+
+            rm -rf varnish/default.vcl
+            curl -fsSL -o varnish/default.vcl https://raw.githubusercontent.com/metacortex687/taxi-manager/main/varnish/default.vcl
 
             export POSTGRES_USER="${{ secrets.DEV_POSTGRES_USER }}"
             export POSTGRES_PASSWORD="${{ secrets.DEV_POSTGRES_PASSWORD }}"
