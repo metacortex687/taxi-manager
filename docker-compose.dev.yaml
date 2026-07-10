@@ -321,7 +321,7 @@ services:
       - -web.listen-address
       - :9131
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./varnish:/etc/varnish:ro
     expose:
       - "9131"
     depends_on:
