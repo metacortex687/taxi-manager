@@ -66,6 +66,14 @@ jobs:
           file: ./rust-api/Dockerfile
           push: true
           tags: metacortex687/taxi-manager-rust-api-dev:latest
+      
+      - name: Build and push Varnish exporter
+        uses: docker/build-push-action@v7
+        with:
+          context: ./varnish-exporter
+          file: ./varnish-exporter/Dockerfile
+          push: true
+          tags: metacortex687/taxi-manager-varnish-exporter-dev:latest
 
       - name: Deploy using an SSH key
         uses: appleboy/ssh-action@v1

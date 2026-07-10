@@ -314,3 +314,19 @@ prometheus.scrape "processes" {
 
   forward_to = [prometheus.remote_write.prometheus.receiver]
 }
+
+prometheus.scrape "varnish" {
+  targets = [
+    {
+      __address__ = "varnish-exporter:9131",
+      job         = "varnish",
+      service     = "varnish",
+      env         = sys.env("DEPLOYMENT_ENVIRONMENT"),
+    },
+  ]
+
+  scrape_interval = "5s"
+  scrape_timeout  = "4s"
+
+  forward_to = [prometheus.remote_write.prometheus.receiver]
+}
