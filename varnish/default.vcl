@@ -23,8 +23,8 @@ sub vcl_recv {
         req.url ~ "^/api/v1/rust/models/batch-queue/[0-9]+/$" ||
         req.url ~ "^/api/v1/models/[0-9]+/$"
     ) {
-        # Игнорируем авторизацию для cache key и разрешаем кэширование.
-        unset req.http.Authorization;
+        # Authorization НЕ удаляем.
+        # Он будет передан Nginx/Django, но не войдёт в стандартный cache key.
 
         # Cookie тоже обычно ломает кэширование и может делать ответ персональным.
         unset req.http.Cookie;
