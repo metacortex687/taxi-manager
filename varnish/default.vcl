@@ -19,9 +19,10 @@ sub vcl_recv {
     # Кэшируем только чтение моделей/брендов.
     # Остальные API не трогаем, чтобы не смешать пользовательские данные.
     if (
-        req.url ~ "^/api/v1/rust/models/[0-9]+/$" ||
-        req.url ~ "^/api/v1/rust/models/batch-queue/[0-9]+/$" ||
-        req.url ~ "^/api/v1/models/[0-9]+/$"
+        req.url ~ "^/api/v1/models/(\?.*)?$" ||
+        req.url ~ "^/api/v1/models/[0-9]+/(\?.*)?$" ||
+        req.url ~ "^/api/v1/rust/models/[0-9]+/(\?.*)?$" ||
+        req.url ~ "^/api/v1/rust/models/batch-queue/[0-9]+/(\?.*)?$"
     ) {
         # Authorization НЕ удаляем.
         # Он будет передан Nginx/Django, но не войдёт в стандартный cache key.
@@ -37,9 +38,10 @@ sub vcl_recv {
 
 sub vcl_backend_response {
     if (
-        bereq.url ~ "^/api/v1/rust/models/[0-9]+/$" ||
-        bereq.url ~ "^/api/v1/rust/models/batch-queue/[0-9]+/$" ||
-        bereq.url ~ "^/api/v1/models/[0-9]+/$"
+        bereq.url ~ "^/api/v1/models/(\?.*)?$" ||
+        bereq.url ~ "^/api/v1/models/[0-9]+/(\?.*)?$" ||
+        bereq.url ~ "^/api/v1/rust/models/[0-9]+/(\?.*)?$" ||
+        bereq.url ~ "^/api/v1/rust/models/batch-queue/[0-9]+/(\?.*)?$"
     ) {
         # Для теста держим объект в кэше 60 секунд.
         set beresp.ttl = 60s;
