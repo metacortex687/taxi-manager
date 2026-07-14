@@ -53,6 +53,16 @@ dev-down:
 	docker compose -f docker-compose.dev-local.yaml down
 	docker compose -f docker-compose.dev-local.observability.yaml down
 
+
+debezium-create-connector:
+	curl \
+		--fail-with-body \
+		--show-error \
+		--request POST \
+		--header "Content-Type: application/json" \
+		--data-binary @debezium-postgres.json \
+		http://127.0.0.1:8083/connectors
+
 perf-dev:
 	docker compose \
 		-p taxi-manager \

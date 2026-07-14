@@ -1,0 +1,24 @@
+{
+  "name": "taxi-manager-postgres",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "tasks.max": "1",
+
+    "database.hostname": "db",
+    "database.port": "5432",
+    "database.user": "${env:POSTGRES_USER}",
+    "database.password": "${env:POSTGRES_PASSWORD}",
+    "database.dbname": "${env:POSTGRES_DB}",
+
+    "topic.prefix": "raw_taxi_manager",
+
+    "plugin.name": "pgoutput",
+    "slot.name": "taxi_manager_debezium",
+    "publication.name": "taxi_manager_debezium_publication",
+    "publication.autocreate.mode": "filtered",
+
+    "table.include.list": "public\\.(vehicle_vehicledriver|vehicle_vehicle|enterprise_enterprise|enterprise_manager|vk_bot_vkuser|manager)",
+
+    "snapshot.mode": "initial"
+  }
+}
