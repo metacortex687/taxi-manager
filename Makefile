@@ -68,7 +68,7 @@ debezium-create-connector:
 		--show-error \
 		--request POST \
 		--header "Content-Type: application/json" \
-		--data-binary @debezium-postgres.json \
+		--data-binary @kafka/debezium-postgres.json \
 		http://127.0.0.1:8083/connectors
 
 perf-dev:
