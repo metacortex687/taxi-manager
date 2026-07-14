@@ -53,6 +53,12 @@ dev-down:
 	docker compose -f docker-compose.dev-local.yaml down
 	docker compose -f docker-compose.dev-local.observability.yaml down
 
+kafka-up:
+	docker compose -f docker-compose.kafka.yaml up -d
+
+kafka-down:
+	docker compose -f docker-compose.kafka.yaml down 
+
 
 debezium-create-connector:
 	curl \
