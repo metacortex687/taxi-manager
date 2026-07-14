@@ -40,7 +40,14 @@ class Manager(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.RESTRICT, verbose_name="Пользователь"
     )
+    
     enterprise = models.ForeignKey(
+        Enterprise,
+        to_field="uuid",
+        db_column="enterprise_uuid",
+        on_delete=models.RESTRICT,
+        verbose_name="Предприятие",
+    )
 
     uuid = models.UUIDField(
         default=uuid.uuid4,
