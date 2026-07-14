@@ -32,8 +32,15 @@ class Manager(models.Model):
         User, on_delete=models.RESTRICT, verbose_name="Пользователь"
     )
     enterprise = models.ForeignKey(
-        Enterprise, on_delete=models.RESTRICT, verbose_name="Предприятие"
+
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        verbose_name="UUID",
     )
+
+
 
     class Meta:
         verbose_name = "Менеджер"
