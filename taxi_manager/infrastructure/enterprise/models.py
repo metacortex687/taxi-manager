@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from taxi_manager.infrastructure.time_zones.models import TimeZone
 
+import uuid
+
 User = get_user_model()
 
 
@@ -17,6 +19,13 @@ class Enterprise(models.Model):
         through="Manager",
         through_fields=("enterprise", "user"),
         related_name="managed_enterprises",
+    )
+
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        verbose_name="UUID",
     )
 
     def __str__(self):
