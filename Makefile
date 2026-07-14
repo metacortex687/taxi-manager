@@ -59,6 +59,8 @@ kafka-up:
 kafka-down:
 	docker compose -f docker-compose.kafka.yaml down 
 
+kafka-drop:
+	docker compose -f docker-compose.kafka.yaml down -v
 
 debezium-create-connector:
 	curl \
