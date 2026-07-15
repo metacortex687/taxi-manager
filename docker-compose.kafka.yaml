@@ -82,7 +82,7 @@ services:
           --data-binary @/config/debezium-postgres.json \
           http://debezium:8083/connectors
     volumes:
-      - ./debezium-postgres.json:/config/debezium-postgres.json:ro
+      - ./kafka/debezium-postgres.json:/config/debezium-postgres.json:ro
     networks:
       - kafka-network
 
