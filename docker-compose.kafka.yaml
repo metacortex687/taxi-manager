@@ -86,6 +86,30 @@ services:
     networks:
       - kafka-network
 
+  kafka-create-topics:
+    image: apache/kafka:4.3.1
+    restart: "no"
+    depends_on:
+      debezium-create-connector:
+        condition: service_completed_successfully
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        echo "Creating Kafka topics..."
+
+        /opt/kafka/bin/kafka-topics.sh \
+          --bootstrap-server kafka:9092 \
+          --create \
+          --if-not-exists \
+          --topic assignment_managers \
+          --partitions 1 \
+          --replication-factor 1
+
+        echo "Kafka topics are ready"
+    networks:
+      - kafka-network
+
   kafka-ui:
     image: provectuslabs/kafka-ui
     depends_on:
