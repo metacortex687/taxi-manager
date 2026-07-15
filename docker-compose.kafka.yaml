@@ -44,6 +44,48 @@ services:
       - kafka-network
       - taxi-manager-network
 
+  debezium-create-connector:
+    image: curlimages/curl:8.21.0
+    restart: "no"
+    depends_on:
+      - debezium
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        until curl \
+          --fail \
+          --silent \
+          http://debezium:8083/connectors \
+          > /dev/null
+        do
+          echo "Waiting for Debezium REST API..."
+          sleep 2
+        done
+
+        if curl \
+          --fail \
+          --silent \
+          http://debezium:8083/connectors/taxi-manager-postgres \
+          > /dev/null
+        then
+          echo "Connector taxi-manager-postgres already exists"
+          exit 0
+        fi
+
+        echo "Creating connector taxi-manager-postgres..."
+
+        curl \
+          --fail-with-body \
+          --show-error \
+          --request POST \
+          --header "Content-Type: application/json" \
+          --data-binary @/config/debezium-postgres.json \
+          http://debezium:8083/connectors
+    volumes:
+      - ./debezium-postgres.json:/config/debezium-postgres.json:ro
+    networks:
+      - kafka-network
+
   kafka-ui:
     image: provectuslabs/kafka-ui
     depends_on:
