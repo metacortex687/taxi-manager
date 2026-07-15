@@ -124,9 +124,69 @@ services:
     networks:
       - kafka-network
 
+  flink-jobmanager:
+    build:
+      context: ./kafka/flink
+    command: jobmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+    ports:
+      - "127.0.0.1:8091:8081"
+    networks:
+      - kafka-network
+
+  flink-taskmanager:
+    build:
+      context: ./kafka/flink
+    command: taskmanager
+    depends_on:
+      - flink-jobmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 1
+    networks:
+      - kafka-network
+
+  flink-sql-init:
+    build:
+      context: ./kafka/flink
+    depends_on:
+      - flink-jobmanager
+      - flink-taskmanager
+      - kafka-create-topics
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        echo "Waiting for Flink..."
+        sleep 10
+
+        for sql_file in /opt/flink/sql/*.sql; do
+          echo "Running $$sql_file"
+          /opt/flink/bin/sql-client.sh -f "$$sql_file"
+        done
+
+        echo "All SQL files started"
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        rest.address: flink-jobmanager
+    volumes:
+      - ./kafka/flink/sql:/opt/flink/sql:ro
+    networks:
+      - kafka-network
+
+
+
 networks:
   kafka-network:
 
   taxi-manager-network:
     external: true
     name: taxi-manager_default
+
+volumes:
+  flink-checkpoints:
+  flink-savepoints:
