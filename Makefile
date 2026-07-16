@@ -19,7 +19,8 @@ collectstatic:
 	uv run manage.py collectstatic --noinput
 
 migrate:
-	uv run manage.py migrate --noinput
+	uv run manage.py shell -c "from django.db import connection; from django.db.migrations.recorder import MigrationRecorder; tables = set(connection.introspection.table_names()); recorder = MigrationRecorder(connection); applied = recorder.applied_migrations() if 'django_migrations' in tables else set(); recorder.record_applied('users', '0001_initial') if {'auth_user', 'auth_user_groups', 'auth_user_user_permissions'}.issubset(tables) and ('admin', '0001_initial') in applied and ('users', '0001_initial') not in applied else None"
+	uv run manage.py migrate --noinput --fake-initial
 
 build:
 	make collectstatic && make migrate

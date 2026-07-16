@@ -80,6 +80,8 @@ INSTALLED_APPS = [
     "taxi_manager.infrastructure.observability",
 ]
 
+AUTH_USER_MODEL = "users.User"
+
 MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "taxi_manager.infrastructure.observability.middleware.RequestTraceLoggingMiddleware",
