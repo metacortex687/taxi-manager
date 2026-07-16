@@ -42,6 +42,8 @@ class Vehicle(models.Model):
 
     enterprise = models.ForeignKey(
         Enterprise,
+        to_field="uuid",
+        db_column="enterprise_uuid",
         on_delete=models.RESTRICT,
         verbose_name="Предприятие",
         related_name="vehicles",
