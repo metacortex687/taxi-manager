@@ -271,3 +271,13 @@ if DEBUG_TOOLBAR_ENABLE:
 
 
 PROMETHEUS_EXPORT_MIGRATIONS = False #True для сбора метрик применения миграций
+
+
+DJOSER = {
+    "SERIALIZERS": {
+        "current_user": (
+            "taxi_manager.infrastructure.users.serializers."
+            "CurrentUserSerializer"
+        ),
+    },
+}
