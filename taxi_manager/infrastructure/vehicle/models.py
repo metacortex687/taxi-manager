@@ -112,6 +112,13 @@ class Model(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
 
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        verbose_name="UUID",
+    )
+
     class Meta:
         verbose_name = "Модель"
         verbose_name_plural = "Модели"
