@@ -5,11 +5,20 @@ from django.core.validators import (
 )
 
 import datetime
+import uuid
+
 from ..enterprise.models import Enterprise
 from .validators import vin_validator
 from django.core.exceptions import ValidationError
 
 class Vehicle(models.Model):
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        verbose_name="UUID",
+    )
+    
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
     year_of_manufacture = models.IntegerField(
         verbose_name="Год выпуска",
