@@ -114,6 +114,14 @@ services:
           --partitions 1 \
           --replication-factor 1
 
+        /opt/kafka/bin/kafka-topics.sh \
+          --bootstrap-server kafka:9092 \
+          --create \
+          --if-not-exists \
+          --topic vehicles \
+          --partitions 1 \
+          --replication-factor 1
+
         echo "Kafka topics are ready"
     networks:
       - kafka-network
@@ -153,7 +161,7 @@ services:
     environment:
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
-        taskmanager.numberOfTaskSlots: 2
+        taskmanager.numberOfTaskSlots: 3
     networks:
       - kafka-network
 
