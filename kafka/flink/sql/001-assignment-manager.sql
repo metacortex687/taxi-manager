@@ -8,11 +8,13 @@ SET 'execution.checkpointing.interval' = '10 s';
 CREATE TABLE manager_cdc (
     `before` ROW<
         `uuid` STRING,
-        `enterprise_uuid` STRING
+        `enterprise_uuid` STRING,
+        `user_uuid` STRING
     >,
     `after` ROW<
         `uuid` STRING,
-        `enterprise_uuid` STRING
+        `enterprise_uuid` STRING,
+        `user_uuid` STRING
     >,
     `op` STRING,
     `ts_ms` BIGINT
@@ -29,7 +31,7 @@ CREATE TABLE manager_cdc (
 
 -- Результат: ключ Kafka = manager_uuid, value = JSON со всеми полями.
 CREATE TABLE assignment_managers (
-    `manager_uuid` STRING,
+    `user_uuid` STRING,
     `enterprise_uuid` STRING,
     `timestamp` BIGINT,
     `op` STRING
@@ -38,7 +40,7 @@ CREATE TABLE assignment_managers (
     'topic' = 'assignment_managers',
     'properties.bootstrap.servers' = 'kafka:9092',
     'key.format' = 'raw',
-    'key.fields' = 'manager_uuid',
+    'key.fields' = 'user_uuid',
     'value.format' = 'json',
     'value.fields-include' = 'ALL',
     'sink.delivery-guarantee' = 'at-least-once'
@@ -46,7 +48,7 @@ CREATE TABLE assignment_managers (
 
 INSERT INTO assignment_managers
 SELECT
-    COALESCE(`after`.`uuid`, `before`.`uuid`) AS `manager_uuid`,
+    COALESCE(`after`.`user_uuid`, `before`.`user_uuid`) AS `user_uuid`,
     COALESCE(`after`.`enterprise_uuid`, `before`.`enterprise_uuid`) AS `enterprise_uuid`,
     `ts_ms` AS `timestamp`,
     CASE `op`
