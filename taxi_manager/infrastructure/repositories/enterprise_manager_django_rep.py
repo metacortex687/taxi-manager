@@ -78,5 +78,5 @@ class EnterpriseManagerDjangoRep(IEnterpriseManagerAssignmentRepository):
 
         ManagerOrm.objects.get_or_create(
             user_id=manager_id.value,
-            enterprise_id=enterprise_id.value,
+            enterprise=enterprise,
         )
