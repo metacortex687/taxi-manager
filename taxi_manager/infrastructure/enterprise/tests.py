@@ -221,13 +221,13 @@ class CommandGenerateDataTest(TestCase):
 
         self.assertEqual(
             VehicleDriver.objects.filter(
-                ~Q(enterprise=F("vehicle__enterprise"))
+                ~Q(enterprise__id=F("vehicle__enterprise__id"))
             ).count(),
             0,
         )
         self.assertFalse(
             VehicleDriver.objects.filter(
-                ~Q(enterprise=F("vehicle__enterprise"))
+                ~Q(enterprise__id=F("vehicle__enterprise__id"))
             ).exists()
         )
 
