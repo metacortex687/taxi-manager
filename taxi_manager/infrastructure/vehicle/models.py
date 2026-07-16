@@ -30,7 +30,13 @@ class Vehicle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
 
-    model = models.ForeignKey("Model", on_delete=models.RESTRICT, verbose_name="Модель")
+    model = models.ForeignKey(
+        "Model",
+        to_field="uuid",
+        db_column="model_uuid",
+        on_delete=models.RESTRICT,
+        verbose_name="Модель",
+    )
 
     purchased_at =  models.DateTimeField(verbose_name="Дата и время приобретения", null=True)
 
