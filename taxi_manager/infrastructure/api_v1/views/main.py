@@ -87,10 +87,10 @@ class VehicleViewSet(
 
         enterprise_id = self.kwargs.get("enterprise_id")
         if enterprise_id:
-            vehicles = vehicles.filter(enterprise=enterprise_id)
+            vehicles = vehicles.filter(enterprise__id=enterprise_id)
 
         enterprise_ids = user.managed_enterprises.values("id")
-        vehicles = vehicles.filter(enterprise__in=enterprise_ids)
+        vehicles = vehicles.filter(enterprise__id__in=enterprise_ids)
 
         vehicles = (
             vehicles.select_related("model")
@@ -261,11 +261,11 @@ class DriverListAPIView(generics.ListAPIView):
 
         if not user.is_superuser:
             enterprise_ids = user.managed_enterprises.values("id")
-            drivers = drivers.filter(enterprise__in=enterprise_ids)
+            drivers = drivers.filter(enterprise__id__in=enterprise_ids)
 
         enterprise_id = self.kwargs.get("enterprise_id")
         if enterprise_id:
-            drivers = drivers.filter(enterprise=enterprise_id)
+            drivers = drivers.filter(enterprise__id=enterprise_id)
 
         return drivers.all()
 
@@ -282,7 +282,7 @@ class DriverDetailAPIView(generics.RetrieveAPIView):
         drivers = Driver.objects
         if not user.is_superuser:
             enterprise_ids = user.managed_enterprises.values("id")
-            drivers = drivers.filter(enterprise__in=enterprise_ids)
+            drivers = drivers.filter(enterprise__id__in=enterprise_ids)
 
         return drivers
 

@@ -14,7 +14,7 @@ class VehicleService:
 
         vehicle_dict = self.vehicle_repository.get_by_id(vehicle_id)
 
-        if not self.is_assignment_exist(vehicle_dict["enterprise_id"], manager_id): 
+        if not self.is_assignment_exist(vehicle_dict["enterprise__id"], manager_id): 
             return Result.not_manager(f'У вас нет прав менеджера для авто "{vehicle_dict["model__name"]} {vehicle_dict["number"]}"(id={vehicle_id})')        
 
         active_driver_id = self.vehicle_repository.get_active_driver_id(vehicle_id)
@@ -33,7 +33,7 @@ class VehicleService:
             "price": vehicle_dict["price"],
             "active_driver_id": active_driver_id,
             "model__name": vehicle_dict["model__name"],
-            "enterprise_id": vehicle_dict["enterprise_id"],
+            "enterprise_id": vehicle_dict["enterprise__id"],
             "purchased_at": vehicle_dict["purchased_at"],
             "driver_ids": driver_ids,
         }

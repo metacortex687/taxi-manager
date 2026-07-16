@@ -51,7 +51,7 @@ class VehicleRepository(IVehicleRepository):
             .values(
                 "id",
                 "number",
-                "enterprise_id",
+                "enterprise__id",
                 "model__name",
                 "model__id",
                 "model__color",
