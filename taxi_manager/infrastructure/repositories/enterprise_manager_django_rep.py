@@ -11,6 +11,7 @@ from taxi_manager.infrastructure.enterprise.models import (
     Enterprise as EnterpriseOrm,
     Manager as ManagerOrm,
 )
+from taxi_manager.infrastructure.users.models import User as UserOrm
 
 
 class EnterpriseManagerDjangoRep(IEnterpriseManagerAssignmentRepository):
@@ -19,7 +20,7 @@ class EnterpriseManagerDjangoRep(IEnterpriseManagerAssignmentRepository):
         key_fn=lambda manager_id: f"enterprise_manager:get_manager_assigments:{manager_id}",
     )
     def get_manager_assigments(self, manager_id: ManagerId) -> list[Enterprise]:
-        orm_objects = ManagerOrm.objects.filter(user_id=manager_id.value).values(
+        orm_objects = ManagerOrm.objects.filter(user__id=manager_id.value).values(
             "user_id",
             "enterprise__id",
             "enterprise__name",
@@ -45,11 +46,11 @@ class EnterpriseManagerDjangoRep(IEnterpriseManagerAssignmentRepository):
     ) -> list[Manager]:
         orm_objects = ManagerOrm.objects.filter(
             enterprise__id=enterprise_id.value
-        ).values("user_id")
+        ).values("user__id")
 
         return [
             Manager(
-                id=ManagerId(obj["user_id"]),
+                id=ManagerId(obj["user__id"]),
             )
             for obj in orm_objects
         ]
@@ -63,20 +64,21 @@ class EnterpriseManagerDjangoRep(IEnterpriseManagerAssignmentRepository):
         self, enterprise_id: EnterpriseId, manager_id: ManagerId
     ) -> bool:
         return ManagerOrm.objects.filter(
-            user_id=manager_id.value,
+            user__id=manager_id.value,
             enterprise__id=enterprise_id.value,
         ).exists()
 
     def delete(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
         ManagerOrm.objects.filter(
-            user_id=manager_id.value,
+            user__id=manager_id.value,
             enterprise__id=enterprise_id.value,
         ).delete()
 
     def create(self, enterprise_id: EnterpriseId, manager_id: ManagerId):
         enterprise = EnterpriseOrm.objects.get(id=enterprise_id.value)
+        user = UserOrm.objects.get(id=manager_id.value)
 
         ManagerOrm.objects.get_or_create(
-            user_id=manager_id.value,
+            user=user,
             enterprise=enterprise,
         )
