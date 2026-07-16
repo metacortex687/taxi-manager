@@ -9,6 +9,7 @@ class User(AbstractUser):
         default=uuid.uuid4,
         unique=True,
         editable=False,
+        verbose_name="UUID",
     )
 
     class Meta:
