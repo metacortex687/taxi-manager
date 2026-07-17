@@ -37,7 +37,7 @@ CREATE TABLE assignment_managers (
     `op` STRING
 ) WITH (
     'connector' = 'kafka',
-    'topic' = 'assignment_managers',
+    'topic' = 'taxi_manager.assignment_managers',
     'properties.bootstrap.servers' = 'kafka:9092',
     'key.format' = 'raw',
     'key.fields' = 'user_uuid',

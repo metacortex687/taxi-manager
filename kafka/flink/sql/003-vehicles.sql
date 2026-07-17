@@ -49,7 +49,7 @@ CREATE TABLE vehicles (
     `uuid` STRING
 ) WITH (
     'connector' = 'kafka',
-    'topic' = 'vehicles',
+    'topic' = 'taxi_manager.vehicles',
     'properties.bootstrap.servers' = 'kafka:9092',
     'key.format' = 'raw',
     'key.fields' = 'uuid',

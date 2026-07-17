@@ -31,7 +31,7 @@ CREATE TABLE enterprises (
     `name` STRING
 ) WITH (
     'connector' = 'kafka',
-    'topic' = 'enterprises',
+    'topic' = 'taxi_manager.enterprises',
     'properties.bootstrap.servers' = 'kafka:9092',
     'key.format' = 'raw',
     'key.fields' = 'uuid',

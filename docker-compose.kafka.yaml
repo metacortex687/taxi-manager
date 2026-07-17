@@ -102,7 +102,7 @@ services:
           --bootstrap-server kafka:9092 \
           --create \
           --if-not-exists \
-          --topic assignment_managers \
+          --topic taxi_manager.assignment_managers \
           --partitions 1 \
           --replication-factor 1
 
@@ -110,7 +110,7 @@ services:
           --bootstrap-server kafka:9092 \
           --create \
           --if-not-exists \
-          --topic enterprises \
+          --topic taxi_manager.enterprises \
           --partitions 1 \
           --replication-factor 1
 
@@ -118,7 +118,7 @@ services:
           --bootstrap-server kafka:9092 \
           --create \
           --if-not-exists \
-          --topic vehicles \
+          --topic taxi_manager.vehicles \
           --partitions 1 \
           --replication-factor 1
 
