@@ -21,6 +21,7 @@ DEBUG = True
 
 INSTALLED_APPS = [
     'workers',
+    'accounts',
 ]
 
 # Database
@@ -49,3 +50,8 @@ USE_TZ = True
 
 VK_BOT_TOKEN=os.getenv("VK_BOT_TOKEN")
 VK_BOT_GROUP_ID=os.getenv("VK_BOT_GROUP_ID")
+
+
+#---------------------------------------------------------------------
+
+AUTH_API_URL=os.getenv("AUTH_API_URL")

@@ -15,9 +15,14 @@ class Command(BaseCommand):
         group_id = settings.VK_BOT_GROUP_ID
         if not group_id:
             raise ImproperlyConfigured("Не установлен VK_BOT_GROUP_ID")  
+        
+        auth_api_url = settings.AUTH_API_URL
+        if not auth_api_url:
+            raise ImproperlyConfigured("Не установлен AUTH_API_URL. Адрес сервиса авторизации.")  
+
 
         print("Сервис запущен")
 
-        start_vk_bot_service(token, group_id)
+        start_vk_bot_service(token, group_id, auth_api_url)
 
         print("Сервис остановлен")
