@@ -55,3 +55,8 @@ VK_BOT_GROUP_ID=os.getenv("VK_BOT_GROUP_ID")
 #---------------------------------------------------------------------
 
 AUTH_API_URL=os.getenv("AUTH_API_URL")
+
+
+#--------------------------------------------------------------
+
+KAFKA_BOOTSTRAP_SERVERS=os.getenv("KAFKA_BOOTSTRAP_SERVERS")

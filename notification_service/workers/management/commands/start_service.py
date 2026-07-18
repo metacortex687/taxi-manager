@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand
 
+from kafka.services import start_listener_kafka
 from vk_bot.services import start_vk_bot_service
 
 
@@ -20,9 +21,13 @@ class Command(BaseCommand):
         if not auth_api_url:
             raise ImproperlyConfigured("Не установлен AUTH_API_URL. Адрес сервиса авторизации.")  
 
+        kafka_bootstrap_servers = settings.KAFKA_BOOTSTRAP_SERVERS
+        if not kafka_bootstrap_servers:
+            raise ImproperlyConfigured("Не установлен KAFKA_BOOTSTRAP_SERVERS. Адрес kafka.")  
 
         print("Сервис запущен")
 
-        start_vk_bot_service(token, group_id, auth_api_url)
+        start_listener_kafka(kafka_bootstrap_servers)
+        # start_vk_bot_service(token, group_id, auth_api_url)
 
         print("Сервис остановлен")
