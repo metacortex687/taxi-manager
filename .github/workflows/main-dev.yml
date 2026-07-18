@@ -75,6 +75,26 @@ jobs:
           push: true
           tags: metacortex687/taxi-manager-varnish-exporter-dev:latest
 
+      - name: Prepare deployment directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEV_HOST_IP }}
+          username: ${{ secrets.DEV_HOST_USER }}
+          key: ${{ secrets.DEV_HOST_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.DEV_HOST_PORT }}
+          script: mkdir -p "$HOME/taxi-manager"
+
+      - name: Upload deployment configuration
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.DEV_HOST_IP }}
+          username: ${{ secrets.DEV_HOST_USER }}
+          key: ${{ secrets.DEV_HOST_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.DEV_HOST_PORT }}
+          source: "docker-compose.dev.yaml,nginx.conf,config.alloy,varnish/default.vcl"
+          target: "taxi-manager"
+          overwrite: true
+
       - name: Deploy using an SSH key
         uses: appleboy/ssh-action@v1
         with:
@@ -98,13 +118,6 @@ jobs:
             mkdir -p "$APP_DIR/varnish"
 
             cd "$APP_DIR"
-
-            curl -fsSL -o docker-compose.dev.yaml https://raw.githubusercontent.com/metacortex687/taxi-manager/main/docker-compose.dev.yaml
-            curl -fsSL -o nginx.conf https://raw.githubusercontent.com/metacortex687/taxi-manager/main/nginx.conf
-            curl -fsSL -o config.alloy https://raw.githubusercontent.com/metacortex687/taxi-manager/main/config.alloy
-
-            rm -rf varnish/default.vcl
-            curl -fsSL -o varnish/default.vcl https://raw.githubusercontent.com/metacortex687/taxi-manager/main/varnish/default.vcl
 
             export POSTGRES_USER="${{ secrets.DEV_POSTGRES_USER }}"
             export POSTGRES_PASSWORD="${{ secrets.DEV_POSTGRES_PASSWORD }}"
