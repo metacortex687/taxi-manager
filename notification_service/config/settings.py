@@ -22,6 +22,7 @@ DEBUG = True
 INSTALLED_APPS = [
     'workers',
     'accounts',
+    'notification_context',
 ]
 
 # Database
