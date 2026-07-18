@@ -63,6 +63,16 @@ kafka-down:
 kafka-drop:
 	docker compose -f docker-compose.kafka.yaml down -v
 
+kafka-reset-offsets:
+	docker compose -f docker-compose.kafka.yaml exec kafka \
+		/opt/kafka/bin/kafka-consumer-groups.sh \
+		--bootstrap-server kafka:9092 \
+		--group vk-bot-notification \
+		--reset-offsets \
+		--to-earliest \
+		--all-topics \
+		--execute
+
 debezium-create-connector:
 	curl \
 		--fail-with-body \
