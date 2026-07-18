@@ -13,7 +13,8 @@ CREATE TABLE enterprise_cdc (
         `uuid` STRING,
         `name` STRING
     >,
-    `op` STRING
+    `op` STRING,
+    `ts_ms` BIGINT
 ) WITH (
     'connector' = 'kafka',
     'topic' = 'raw_taxi_manager.public.enterprise_enterprise',
@@ -25,24 +26,44 @@ CREATE TABLE enterprise_cdc (
     'json.ignore-parse-errors' = 'true'
 );
 
--- Результат: ключ Kafka = uuid, value = JSON только с полями uuid и name.
+-- Результат: ключ Kafka = uuid, value = JSON с before, after, timestamp и op.
 CREATE TABLE enterprises (
-    `uuid` STRING,
-    `name` STRING
+    `message_key` STRING,
+    `before` ROW<
+        `uuid` STRING,
+        `name` STRING
+    >,
+    `after` ROW<
+        `uuid` STRING,
+        `name` STRING
+    >,
+    `timestamp` BIGINT,
+    `op` STRING
 ) WITH (
     'connector' = 'kafka',
     'topic' = 'taxi_manager.enterprises',
     'properties.bootstrap.servers' = 'kafka:9092',
     'key.format' = 'raw',
-    'key.fields' = 'uuid',
+    'key.fields' = 'message_key',
     'value.format' = 'json',
-    'value.fields-include' = 'ALL',
+    'value.fields-include' = 'EXCEPT_KEY',
     'sink.delivery-guarantee' = 'at-least-once'
 );
 
 INSERT INTO enterprises
 SELECT
-    COALESCE(`after`.`uuid`, `before`.`uuid`) AS `uuid`,
-    COALESCE(`after`.`name`, `before`.`name`) AS `name`
+    CASE `op`
+        WHEN 'd' THEN `before`.`uuid`
+        ELSE `after`.`uuid`
+    END AS `message_key`,
+    `before`,
+    `after`,
+    `ts_ms` AS `timestamp`,
+    CASE `op`
+        WHEN 'c' THEN 'create'
+        WHEN 'r' THEN 'create'
+        WHEN 'u' THEN 'update'
+        WHEN 'd' THEN 'delete'
+    END AS `op`
 FROM enterprise_cdc
-WHERE `op` IN ('c', 'r', 'u');
+WHERE `op` IN ('c', 'r', 'u', 'd');

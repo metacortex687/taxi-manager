@@ -25,7 +25,8 @@ CREATE TABLE vehicle_cdc (
         `enterprise_uuid` STRING,
         `uuid` STRING
     >,
-    `op` STRING
+    `op` STRING,
+    `ts_ms` BIGINT
 ) WITH (
     'connector' = 'kafka',
     'topic' = 'raw_taxi_manager.public.vehicle_vehicle',
@@ -37,36 +38,56 @@ CREATE TABLE vehicle_cdc (
     'json.ignore-parse-errors' = 'true'
 );
 
--- Результат: ключ Kafka = uuid, value = JSON с данными автомобиля.
+-- Результат: ключ Kafka = uuid, value = JSON с before, after, timestamp и op.
 CREATE TABLE vehicles (
-    `price` STRING,
-    `year_of_manufacture` INT,
-    `mileage` INT,
-    `number` STRING,
-    `vin` STRING,
-    `model_uuid` STRING,
-    `enterprise_uuid` STRING,
-    `uuid` STRING
+    `message_key` STRING,
+    `before` ROW<
+        `price` STRING,
+        `year_of_manufacture` INT,
+        `mileage` INT,
+        `number` STRING,
+        `vin` STRING,
+        `model_uuid` STRING,
+        `enterprise_uuid` STRING,
+        `uuid` STRING
+    >,
+    `after` ROW<
+        `price` STRING,
+        `year_of_manufacture` INT,
+        `mileage` INT,
+        `number` STRING,
+        `vin` STRING,
+        `model_uuid` STRING,
+        `enterprise_uuid` STRING,
+        `uuid` STRING
+    >,
+    `timestamp` BIGINT,
+    `op` STRING
 ) WITH (
     'connector' = 'kafka',
     'topic' = 'taxi_manager.vehicles',
     'properties.bootstrap.servers' = 'kafka:9092',
     'key.format' = 'raw',
-    'key.fields' = 'uuid',
+    'key.fields' = 'message_key',
     'value.format' = 'json',
-    'value.fields-include' = 'ALL',
+    'value.fields-include' = 'EXCEPT_KEY',
     'sink.delivery-guarantee' = 'at-least-once'
 );
 
 INSERT INTO vehicles
 SELECT
-    COALESCE(`after`.`price`, `before`.`price`) AS `price`,
-    COALESCE(`after`.`year_of_manufacture`, `before`.`year_of_manufacture`) AS `year_of_manufacture`,
-    COALESCE(`after`.`mileage`, `before`.`mileage`) AS `mileage`,
-    COALESCE(`after`.`number`, `before`.`number`) AS `number`,
-    COALESCE(`after`.`vin`, `before`.`vin`) AS `vin`,
-    COALESCE(`after`.`model_uuid`, `before`.`model_uuid`) AS `model_uuid`,
-    COALESCE(`after`.`enterprise_uuid`, `before`.`enterprise_uuid`) AS `enterprise_uuid`,
-    COALESCE(`after`.`uuid`, `before`.`uuid`) AS `uuid`
+    CASE `op`
+        WHEN 'd' THEN `before`.`uuid`
+        ELSE `after`.`uuid`
+    END AS `message_key`,
+    `before`,
+    `after`,
+    `ts_ms` AS `timestamp`,
+    CASE `op`
+        WHEN 'c' THEN 'create'
+        WHEN 'r' THEN 'create'
+        WHEN 'u' THEN 'update'
+        WHEN 'd' THEN 'delete'
+    END AS `op`
 FROM vehicle_cdc
-WHERE `op` IN ('c', 'r', 'u');
+WHERE `op` IN ('c', 'r', 'u', 'd');

@@ -3,8 +3,6 @@ SET 'pipeline.name' = 'assignment-manager-transform';
 SET 'parallelism.default' = '1';
 SET 'execution.checkpointing.interval' = '10 s';
 
--- Исходный Debezium topic.
--- Если в debezium-postgres.json другой topic.prefix, измените topic ниже.
 CREATE TABLE manager_cdc (
     `before` ROW<
         `uuid` STRING,
@@ -29,33 +27,37 @@ CREATE TABLE manager_cdc (
     'json.ignore-parse-errors' = 'true'
 );
 
--- Результат: ключ Kafka = manager_uuid, value = JSON со всеми полями.
+-- Результат: ключ Kafka = user_uuid, value = JSON с before и after.
 CREATE TABLE assignment_managers (
-    `user_uuid` STRING,
-    `enterprise_uuid` STRING,
-    `timestamp` BIGINT,
-    `op` STRING
+    `message_key` STRING,
+    `before` ROW<
+        `uuid` STRING,
+        `enterprise_uuid` STRING,
+        `user_uuid` STRING
+    >,
+    `after` ROW<
+        `uuid` STRING,
+        `enterprise_uuid` STRING,
+        `user_uuid` STRING
+    >
 ) WITH (
     'connector' = 'kafka',
     'topic' = 'taxi_manager.assignment_managers',
     'properties.bootstrap.servers' = 'kafka:9092',
     'key.format' = 'raw',
-    'key.fields' = 'user_uuid',
+    'key.fields' = 'message_key',
     'value.format' = 'json',
-    'value.fields-include' = 'ALL',
+    'value.fields-include' = 'EXCEPT_KEY',
     'sink.delivery-guarantee' = 'at-least-once'
 );
 
 INSERT INTO assignment_managers
 SELECT
-    COALESCE(`after`.`user_uuid`, `before`.`user_uuid`) AS `user_uuid`,
-    COALESCE(`after`.`enterprise_uuid`, `before`.`enterprise_uuid`) AS `enterprise_uuid`,
-    `ts_ms` AS `timestamp`,
     CASE `op`
-        WHEN 'c' THEN 'create'
-        WHEN 'r' THEN 'create'
-        WHEN 'u' THEN 'update'
-        WHEN 'd' THEN 'delete'
-    END AS `op`
+        WHEN 'd' THEN `before`.`user_uuid`
+        ELSE `after`.`user_uuid`
+    END AS `message_key`,
+    `before`,
+    `after`
 FROM manager_cdc
 WHERE `op` IN ('c', 'r', 'u', 'd');
