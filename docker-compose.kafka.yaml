@@ -164,7 +164,7 @@ services:
     environment:
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
-        taskmanager.numberOfTaskSlots: 3
+        taskmanager.numberOfTaskSlots: 4
     networks:
       - kafka-network
 

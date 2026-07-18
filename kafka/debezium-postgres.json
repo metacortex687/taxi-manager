@@ -17,7 +17,7 @@
     "publication.name": "taxi_manager_debezium_publication",
     "publication.autocreate.mode": "filtered",
 
-    "table.include.list": "public\\.(vehicle_vehicledriver|vehicle_vehicle|enterprise_enterprise|enterprise_manager|vk_bot_vkuser|manager)",
+    "table.include.list": "public\\.(vehicle_vehicledriver|vehicle_vehicle|enterprise_enterprise|enterprise_manager|vk_bot_vkuser|vehicle_model)",
 
     "snapshot.mode": "initial"
   }
