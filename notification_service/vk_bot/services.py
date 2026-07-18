@@ -1,9 +1,7 @@
 from accounts.services import link_vk_account, logout
 from vk_bot.bot_client import VkChatBotClient
 
-def start_vk_bot_service(token, group_id, auth_api_url):
-   
-    vk_bot_client=VkChatBotClient(token, group_id)
+def start_vk_bot_service(vk_bot_client: VkChatBotClient, token, group_id, auth_api_url):
 
     for chat_user_id, text in vk_bot_client.listen():
         text = text.strip()
