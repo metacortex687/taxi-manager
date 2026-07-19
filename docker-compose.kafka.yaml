@@ -146,6 +146,7 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: debezium
       KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://debezium:8083
+      SERVER_FORWARDHEADERSSTRATEGY: framework
     ports:
       - "127.0.0.1:8089:8080"
     networks:
