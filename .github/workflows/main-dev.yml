@@ -84,6 +84,53 @@ jobs:
           port: ${{ secrets.DEV_HOST_PORT }}
           script: mkdir -p "$HOME/taxi-manager"
 
+      - name: Create Docker Compose environment files
+        shell: bash
+        env:
+          POSTGRES_USER: ${{ secrets.DEV_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DEV_POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.DEV_POSTGRES_DB }}
+          DJANGO_SUPERUSER_NAME: ${{ secrets.DEV_DJANGO_SUPERUSER_NAME }}
+          DJANGO_SUPERUSER_EMAIL: ${{ secrets.DEV_DJANGO_SUPERUSER_EMAIL }}
+          DJANGO_SUPERUSER_PASSWORD: ${{ secrets.DEV_DJANGO_SUPERUSER_PASSWORD }}
+          DJANGO_SECRET_KEY: ${{ secrets.DEV_DJANGO_SECRET_KEY }}
+          LOCATIONIQ_KEY: ${{ secrets.LOCATIONIQ_KEY }}
+          VK_BOT_TOKEN: ${{ secrets.VK_BOT_TOKEN }}
+          VK_BOT_GROUP_ID: ${{ secrets.VK_BOT_GROUP_ID }}
+          DEV_UI_PATH_SUFFIX: ${{ secrets.DEV_UI_PATH_SUFFIX }}
+          LOKI_URL: http://${{ secrets.OBS_HOST_IP }}:3100/loki/api/v1/push
+          TEMPO_ENDPOINT: ${{ secrets.OBS_HOST_IP }}:4317
+          PYROSCOPE_URL: http://${{ secrets.OBS_HOST_IP }}:4040
+          PROMETHEUS_REMOTE_WRITE_URL: http://${{ secrets.OBS_HOST_IP }}:9090/api/v1/write
+        run: |
+          set -euo pipefail
+          umask 077
+
+          {
+            printf 'POSTGRES_USER=%s\n' "$POSTGRES_USER"
+            printf 'POSTGRES_PASSWORD=%s\n' "$POSTGRES_PASSWORD"
+            printf 'POSTGRES_DB=%s\n' "$POSTGRES_DB"
+            printf 'DJANGO_SUPERUSER_NAME=%s\n' "$DJANGO_SUPERUSER_NAME"
+            printf 'DJANGO_SUPERUSER_EMAIL=%s\n' "$DJANGO_SUPERUSER_EMAIL"
+            printf 'DJANGO_SUPERUSER_PASSWORD=%s\n' "$DJANGO_SUPERUSER_PASSWORD"
+            printf 'DJANGO_SECRET_KEY=%s\n' "$DJANGO_SECRET_KEY"
+            printf 'LOCATIONIQ_KEY=%s\n' "$LOCATIONIQ_KEY"
+            printf 'VK_BOT_TOKEN=%s\n' "$VK_BOT_TOKEN"
+            printf 'VK_BOT_GROUP_ID=%s\n' "$VK_BOT_GROUP_ID"
+            printf 'DEV_UI_PATH_SUFFIX=%s\n' "$DEV_UI_PATH_SUFFIX"
+            printf 'DEPLOYMENT_ENVIRONMENT=dev\n'
+            printf 'LOKI_URL=%s\n' "$LOKI_URL"
+            printf 'TEMPO_ENDPOINT=%s\n' "$TEMPO_ENDPOINT"
+            printf 'PYROSCOPE_URL=%s\n' "$PYROSCOPE_URL"
+            printf 'PROMETHEUS_REMOTE_WRITE_URL=%s\n' "$PROMETHEUS_REMOTE_WRITE_URL"
+          } > .env.dev
+
+          {
+            printf 'POSTGRES_USER=%s\n' "$POSTGRES_USER"
+            printf 'POSTGRES_PASSWORD=%s\n' "$POSTGRES_PASSWORD"
+            printf 'POSTGRES_DB=%s\n' "$POSTGRES_DB"
+          } > .env.kafka
+
       - name: Upload deployment configuration
         uses: appleboy/scp-action@v1
         with:
@@ -91,7 +138,7 @@ jobs:
           username: ${{ secrets.DEV_HOST_USER }}
           key: ${{ secrets.DEV_HOST_SSH_PRIVATE_KEY }}
           port: ${{ secrets.DEV_HOST_PORT }}
-          source: "docker-compose.dev.yaml,docker-compose.kafka.yaml,nginx.conf,config.alloy,varnish/default.vcl,kafka"
+          source: ".env.dev,.env.kafka,docker-compose.dev.yaml,docker-compose.kafka.yaml,nginx.conf,config.alloy,varnish/default.vcl,kafka"
           target: "taxi-manager"
           overwrite: true
 
@@ -119,18 +166,9 @@ jobs:
 
             cd "$APP_DIR"
 
-            export POSTGRES_USER="${{ secrets.DEV_POSTGRES_USER }}"
-            export POSTGRES_PASSWORD="${{ secrets.DEV_POSTGRES_PASSWORD }}"
-            export POSTGRES_DB="${{ secrets.DEV_POSTGRES_DB }}"
-            export DJANGO_SUPERUSER_NAME="${{ secrets.DEV_DJANGO_SUPERUSER_NAME }}"
-            export DJANGO_SUPERUSER_EMAIL="${{ secrets.DEV_DJANGO_SUPERUSER_EMAIL }}"
-            export DJANGO_SUPERUSER_PASSWORD="${{ secrets.DEV_DJANGO_SUPERUSER_PASSWORD }}"
-            export DJANGO_SECRET_KEY="${{ secrets.DEV_DJANGO_SECRET_KEY }}"
-            export LOCATIONIQ_KEY="${{ secrets.LOCATIONIQ_KEY }}"
-            export VK_BOT_TOKEN="${{ secrets.VK_BOT_TOKEN }}"
-            export VK_BOT_GROUP_ID="${{ secrets.VK_BOT_GROUP_ID }}"
-            export DEV_UI_PATH_SUFFIX="${{ secrets.DEV_UI_PATH_SUFFIX }}"
+            chmod 600 .env.dev .env.kafka
 
+            DEV_UI_PATH_SUFFIX="$(sed -n 's/^DEV_UI_PATH_SUFFIX=//p' .env.dev)"
             case "$DEV_UI_PATH_SUFFIX" in
               ''|*[!A-Za-z0-9_-]*)
                 echo "DEV_UI_PATH_SUFFIX must contain only letters, digits, '_' or '-'"
@@ -138,15 +176,10 @@ jobs:
                 ;;
             esac
 
-            export DEPLOYMENT_ENVIRONMENT="dev"
-            export LOKI_URL="http://${{ secrets.OBS_HOST_IP }}:3100/loki/api/v1/push"
-            export TEMPO_ENDPOINT="${{ secrets.OBS_HOST_IP }}:4317"
-            export PYROSCOPE_URL="http://${{ secrets.OBS_HOST_IP }}:4040"
-            export PROMETHEUS_REMOTE_WRITE_URL="http://${{ secrets.OBS_HOST_IP }}:9090/api/v1/write"
-
-            docker compose -p taxi-manager -f docker-compose.dev.yaml pull
+            docker compose --env-file .env.dev -p taxi-manager -f docker-compose.dev.yaml pull
 
             docker compose \
+              --env-file .env.kafka \
               -p taxi-manager-kafka \
               -f docker-compose.kafka.yaml \
               pull \
@@ -157,19 +190,20 @@ jobs:
               kafka-ui
 
             # Create the Kafka network before Nginx joins it on the first deployment.
-            docker compose -p taxi-manager-kafka -f docker-compose.kafka.yaml up -d kafka
+            docker compose --env-file .env.kafka -p taxi-manager-kafka -f docker-compose.kafka.yaml up -d kafka
 
-            docker compose -p taxi-manager -f docker-compose.dev.yaml up -d --no-build --force-recreate --remove-orphans
+            docker compose --env-file .env.dev -p taxi-manager -f docker-compose.dev.yaml up -d --no-build --force-recreate --remove-orphans
 
             docker compose \
+              --env-file .env.kafka \
               -p taxi-manager-kafka \
               -f docker-compose.kafka.yaml \
               up -d --build --remove-orphans
 
-            docker compose -p taxi-manager -f docker-compose.dev.yaml exec -T nginx nginx -t
+            docker compose --env-file .env.dev -p taxi-manager -f docker-compose.dev.yaml exec -T nginx nginx -t
 
-            docker compose -p taxi-manager -f docker-compose.dev.yaml ps
-            docker compose -p taxi-manager-kafka -f docker-compose.kafka.yaml ps -a
+            docker compose --env-file .env.dev -p taxi-manager -f docker-compose.dev.yaml ps
+            docker compose --env-file .env.kafka -p taxi-manager-kafka -f docker-compose.kafka.yaml ps -a
 
             echo "Disk usage before cleanup:"
             df -h
