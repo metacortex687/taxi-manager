@@ -129,6 +129,14 @@ jobs:
             export LOCATIONIQ_KEY="${{ secrets.LOCATIONIQ_KEY }}"
             export VK_BOT_TOKEN="${{ secrets.VK_BOT_TOKEN }}"
             export VK_BOT_GROUP_ID="${{ secrets.VK_BOT_GROUP_ID }}"
+            export DEV_UI_PATH_SUFFIX="${{ secrets.DEV_UI_PATH_SUFFIX }}"
+
+            case "$DEV_UI_PATH_SUFFIX" in
+              ''|*[!A-Za-z0-9_-]*)
+                echo "DEV_UI_PATH_SUFFIX must contain only letters, digits, '_' or '-'"
+                exit 1
+                ;;
+            esac
 
             export DEPLOYMENT_ENVIRONMENT="dev"
             export LOKI_URL="http://${{ secrets.OBS_HOST_IP }}:3100/loki/api/v1/push"
@@ -137,7 +145,6 @@ jobs:
             export PROMETHEUS_REMOTE_WRITE_URL="http://${{ secrets.OBS_HOST_IP }}:9090/api/v1/write"
 
             docker compose -p taxi-manager -f docker-compose.dev.yaml pull
-            docker compose -p taxi-manager -f docker-compose.dev.yaml up -d --no-build --force-recreate --remove-orphans
 
             docker compose \
               -p taxi-manager-kafka \
@@ -149,10 +156,17 @@ jobs:
               kafka-create-topics \
               kafka-ui
 
+            # Create the Kafka network before Nginx joins it on the first deployment.
+            docker compose -p taxi-manager-kafka -f docker-compose.kafka.yaml up -d kafka
+
+            docker compose -p taxi-manager -f docker-compose.dev.yaml up -d --no-build --force-recreate --remove-orphans
+
             docker compose \
               -p taxi-manager-kafka \
               -f docker-compose.kafka.yaml \
               up -d --build --remove-orphans
+
+            docker compose -p taxi-manager -f docker-compose.dev.yaml exec -T nginx nginx -t
 
             docker compose -p taxi-manager -f docker-compose.dev.yaml ps
             docker compose -p taxi-manager-kafka -f docker-compose.kafka.yaml ps -a
