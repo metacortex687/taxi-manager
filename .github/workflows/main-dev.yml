@@ -91,7 +91,7 @@ jobs:
           username: ${{ secrets.DEV_HOST_USER }}
           key: ${{ secrets.DEV_HOST_SSH_PRIVATE_KEY }}
           port: ${{ secrets.DEV_HOST_PORT }}
-          source: "docker-compose.dev.yaml,nginx.conf,config.alloy,varnish/default.vcl"
+          source: "docker-compose.dev.yaml,docker-compose.kafka.yaml,nginx.conf,config.alloy,varnish/default.vcl,kafka"
           target: "taxi-manager"
           overwrite: true
 
@@ -136,10 +136,26 @@ jobs:
             export PYROSCOPE_URL="http://${{ secrets.OBS_HOST_IP }}:4040"
             export PROMETHEUS_REMOTE_WRITE_URL="http://${{ secrets.OBS_HOST_IP }}:9090/api/v1/write"
 
-            docker compose -f docker-compose.dev.yaml pull
-            docker compose -f docker-compose.dev.yaml up -d --no-build --force-recreate --remove-orphans
+            docker compose -p taxi-manager -f docker-compose.dev.yaml pull
+            docker compose -p taxi-manager -f docker-compose.dev.yaml up -d --no-build --force-recreate --remove-orphans
 
-            docker compose -f docker-compose.dev.yaml ps
+            docker compose \
+              -p taxi-manager-kafka \
+              -f docker-compose.kafka.yaml \
+              pull \
+              kafka \
+              debezium \
+              debezium-create-connector \
+              kafka-create-topics \
+              kafka-ui
+
+            docker compose \
+              -p taxi-manager-kafka \
+              -f docker-compose.kafka.yaml \
+              up -d --build --remove-orphans
+
+            docker compose -p taxi-manager -f docker-compose.dev.yaml ps
+            docker compose -p taxi-manager-kafka -f docker-compose.kafka.yaml ps -a
 
             echo "Disk usage before cleanup:"
             df -h

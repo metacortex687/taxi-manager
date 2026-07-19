@@ -1,6 +1,7 @@
 services:
   kafka:
     image: apache/kafka:4.3.1
+    restart: unless-stopped
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -14,11 +15,14 @@ services:
 
     ports:
       - "127.0.0.1:9092:29092"
+    volumes:
+      - kafka-data:/tmp/kraft-combined-logs
     networks:
       - kafka-network
 
   debezium:
     image: quay.io/debezium/connect:3.6
+    restart: unless-stopped
     depends_on:
       - kafka
     environment:
@@ -115,7 +119,7 @@ services:
           --if-not-exists \
           --topic taxi_manager.enterprises \
           --partitions 1 \
-          --replication-factor 1
+          --replication-factor 1 \
           --config cleanup.policy=compact \
           --config min.compaction.lag.ms=604800000 \
           --config max.compaction.lag.ms=604800000
@@ -134,6 +138,7 @@ services:
 
   kafka-ui:
     image: provectuslabs/kafka-ui
+    restart: unless-stopped
     depends_on:
       - kafka
     environment:
@@ -149,6 +154,7 @@ services:
   flink-jobmanager:
     build:
       context: ./kafka/flink
+    restart: unless-stopped
     command: jobmanager
     environment:
       FLINK_PROPERTIES: |
@@ -161,6 +167,7 @@ services:
   flink-taskmanager:
     build:
       context: ./kafka/flink
+    restart: unless-stopped
     command: taskmanager
     depends_on:
       - flink-jobmanager
@@ -210,5 +217,6 @@ networks:
     name: taxi-manager_default
 
 volumes:
+  kafka-data:
   flink-checkpoints:
   flink-savepoints:
