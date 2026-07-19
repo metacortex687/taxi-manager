@@ -45,14 +45,30 @@ demo-up:
 
 dev-up:
 	docker compose \
+		-p taxi-manager-kafka \
+		-f docker-compose.kafka.yaml \
+		up -d --build kafka kafka-ui flink-jobmanager flink-taskmanager
+	docker compose \
 		-p taxi-manager \
 		-f docker-compose.dev-local.observability.yaml \
 		-f docker-compose.dev-local.yaml \
 		up -d --build --force-recreate --remove-orphans
+	docker compose \
+		-p taxi-manager-kafka \
+		-f docker-compose.kafka.yaml \
+		up -d --build
 
 dev-down:
-	docker compose -f docker-compose.dev-local.yaml down
-	docker compose -f docker-compose.dev-local.observability.yaml down
+	docker compose \
+		-p taxi-manager \
+		-f docker-compose.dev-local.observability.yaml \
+		-f docker-compose.dev-local.yaml \
+		down
+	docker compose \
+		-p taxi-manager-kafka \
+		-f docker-compose.kafka.yaml \
+		down
+	docker network rm taxi-manager_default 2>/dev/null || true
 
 kafka-up:
 	docker compose -f docker-compose.kafka.yaml up -d
