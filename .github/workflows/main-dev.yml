@@ -75,6 +75,14 @@ jobs:
           push: true
           tags: metacortex687/taxi-manager-varnish-exporter-dev:latest
 
+      - name: Build and push notification service
+        uses: docker/build-push-action@v7
+        with:
+          context: ./notification_service
+          file: ./notification_service/Dockerfile
+          push: true
+          tags: metacortex687/taxi-manager-notification-service-dev:latest
+
       - name: Prepare deployment directory
         uses: appleboy/ssh-action@v1
         with:
@@ -131,6 +139,13 @@ jobs:
             printf 'POSTGRES_DB=%s\n' "$POSTGRES_DB"
           } > .env.kafka
 
+          {
+            printf 'VK_BOT_TOKEN=%s\n' "$VK_BOT_TOKEN"
+            printf 'VK_BOT_GROUP_ID=%s\n' "$VK_BOT_GROUP_ID"
+            printf 'AUTH_API_URL=http://nginx/api/v1/auth/\n'
+            printf 'KAFKA_BOOTSTRAP_SERVERS=kafka:9092\n'
+          } > .env.notification-service
+
       - name: Upload deployment configuration
         uses: appleboy/scp-action@v1
         with:
@@ -138,7 +153,7 @@ jobs:
           username: ${{ secrets.DEV_HOST_USER }}
           key: ${{ secrets.DEV_HOST_SSH_PRIVATE_KEY }}
           port: ${{ secrets.DEV_HOST_PORT }}
-          source: ".env.dev,.env.kafka,docker-compose.dev.yaml,docker-compose.kafka.yaml,nginx.conf,config.alloy,varnish/default.vcl,kafka"
+          source: ".env.dev,.env.kafka,.env.notification-service,docker-compose.dev.yaml,docker-compose.kafka.yaml,docker-compose.notification-service.yaml,nginx.conf,config.alloy,varnish/default.vcl,kafka"
           target: "taxi-manager"
           overwrite: true
 
@@ -162,11 +177,15 @@ jobs:
             mkdir -p "$APP_DIR"
             mkdir -p "$APP_DIR/data/logs/nginx"
             mkdir -p "$APP_DIR/data/goaccess"
+            mkdir -p "$APP_DIR/data/notification-service"
             mkdir -p "$APP_DIR/varnish"
+
+            touch "$APP_DIR/data/notification-service/db.sqlite3"
 
             cd "$APP_DIR"
 
-            chmod 600 .env.dev .env.kafka
+            chmod 600 .env.dev .env.kafka .env.notification-service
+            chmod 600 data/notification-service/db.sqlite3
 
             DEV_UI_PATH_SUFFIX="$(sed -n 's/^DEV_UI_PATH_SUFFIX=//p' .env.dev)"
             case "$DEV_UI_PATH_SUFFIX" in
@@ -177,6 +196,12 @@ jobs:
             esac
 
             docker compose --env-file .env.dev -p taxi-manager -f docker-compose.dev.yaml pull
+
+            docker compose \
+              --env-file .env.notification-service \
+              -p notification-service \
+              -f docker-compose.notification-service.yaml \
+              pull
 
             docker compose \
               --env-file .env.kafka \
@@ -195,6 +220,12 @@ jobs:
             docker compose --env-file .env.dev -p taxi-manager -f docker-compose.dev.yaml up -d --no-build --force-recreate --remove-orphans
 
             docker compose \
+              --env-file .env.notification-service \
+              -p notification-service \
+              -f docker-compose.notification-service.yaml \
+              up -d --no-build --force-recreate --remove-orphans
+
+            docker compose \
               --env-file .env.kafka \
               -p taxi-manager-kafka \
               -f docker-compose.kafka.yaml \
@@ -203,6 +234,7 @@ jobs:
             docker compose --env-file .env.dev -p taxi-manager -f docker-compose.dev.yaml exec -T nginx nginx -t
 
             docker compose --env-file .env.dev -p taxi-manager -f docker-compose.dev.yaml ps
+            docker compose --env-file .env.notification-service -p notification-service -f docker-compose.notification-service.yaml ps
             docker compose --env-file .env.kafka -p taxi-manager-kafka -f docker-compose.kafka.yaml ps -a
 
             echo "Disk usage before cleanup:"

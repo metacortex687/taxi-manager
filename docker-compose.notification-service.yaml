@@ -1,0 +1,23 @@
+services:
+  notification-service:
+    image: metacortex687/taxi-manager-notification-service-dev:latest
+    pull_policy: always
+    restart: unless-stopped
+    labels:
+      logging: "alloy"
+    env_file:
+      - .env.notification-service
+    volumes:
+      - ./data/notification-service/db.sqlite3:/app/db.sqlite3
+    networks:
+      - taxi-manager-network
+      - kafka-network
+
+networks:
+  taxi-manager-network:
+    external: true
+    name: taxi-manager_default
+
+  kafka-network:
+    external: true
+    name: taxi-manager-kafka_kafka-network
