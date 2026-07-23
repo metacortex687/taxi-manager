@@ -57,4 +57,5 @@ dev = [
     "pytest>=9.0.2",
     "pytest-django>=4.11.1",
     "ruff>=0.14.10",
+    "unittest-xml-reporting>=4.0.0",
 ]

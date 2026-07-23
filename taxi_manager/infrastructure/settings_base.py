@@ -281,3 +281,8 @@ DJOSER = {
         ),
     },
 }
+
+
+if test_output_dir := os.getenv("TEST_OUTPUT_DIR"):
+    TEST_RUNNER = "xmlrunner.extra.djangotestrunner.XMLTestRunner"
+    TEST_OUTPUT_DIR = test_output_dir
