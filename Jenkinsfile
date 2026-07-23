@@ -12,7 +12,7 @@ pipeline {
     }
 
     stages {
-        
+
         stage('Check user') {
             steps {
                 sh 'echo "Environment USER: $USER"'
@@ -62,18 +62,44 @@ pipeline {
                         sleep 2
                     done
 
+                    mkdir -p reports
+
+                    set +e
+
                     docker run \
-                        --rm \
+                        --name "$TEST_CONTAINER" \
                         --network "$CI_NETWORK" \
                         -e DATABASE_URL="postgis://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}" \
                         -e SECRET_KEY="jenkins-test-secret-key" \
                         -e LOCATIONIQ_KEY="" \
+                        -e TEST_OUTPUT_DIR="/reports" \
                         "$APP_IMAGE" \
                         uv run manage.py test
+
+                    TEST_EXIT_CODE=$?
+
+                    docker cp "$TEST_CONTAINER:/reports/." reports/
+                    docker rm "$TEST_CONTAINER"
+
+                    exit "$TEST_EXIT_CODE"
                 '''
             }
         }
     }
+
+    post {
+        always {
+            junit testResults: 'reports/*.xml',
+                allowEmptyResults: true
+
+            sh '''
+                docker rm -f "$TEST_CONTAINER" 2>/dev/null || true
+                docker rm -f "$DB_CONTAINER" 2>/dev/null || true
+                docker network rm "$CI_NETWORK" 2>/dev/null || true
+                docker image rm "$APP_IMAGE" 2>/dev/null || true
+            '''
+    }
+}
 
 
 }
