@@ -5,6 +5,7 @@ pipeline {
         APP_IMAGE   = "taxi-manager-ci:${BUILD_NUMBER}"
         DB_CONTAINER = "taxi-manager-ci-db-${BUILD_NUMBER}"
         CI_NETWORK   = "taxi-manager-ci-${BUILD_NUMBER}"
+        TEST_CONTAINER = "taxi-manager-ci-tests-${BUILD_NUMBER}"
 
         POSTGRES_DB       = "taxi_manager"
         POSTGRES_USER     = "postgres"
@@ -62,9 +63,10 @@ pipeline {
                         sleep 2
                     done
 
+                    rm -rf reports
                     mkdir -p reports
 
-                    set +e
+                    TEST_EXIT_CODE=0
 
                     docker run \
                         --name "$TEST_CONTAINER" \
@@ -74,12 +76,17 @@ pipeline {
                         -e LOCATIONIQ_KEY="" \
                         -e TEST_OUTPUT_DIR="/reports" \
                         "$APP_IMAGE" \
-                        uv run manage.py test
+                        uv run manage.py test \
+                        || TEST_EXIT_CODE=$?
 
-                    TEST_EXIT_CODE=$?
+                    echo "Копирование XML-отчётов из $TEST_CONTAINER"
 
-                    docker cp "$TEST_CONTAINER:/reports/." reports/
-                    docker rm "$TEST_CONTAINER"
+                    docker cp \
+                        "$TEST_CONTAINER:/reports/." \
+                        reports/
+
+                    echo "Найденные XML-отчёты:"
+                    find reports -type f -name "*.xml" -print
 
                     exit "$TEST_EXIT_CODE"
                 '''
@@ -89,17 +96,15 @@ pipeline {
 
     post {
         always {
-            junit testResults: 'reports/*.xml',
-                allowEmptyResults: true
-
             sh '''
                 docker rm -f "$TEST_CONTAINER" 2>/dev/null || true
                 docker rm -f "$DB_CONTAINER" 2>/dev/null || true
                 docker network rm "$CI_NETWORK" 2>/dev/null || true
                 docker image rm "$APP_IMAGE" 2>/dev/null || true
             '''
+
+            junit testResults: 'reports/**/*.xml',
+                allowEmptyResults: false
+        }
     }
-}
-
-
 }
