@@ -119,6 +119,7 @@ pipeline {
                         -e DATABASE_URL="postgis://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}" \
                         -e SECRET_KEY="jenkins-test-secret-key" \
                         -e LOCATIONIQ_KEY="" \
+                        -e DEBUG="True" \
                         "$APP_IMAGE" \
                         make run-dev
 
