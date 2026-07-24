@@ -11,7 +11,7 @@ pipeline {
         POSTGRES_DB       = "taxi_manager"
         POSTGRES_USER     = "postgres"
         POSTGRES_PASSWORD = "postgres"
-        BASE_URL = "http://app:8000"
+        BASE_URL = "http://taxi-app:8000"
     }
 
     stages {
@@ -115,7 +115,7 @@ pipeline {
                     docker run -d \
                         --name "$APP_CONTAINER" \
                         --network "$CI_NETWORK" \
-                        --network-alias app \
+                        --network-alias taxi-app \
                         -e DATABASE_URL="postgis://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}" \
                         -e SECRET_KEY="jenkins-test-secret-key" \
                         -e LOCATIONIQ_KEY="" \
