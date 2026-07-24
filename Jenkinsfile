@@ -103,13 +103,21 @@ pipeline {
             }
 
             steps {
-                sh '''
-                    node --version
-                    npm --version
+                dir('playwright') {
+                    sh '''
+                        echo "Current directory:"
+                        pwd
+                        
+                        echo "Files:"
+                        ls -la
+                        
+                        node --version
+                        npm --version
 
-                    npm ci
-                    npx playwright test
-                '''
+                        npm ci
+                        npx playwright test
+                    '''                    
+                }
             }
 
             post {
