@@ -6,6 +6,7 @@ pipeline {
         DB_CONTAINER = "taxi-manager-ci-db-${BUILD_NUMBER}"
         CI_NETWORK   = "taxi-manager-ci-${BUILD_NUMBER}"
         TEST_CONTAINER = "taxi-manager-ci-tests-${BUILD_NUMBER}"
+        APP_CONTAINER = "taxi-manager-ci-app-${BUILD_NUMBER}"
 
         POSTGRES_DB       = "taxi_manager"
         POSTGRES_USER     = "postgres"
@@ -92,6 +93,31 @@ pipeline {
                 '''
             }
         }
+
+        stage('Start demo application') {
+            steps {
+                sh '''
+                    docker run -d \
+                        --name "$APP_CONTAINER" \
+                        --network "$CI_NETWORK" \
+                        --network-alias app \
+                        -e DATABASE_URL="postgis://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}" \
+                        -e SECRET_KEY="jenkins-test-secret-key" \
+                        -e LOCATIONIQ_KEY="" \
+                        "$APP_IMAGE" \
+                        sh -c "make migrate && make ensure-demo-data && make run-dev"
+
+                    until docker exec "$APP_CONTAINER" \
+                        uv run python -c \
+                        'import socket; socket.create_connection(("127.0.0.1", 8000), 2).close()'
+                    do
+                        sleep 2
+                    done
+                '''
+            }
+        }
+
+
 
         stage('Playwright tests') {
             agent {
