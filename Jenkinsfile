@@ -160,6 +160,7 @@ pipeline {
     post {
         always {
             sh '''
+                docker rm -f "$APP_CONTAINER" 2>/dev/null || true
                 docker rm -f "$TEST_CONTAINER" 2>/dev/null || true
                 docker rm -f "$DB_CONTAINER" 2>/dev/null || true
                 docker network rm "$CI_NETWORK" 2>/dev/null || true
