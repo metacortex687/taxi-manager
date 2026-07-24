@@ -11,6 +11,7 @@ pipeline {
         POSTGRES_DB       = "taxi_manager"
         POSTGRES_USER     = "postgres"
         POSTGRES_PASSWORD = "postgres"
+        BASE_URL = "http://app:8000"
     }
 
     stages {
@@ -123,7 +124,7 @@ pipeline {
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.61.0-noble'
-                    args '--ipc=host'
+                    args "--ipc=host --network=${env.CI_NETWORK}"
                     reuseNode true
                 }
             }
@@ -149,7 +150,7 @@ pipeline {
             post {
                 always {
                     archiveArtifacts(
-                        artifacts: 'playwright-report/**',
+                        artifacts: 'playwright/playwright-report/**',
                         allowEmptyArchive: true
                     )
                 }
