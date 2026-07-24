@@ -95,6 +95,20 @@ pipeline {
             }
         }
 
+        stage('Fill demo data') {
+            steps {
+                sh '''
+                    docker run --rm \
+                        --network "$CI_NETWORK" \
+                        -e DATABASE_URL="postgis://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}" \
+                        -e SECRET_KEY="jenkins-test-secret-key" \
+                        -e LOCATIONIQ_KEY="" \
+                        "$APP_IMAGE" \
+                        sh -c "make migrate && make ensure-demo-data"
+                '''
+            }
+        }
+
         stage('Start demo application') {
             steps {
                 sh '''
@@ -106,12 +120,18 @@ pipeline {
                         -e SECRET_KEY="jenkins-test-secret-key" \
                         -e LOCATIONIQ_KEY="" \
                         "$APP_IMAGE" \
-                        sh -c "make migrate && make ensure-demo-data && make run-dev"
+                        make run-dev
 
                     until docker exec "$APP_CONTAINER" \
                         uv run python -c \
                         'import socket; socket.create_connection(("127.0.0.1", 8000), 2).close()'
                     do
+                        if [ "$(docker inspect -f '{{.State.Running}}' "$APP_CONTAINER" 2>/dev/null)" != "true" ]
+                        then
+                            docker logs "$APP_CONTAINER"
+                            exit 1
+                        fi
+
                         sleep 2
                     done
                 '''
