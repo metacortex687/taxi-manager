@@ -92,6 +92,35 @@ pipeline {
                 '''
             }
         }
+
+        stage('Playwright tests') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.61.0-noble'
+                    args '--ipc=host'
+                    reuseNode true
+                }
+            }
+
+            steps {
+                sh '''
+                    node --version
+                    npm --version
+
+                    npm ci
+                    npx playwright test
+                '''
+            }
+
+            post {
+                always {
+                    archiveArtifacts(
+                        artifacts: 'playwright-report/**',
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
     }
 
     post {
