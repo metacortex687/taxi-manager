@@ -1,0 +1,68 @@
+services:
+  db:
+    image: postgis/postgis:16-3.5
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-taxi_manager}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  taxi-app:
+    build:
+      context: .
+    image: taxi-manager-ci:${BUILD_NUMBER:-local}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgis://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-taxi_manager}
+      SECRET_KEY: jenkins-test-secret-key
+      LOCATIONIQ_KEY: ""
+      DEBUG: "True"
+      PYTHONUNBUFFERED: "1"
+      TEST_OUTPUT_DIR: /reports
+
+      OTEL_SERVICE_NAME: ${JOB_NAME:-taxi-manager-ci}
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_RESOURCE_ATTRIBUTES: build=${BUILD_TAG:-local},suite=playwright
+
+    command:
+      - uv
+      - run
+      - opentelemetry-instrument
+      - make
+      - run-dev
+
+    healthcheck:
+      test:
+        - CMD
+        - uv
+        - run
+        - python
+        - -c
+        - import socket; socket.create_connection(("127.0.0.1", 8000), 2).close()
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+    expose:
+      - "8000"
+
+    networks:
+      - default
+      - observability
+
+networks:
+  observability:
+    external: true
+    name: jenkins-ci
