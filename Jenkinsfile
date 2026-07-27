@@ -61,22 +61,18 @@ pipeline {
                     set -e
                     sleep 10
 
-                    FILTER="resource.service.name = \\"taxi-manager-ci\\" && resource.build = \\"${BUILD_TAG}\\""
-                    TRACES="{ ${FILTER} && span:kind = server }"
-                    N_PLUS_ONE="${TRACES} >> { ${FILTER} && span:name =~ \\"SELECT.*\\" && span.db.statement != nil } | by(span.db.statement) | count() > 2"
+                    RESULT=$(curl -fsS --get "${TEMPO_URL}/api/search" \
+                        --data-urlencode "q={ resource.service.name = \\"taxi-manager-ci\\" && resource.build = \\"${BUILD_TAG}\\" && span:kind = server }" \
+                        --data-urlencode "limit=20")
 
-                    search() {
-                        curl -fsS --get "${TEMPO_URL}/api/search" \
-                            --data-urlencode "q=$1" \
-                            --data-urlencode "limit=20"
-                    }
-
-                    search "$TRACES" | grep -q '"traceID"' || {
+                    printf '%s' "$RESULT" | grep -q '"traceID"' || {
                         echo "Трейсы сборки ${BUILD_TAG} не найдены"
                         exit 1
                     }
 
-                    RESULT=$(search "$N_PLUS_ONE")
+                    RESULT=$(curl -fsS --get "${TEMPO_URL}/api/search" \
+                        --data-urlencode "q={ resource.service.name = \\"taxi-manager-ci\\" && resource.build = \\"${BUILD_TAG}\\" && span:kind = server } >> { resource.service.name = \\"taxi-manager-ci\\" && resource.build = \\"${BUILD_TAG}\\" && span:name =~ \\"SELECT.*\\" && span.db.statement != nil } | by(span.db.statement) | count() > 2" \
+                        --data-urlencode "limit=20")
 
                     if printf '%s' "$RESULT" | grep -q '"traceID"'; then
                         echo "Обнаружена возможная проблема N+1"
