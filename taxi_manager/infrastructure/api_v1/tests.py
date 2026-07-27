@@ -386,7 +386,7 @@ class VehicleAPITest(TestCase):
 
     def test_cannot_create_vehicle_with_short_vin_return_400(self):
         """
-        VIN Ð½Ð¾Ð¼ÐµÑ€ Ð² Ð·Ð°Ð¿Ð¸ÑÐ¸ Ð¾Ð± Ð°Ð²Ñ‚Ð¾ Ð½Ðµ Ð¼Ð¾Ð¶ÐµÑ‚ Ð±Ñ‹Ñ‚ÑŒ Ð¼ÐµÐ½ÑŒÑˆÐµ 17 ÑÐ¸Ð¼Ð²Ð¾Ð»Ð¾Ð²
+        VIN номер в записи об авто не может быть меньше 17 символов
         """
 
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
@@ -411,7 +411,7 @@ class VehicleAPITest(TestCase):
 
     def test_cannot_create_vehicle_with_long_vin_return_400(self):
         """
-        VIN Ð½Ð¾Ð¼ÐµÑ€ Ð² Ð·Ð°Ð¿Ð¸ÑÐ¸ Ð¾Ð± Ð°Ð²Ñ‚Ð¾ Ð½Ðµ Ð¼Ð¾Ð¶ÐµÑ‚ Ð±Ñ‹Ñ‚ÑŒ Ð´Ð»Ð¸Ð½Ð½ÐµÐµ 17 ÑÐ¸Ð¼Ð²Ð¾Ð»Ð¾Ð²
+        VIN номер в записи об авто не может быть длиннее 17 символов
         """
 
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
@@ -436,8 +436,8 @@ class VehicleAPITest(TestCase):
 
     def test_cannot_create_vehicle_with_invalid_chars_vin_return_400(self):
         """
-        VIN Ð½Ð¾Ð¼ÐµÑ€ Ð¼Ð¾Ð¶ÐµÑ‚ ÑÐ¾Ð´ÐµÑ€Ð¶Ð°Ñ‚ÑŒ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ ÑÐ¸Ð¼Ð²Ð¾Ð»Ñ‹ "0 1 2 3 4 5 6 7 8 9 A B C D E F G H J K L M N P R S T U V W X Y Z"
-        ÑÐ¸Ð¼Ð²Ð¾Ð»Ñ‹ I, O, Q Ð·Ð°Ð¿Ñ€ÐµÑ‰ÐµÐ½Ñ‹
+        VIN номер может содержать только символы "0 1 2 3 4 5 6 7 8 9 A B C D E F G H J K L M N P R S T U V W X Y Z"
+        символы I, O, Q запрещены
         """
 
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
@@ -474,7 +474,7 @@ class TokenAPITest(TestCase):
 
     def test_token_login_success_return_200(self):
         """
-        ÐŸÐ¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»ÑŒ Ð¼Ð¾Ð¶ÐµÑ‚ Ð°Ð²Ñ‚Ð¾Ñ€Ð¸Ð·Ð¾Ð²Ð°Ñ‚ÑŒÑÑ, Ð¿Ð¾ÑƒÐ»Ñ‡Ð¸Ñ‚ÑŒ Ñ‚Ð¾ÐºÐµÐ½, Ð¸ Ñ Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ð½Ð¸ÐµÐ¼ ÑÑ‚Ð¾Ð³Ð¾ Ñ‚Ð¾ÐºÐµÐ½Ð° Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð½Ð°Ð¿Ñ€Ð¸Ð¼ÐµÑ€ Ð¸Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸ÑŽ Ð¾ ÑÐ²Ð¾ÐµÐ¹ ÑƒÑ‡ÐµÑ‚Ð½Ð¾Ð¹ Ð·Ð°Ð¿Ð¸ÑÐ¸.
+        Пользователь может авторизоваться, поулчить токен, и с использованием этого токена получить например информацию о своей учетной записи.
         """
         response = self.client.post(
             "/api/v1/auth/token/login/", {"username": "manager1", "password": "secret"}
@@ -492,7 +492,7 @@ class TokenAPITest(TestCase):
 
     def test_token_login_failure_return_401(self):
         """
-        Ð’ ÑÐ»ÑƒÑ‡Ð°Ðµ ÐµÑÐ»Ð¸ Ð¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»ÑŒ Ð²Ð²Ð¾Ð´Ð¸Ñ‚ Ð½ÐµÐ¿Ñ€Ð°Ð²Ð¸Ð»ÑŒÐ½Ñ‹Ðµ ÑƒÑ‡ÐµÑ‚Ð½Ñ‹Ðµ Ð´Ð°Ð½Ð½Ñ‹Ðµ, Ñ‚Ð¾ Ð¾Ð½ Ð½Ðµ Ð¼Ð¾Ð¶ÐµÑ‚ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ñ‚Ð¾ÐºÐµÐ½
+        В случае если пользователь вводит неправильные учетные данные, то он не может получить токен
         """
         response = self.client.post(
             "/api/v1/auth/token/login/", {"username": "manager1", "password": "wrong"}
@@ -502,7 +502,7 @@ class TokenAPITest(TestCase):
 
     def test_manager_can_access_vehile_list_with_token_return_200(self):
         """
-        ÐœÐµÐ½ÐµÐ´Ð¶ÐµÑ€ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ð² Ñ‚Ð¾ÐºÐµÐ½, Ð¼Ð¾Ð¶ÐµÑ‚ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð´Ð¾ÑÑ‚ÑƒÐ¿ Ð´Ð¾ ÑÐ¿Ð¸ÑÐºÐ° Ð¼Ð°ÑˆÐ¸Ð½.
+        Менеджер получив токен, может получить доступ до списка машин.
         """
         response = self.client.post(
             "/api/v1/auth/token/login/", {"username": "manager1", "password": "secret"}
@@ -519,7 +519,7 @@ class TokenAPITest(TestCase):
 
     def test_cannot_access_vehile_list_with_invalid_token_return_401(self):
         """
-        Ð¡ Ð½ÐµÐ¿Ñ€Ð°Ð²Ð¸Ð»ÑŒÐ½Ñ‹Ð¼ Ñ‚Ð¾ÐºÐµÐ½Ð¾Ð¼, Ð½ÐµÐ»ÑŒÐ·Ñ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð´Ð¾ÑÑ‚ÑƒÐ¿ Ð´Ð¾ ÑÐ¿Ð¸ÑÐºÐ° Ð¼Ð°ÑˆÐ¸Ð½. ÐšÐ¾Ð´ Ð²Ð¾Ð·Ð²Ñ€Ð°Ñ‚Ð° 401.
+        С неправильным токеном, нельзя получить доступ до списка машин. Код возврата 401.
         """
 
         response = self.client.get(
@@ -529,7 +529,7 @@ class TokenAPITest(TestCase):
 
     def test_cannot_access_vehile_list_without_token_return_401(self):
         """
-        Ð‘ÐµÐ· Ñ‚Ð¾ÐºÐµÐ½Ð°, Ð½ÐµÐ»ÑŒÐ·Ñ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð´Ð¾ÑÑ‚ÑƒÐ¿ Ð´Ð¾ ÑÐ¿Ð¸ÑÐºÐ° Ð¼Ð°ÑˆÐ¸Ð½. ÐšÐ¾Ð´ Ð²Ð¾Ð·Ð²Ñ€Ð°Ñ‚Ð° 401.
+        Без токена, нельзя получить доступ до списка машин. Код возврата 401.
         """
 
         response = self.client.get("/api/v1/vehicles/")
@@ -537,7 +537,7 @@ class TokenAPITest(TestCase):
 
     def test_get_unknown_endpoint_return_404(self):
         """
-        Ð‘ÐµÐ· Ñ‚Ð¾ÐºÐµÐ½Ð°, Ð¿Ð¾Ð¿Ñ‹Ñ‚ÐºÐ° Ð´Ð¾ÑÑ‚ÑƒÐ¿Ð° Ð´Ð¾ Ð½ÐµÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÑŽÑ‰ÐµÐ³Ð¾ Ñ€ÐµÑÑƒÑ€ÑÐ°.
+        Без токена, попытка доступа до несуществующего ресурса.
         """
 
         response = self.client.get("/api/v1/unknown_endpoint/")
@@ -857,7 +857,7 @@ class TripPointAPITest(BaseAuthTestCase):
 
     def test_return_status_code_200(self):
         """
-        ÐŸÐ¾Ð»ÑƒÑ‡ÐµÐ½Ð¸Ðµ Ð¼Ð°Ñ€ÑˆÑ€ÑƒÑ‚Ð° Ð¿Ð¾ÐµÐ·Ð´ÐºÐ¸ Ñ€Ð°Ð±Ð¾Ñ‚Ð°ÐµÑ‚
+        Получение маршрута поездки работает
         """
 
         token = self.get_token(self.manager1)
@@ -1047,7 +1047,7 @@ class TripAPITest(BaseAuthTestCase):
 
     def test_list_trips_returns_200_for_manager(self):
         """
-        ÐœÐµÐ½ÐµÐ´Ð¶ÐµÑ€ Ð¼Ð¾Ð¶ÐµÑ‚ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ ÑÐ¿Ð¸ÑÐ¾Ðº Ð¿Ð¾ÐµÐ·Ð´Ð¾Ðº Ð°Ð²Ñ‚Ð¾Ð¼Ð¾Ð±Ð¸Ð»Ñ
+        Менеджер может получить список поездок автомобиля
         """
         response = self.client_get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1
@@ -1060,7 +1060,7 @@ class TripAPITest(BaseAuthTestCase):
 
     def test_trip_list_contains_start_point(self):
         """
-        Ð’ Ð¸Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸Ð¸ Ð¿Ð¾ Ð¿Ð¾ÐµÐ·Ð´ÐºÐµ ÐµÑÑ‚ÑŒ ÑÑ‚Ð°Ñ€Ñ‚Ð¾Ð²Ð°Ñ Ñ‚Ð¾Ñ‡ÐºÐ°
+        В информации по поездке есть стартовая точка
         """
         response = self.client_get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1
@@ -1077,7 +1077,7 @@ class TripAPITest(BaseAuthTestCase):
 
     def test_trip_list_contains_end_point(self):
         """
-        Ð’ Ð¸Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸Ð¸ Ð¿Ð¾ Ð¿Ð¾ÐµÐ·Ð´ÐºÐµ ÐµÑÑ‚ÑŒ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½ÑÑ Ñ‚Ð¾Ñ‡ÐºÐ°
+        В информации по поездке есть последняя точка
         """
         response = self.client_get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1
