@@ -21,6 +21,7 @@ services:
       db:
         condition: service_healthy
     environment:
+      DJANGO_SETTINGS_MODULE: taxi_manager.infrastructure.settings_wsgi
       DATABASE_URL: postgis://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-taxi_manager}
       SECRET_KEY: jenkins-test-secret-key
       LOCATIONIQ_KEY: ""
