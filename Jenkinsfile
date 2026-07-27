@@ -31,7 +31,7 @@ pipeline {
                     docker compose run \
                         --name "$TEST_CONTAINER" \
                         --no-deps \
-                        -e DJANGO_SETTINGS_MODULE=taxi_manager.settings_wsgi \
+                        -e DJANGO_SETTINGS_MODULE=taxi_manager.infrastructure.settings_wsgi \
                         -e "OTEL_RESOURCE_ATTRIBUTES=build=${BUILD_TAG},suite=django" \
                         taxi-app \
                         sh -c 'mkdir -p /reports && exec uv run opentelemetry-instrument python manage.py test' \
