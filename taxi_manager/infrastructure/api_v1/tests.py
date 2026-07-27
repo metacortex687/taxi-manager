@@ -1,12 +1,9 @@
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from django.contrib.gis.geos import Point, Polygon
 
-from rest_framework.test import APIRequestFactory, force_authenticate
-
-from taxi_manager.infrastructure.api_v1.views.main import VehicleViewSet
 from taxi_manager.infrastructure.enterprise.models import Enterprise
 from taxi_manager.infrastructure.vehicle.models import Model, Vehicle, Driver
 from taxi_manager.infrastructure.geo_tracking.models import Trip, VehicleLocation
@@ -75,55 +72,47 @@ class VehicleAPITest(TestCase):
             price=125000,
         )
 
-        self.viewset_get_list = VehicleViewSet.as_view({"get": "list"})
-        self.viewset_post_create = VehicleViewSet.as_view({"post": "create"})
-        self.viewset_put_update = VehicleViewSet.as_view({"put": "update"})
-        self.viewset_delete_destroy = VehicleViewSet.as_view({"delete": "destroy"})
-        self.viewset_get_retrieve = VehicleViewSet.as_view({"get": "retrieve"})
-
     def get_token(self, user):
         response = self.client.post(
-            "/api/v1/auth/token/login/", {"username": "manager1", "password": "secret"}
+            "/api/v1/auth/token/login/",
+            {"username": user.username, "password": "secret"},
         )
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data["auth_token"])
         return response.data["auth_token"]
 
+    def get_auth_headers(self, user):
+        return {"Authorization": f"Token {self.get_token(user)}"}
+
     def test_anonymous_cannot_list_return_401(self):
-        factory = APIRequestFactory()
-        request = factory.get("/api/v1/vehicles/")
+        response = self.client.get("/api/v1/vehicles/")
 
-        responce = self.viewset_get_list(request)
-
-        self.assertEqual(responce.status_code, 401)
+        self.assertEqual(response.status_code, 401)
 
     def test_not_manager_cannot_list_return_403(self):
-        factory = APIRequestFactory()
-        request = factory.get("/api/v1/vehicles/")
-
-        force_authenticate(request, user=self.user)
-        responce = self.viewset_get_list(request)
+        response = self.client.get(
+            "/api/v1/vehicles/",
+            headers=self.get_auth_headers(self.user),
+        )
 
         self.assertTrue(self.superuser.is_superuser)
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_can_list_return_200(self):
-        factory = APIRequestFactory()
-        request = factory.get("/api/v1/vehicles/")
+        response = self.client.get(
+            "/api/v1/vehicles/",
+            headers=self.get_auth_headers(self.manager1),
+        )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_get_list(request)
-
-        self.assertEqual(responce.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_manager_can_create_vehicle_for_managed_enterprise_return_201(self):
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
-        factory = APIRequestFactory()
-        request = factory.post(
+        response = self.client.post(
             "/api/v1/vehicles/",
-            {
+            data={
                 "model_id": self.model1.pk,
                 "number": "test1",
                 "vin": "Z948741AACR123456",
@@ -132,22 +121,19 @@ class VehicleAPITest(TestCase):
                 "enterprise_id": self.enterprise1.pk,
                 "price": 1250000,
             },
-            format="json",
+            content_type="application/json",
+            headers=self.get_auth_headers(self.manager1),
         )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_post_create(request)
-
-        self.assertEqual(responce.status_code, 201)
+        self.assertEqual(response.status_code, 201)
         self.assertTrue(Vehicle.objects.filter(number="test1").exists())
 
     def test_manager_cannot_create_vehicle_for_not_managed_enterprise_return_403(self):
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
-        factory = APIRequestFactory()
-        request = factory.post(
+        response = self.client.post(
             "/api/v1/vehicles/",
-            {
+            data={
                 "model_id": self.model1.pk,
                 "number": "test1",
                 "vin": "Z948741AACR123456",
@@ -156,22 +142,19 @@ class VehicleAPITest(TestCase):
                 "enterprise_id": self.enterprise3.pk,
                 "price": 1250000,
             },
-            format="json",
+            content_type="application/json",
+            headers=self.get_auth_headers(self.manager1),
         )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_post_create(request)
-
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(response.status_code, 403)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
     def test_anonymous_cannot_create_vehicle_return_401(self):
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
-        factory = APIRequestFactory()
-        request = factory.post(
+        response = self.client.post(
             "/api/v1/vehicles/",
-            {
+            data={
                 "model": self.model1.pk,
                 "number": "test1",
                 "vin": "Z948741AACR123456",
@@ -180,21 +163,18 @@ class VehicleAPITest(TestCase):
                 "enterprise": self.enterprise3.pk,
                 "price": 1250000,
             },
-            format="json",
+            content_type="application/json",
         )
 
-        responce = self.viewset_post_create(request)
-
-        self.assertEqual(responce.status_code, 401)
+        self.assertEqual(response.status_code, 401)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
     def test_superuser_cannot_create_vehicle_return_403(self):
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
-        factory = APIRequestFactory()
-        request = factory.post(
+        response = self.client.post(
             "/api/v1/vehicles/",
-            {
+            data={
                 "model_id": self.model1.pk,
                 "number": "test1",
                 "vin": "Z948741AACR123456",
@@ -203,14 +183,11 @@ class VehicleAPITest(TestCase):
                 "enterprise_id": self.enterprise3.pk,
                 "price": 1250000,
             },
-            format="json",
+            content_type="application/json",
+            headers=self.get_auth_headers(self.superuser),
         )
 
-        force_authenticate(request, user=self.superuser)
-        responce = self.viewset_post_create(request)
-
-        print(responce.data)
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(response.status_code, 403)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
     def test_manager_can_update_vehicle_for_managed_enterprise_return_200(self):
@@ -218,10 +195,9 @@ class VehicleAPITest(TestCase):
         self.assertNotEqual(self.vehicle1.price, 50000000)
         self.assertNotEqual(self.vehicle1.enterprise, self.enterprise3)
 
-        factory = APIRequestFactory()
-        request = factory.put(
+        response = self.client.put(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
-            {
+            data={
                 "model_id": self.model1.pk,
                 "number": "test1",
                 "vin": "Z948741AACR123456",
@@ -230,13 +206,11 @@ class VehicleAPITest(TestCase):
                 "enterprise_id": self.enterprise2.pk,
                 "price": 50000000,
             },
-            format="json",
+            content_type="application/json",
+            headers=self.get_auth_headers(self.manager1),
         )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_put_update(request, pk=self.vehicle1.pk)
-
-        self.assertEqual(responce.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         self.vehicle1.refresh_from_db()
         self.assertEqual(self.vehicle1.price, 50000000)
@@ -245,10 +219,9 @@ class VehicleAPITest(TestCase):
     def test_manager_can_update_vehicle_for_managed_enterprise_to_unmanged_return_403(
         self,
     ):
-        factory = APIRequestFactory()
-        request = factory.put(
+        response = self.client.put(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
-            {
+            data={
                 "model_id": self.model1.pk,
                 "number": "test1",
                 "vin": "Z948741AACR123456",
@@ -257,21 +230,18 @@ class VehicleAPITest(TestCase):
                 "enterprise_id": self.enterprise3.pk,
                 "price": 50000000,
             },
-            format="json",
+            content_type="application/json",
+            headers=self.get_auth_headers(self.manager1),
         )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_put_update(request, pk=self.vehicle1.pk)
-
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
     def test_anonymous_cannot_update_vehicle_for_managed_enterprise_to_unmanged_return_401(
         self,
     ):
-        factory = APIRequestFactory()
-        request = factory.put(
+        response = self.client.put(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
-            {
+            data={
                 "model": self.model1.pk,
                 "number": "test1",
                 "vin": "Z948741AACR123456",
@@ -280,20 +250,17 @@ class VehicleAPITest(TestCase):
                 "enterprise": self.enterprise2.pk,
                 "price": 50000000,
             },
-            format="json",
+            content_type="application/json",
         )
 
-        responce = self.viewset_put_update(request, pk=self.vehicle1.pk)
-
-        self.assertEqual(responce.status_code, 401)
+        self.assertEqual(response.status_code, 401)
 
     def test_superuser_cannot_update_vehicle_for_managed_enterprise_to_unmanged_return_403(
         self,
     ):
-        factory = APIRequestFactory()
-        request = factory.put(
+        response = self.client.put(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
-            {
+            data={
                 "model_id": self.model1.pk,
                 "number": "test1",
                 "vin": "Z948741AACR123456",
@@ -302,29 +269,23 @@ class VehicleAPITest(TestCase):
                 "enterprise_id": self.enterprise2.pk,
                 "price": 50000000,
             },
-            format="json",
+            content_type="application/json",
+            headers=self.get_auth_headers(self.superuser),
         )
 
-        force_authenticate(request, user=self.superuser)
-        responce = self.viewset_put_update(request, pk=self.vehicle1.pk)
-
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_can_delete_vehicle_for_managed_enterprise_return_200(self):
         pk = self.vehicle1.pk
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
-        factory = APIRequestFactory()
-        request = factory.delete(
+        response = self.client.delete(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
-            format="json",
+            headers=self.get_auth_headers(self.manager1),
         )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_delete_destroy(request, pk=self.vehicle1.pk)
-
         self.assertFalse(Vehicle.objects.filter(pk=pk).exists())
-        self.assertEqual(responce.status_code, 204)
+        self.assertEqual(response.status_code, 204)
 
     def test_manager_cannot_delete_vehicle_with_driver_return_409(self):
         pk = self.vehicle1.pk
@@ -342,13 +303,13 @@ class VehicleAPITest(TestCase):
 
         response = self.client.delete(
             f"/api/v1/vehicles/{pk}/",
-            headers={"Authorization": f"Token {self.get_token(self.manager1)}"},
+            headers=self.get_auth_headers(self.manager1),
         )
 
         self.assertEqual(response.status_code, 409)
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
-        # Если убрать ссылку то удалит
+        # Ð•ÑÐ»Ð¸ ÑƒÐ±Ñ€Ð°Ñ‚ÑŒ ÑÑÑ‹Ð»ÐºÑƒ Ñ‚Ð¾ ÑƒÐ´Ð°Ð»Ð¸Ñ‚
         # self.vehicle1.drivers.remove(driver)
         # response = self.client.delete(
         #     f"/api/v1/vehicles/{pk}/",
@@ -361,111 +322,78 @@ class VehicleAPITest(TestCase):
         pk = self.vehicle3.pk
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
-        factory = APIRequestFactory()
-        request = factory.delete(
+        response = self.client.delete(
             f"/api/v1/vehicles/{self.vehicle3.pk}/",
-            format="json",
+            headers=self.get_auth_headers(self.manager1),
         )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_delete_destroy(request, pk=self.vehicle3.pk)
-
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
     def test_anonymous_cannot_delete_vehicle_return_401(self):
         pk = self.vehicle3.pk
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
-        factory = APIRequestFactory()
-        request = factory.delete(
-            f"/api/v1/vehicles/{self.vehicle3.pk}/",
-            format="json",
-        )
-
-        responce = self.viewset_delete_destroy(request, pk=self.vehicle3.pk)
+        response = self.client.delete(f"/api/v1/vehicles/{self.vehicle3.pk}/")
 
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
-        self.assertEqual(responce.status_code, 401)
+        self.assertEqual(response.status_code, 401)
 
     def test_superuser_cannot_delete_vehicle_return_403(self):
         pk = self.vehicle3.pk
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
 
-        factory = APIRequestFactory()
-        request = factory.delete(
+        response = self.client.delete(
             f"/api/v1/vehicles/{self.vehicle3.pk}/",
-            format="json",
+            headers=self.get_auth_headers(self.superuser),
         )
-
-        force_authenticate(request, user=self.superuser)
-        responce = self.viewset_delete_destroy(request, pk=self.vehicle3.pk)
 
         self.assertTrue(Vehicle.objects.filter(pk=pk).exists())
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_can_retrieve_vehicle_for_managed_enterprise_return_200(self):
-        factory = APIRequestFactory()
-        request = factory.get(
+        response = self.client.get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
-            format="json",
+            headers=self.get_auth_headers(self.manager1),
         )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_get_retrieve(request, pk=self.vehicle1.pk)
-
-        self.assertEqual(responce.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_manager_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_403(self):
-        factory = APIRequestFactory()
-        request = factory.get(
+        response = self.client.get(
             f"/api/v1/vehicles/{self.vehicle3.pk}/",
-            format="json",
+            headers=self.get_auth_headers(self.manager1),
         )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_get_retrieve(request, pk=self.vehicle3.pk)
-
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
     def test_anonymous_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_401(
         self,
     ):
-        factory = APIRequestFactory()
-        request = factory.get(
-            f"/api/v1/vehicles/{self.vehicle1.pk}/",
-            format="json",
-        )
+        response = self.client.get(f"/api/v1/vehicles/{self.vehicle1.pk}/")
 
-        responce = self.viewset_get_retrieve(request, pk=self.vehicle1.pk)
-
-        self.assertEqual(responce.status_code, 401)
+        self.assertEqual(response.status_code, 401)
 
     def test_superuser_cannot_retrieve_vehicle_for_unmanaged_enterprise_return_403(
         self,
     ):
-        factory = APIRequestFactory()
-        request = factory.get(
+        response = self.client.get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/",
-            format="json",
+            headers=self.get_auth_headers(self.superuser),
         )
 
-        force_authenticate(request, user=self.superuser)
-        responce = self.viewset_get_retrieve(request, pk=self.vehicle1.pk)
-
-        self.assertEqual(responce.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
     def test_cannot_create_vehicle_with_short_vin_return_400(self):
         """
-        VIN номер в записи об авто не может быть меньше 17 символов
+        VIN Ð½Ð¾Ð¼ÐµÑ€ Ð² Ð·Ð°Ð¿Ð¸ÑÐ¸ Ð¾Ð± Ð°Ð²Ñ‚Ð¾ Ð½Ðµ Ð¼Ð¾Ð¶ÐµÑ‚ Ð±Ñ‹Ñ‚ÑŒ Ð¼ÐµÐ½ÑŒÑˆÐµ 17 ÑÐ¸Ð¼Ð²Ð¾Ð»Ð¾Ð²
         """
 
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
-        factory = APIRequestFactory()
-        request = factory.post(
+        response = self.client.post(
             "/api/v1/vehicles/",
-            {
+            data={
                 "model": self.model1.pk,
                 "number": "test1",
                 "vin": "Z948741AACR12345",
@@ -474,26 +402,23 @@ class VehicleAPITest(TestCase):
                 "enterprise": self.enterprise1.pk,
                 "price": 1250000,
             },
-            format="json",
+            content_type="application/json",
+            headers=self.get_auth_headers(self.manager1),
         )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_post_create(request)
-
-        self.assertEqual(responce.status_code, 400)
+        self.assertEqual(response.status_code, 400)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
     def test_cannot_create_vehicle_with_long_vin_return_400(self):
         """
-        VIN номер в записи об авто не может быть длиннее 17 символов
+        VIN Ð½Ð¾Ð¼ÐµÑ€ Ð² Ð·Ð°Ð¿Ð¸ÑÐ¸ Ð¾Ð± Ð°Ð²Ñ‚Ð¾ Ð½Ðµ Ð¼Ð¾Ð¶ÐµÑ‚ Ð±Ñ‹Ñ‚ÑŒ Ð´Ð»Ð¸Ð½Ð½ÐµÐµ 17 ÑÐ¸Ð¼Ð²Ð¾Ð»Ð¾Ð²
         """
 
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
-        factory = APIRequestFactory()
-        request = factory.post(
+        response = self.client.post(
             "/api/v1/vehicles/",
-            {
+            data={
                 "model": self.model1.pk,
                 "number": "test1",
                 "vin": "Z948741AACR1234561",
@@ -502,27 +427,24 @@ class VehicleAPITest(TestCase):
                 "enterprise": self.enterprise1.pk,
                 "price": 1250000,
             },
-            format="json",
+            content_type="application/json",
+            headers=self.get_auth_headers(self.manager1),
         )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_post_create(request)
-
-        self.assertEqual(responce.status_code, 400)
+        self.assertEqual(response.status_code, 400)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
     def test_cannot_create_vehicle_with_invalid_chars_vin_return_400(self):
         """
-        VIN номер может содержать только символы "0 1 2 3 4 5 6 7 8 9 A B C D E F G H J K L M N P R S T U V W X Y Z"
-        символы I, O, Q запрещены
+        VIN Ð½Ð¾Ð¼ÐµÑ€ Ð¼Ð¾Ð¶ÐµÑ‚ ÑÐ¾Ð´ÐµÑ€Ð¶Ð°Ñ‚ÑŒ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ ÑÐ¸Ð¼Ð²Ð¾Ð»Ñ‹ "0 1 2 3 4 5 6 7 8 9 A B C D E F G H J K L M N P R S T U V W X Y Z"
+        ÑÐ¸Ð¼Ð²Ð¾Ð»Ñ‹ I, O, Q Ð·Ð°Ð¿Ñ€ÐµÑ‰ÐµÐ½Ñ‹
         """
 
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
-        factory = APIRequestFactory()
-        request = factory.post(
+        response = self.client.post(
             "/api/v1/vehicles/",
-            {
+            data={
                 "model": self.model1.pk,
                 "number": "test1",
                 "vin": "IOQ8741AACR123456",
@@ -531,13 +453,11 @@ class VehicleAPITest(TestCase):
                 "enterprise": self.enterprise1.pk,
                 "price": 1250000,
             },
-            format="json",
+            content_type="application/json",
+            headers=self.get_auth_headers(self.manager1),
         )
 
-        force_authenticate(request, user=self.manager1)
-        responce = self.viewset_post_create(request)
-
-        self.assertEqual(responce.status_code, 400)
+        self.assertEqual(response.status_code, 400)
         self.assertFalse(Vehicle.objects.filter(number="test1").exists())
 
 
@@ -554,7 +474,7 @@ class TokenAPITest(TestCase):
 
     def test_token_login_success_return_200(self):
         """
-        Пользователь может авторизоваться, поулчить токен, и с использованием этого токена получить например информацию о своей учетной записи.
+        ÐŸÐ¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»ÑŒ Ð¼Ð¾Ð¶ÐµÑ‚ Ð°Ð²Ñ‚Ð¾Ñ€Ð¸Ð·Ð¾Ð²Ð°Ñ‚ÑŒÑÑ, Ð¿Ð¾ÑƒÐ»Ñ‡Ð¸Ñ‚ÑŒ Ñ‚Ð¾ÐºÐµÐ½, Ð¸ Ñ Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ð½Ð¸ÐµÐ¼ ÑÑ‚Ð¾Ð³Ð¾ Ñ‚Ð¾ÐºÐµÐ½Ð° Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð½Ð°Ð¿Ñ€Ð¸Ð¼ÐµÑ€ Ð¸Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸ÑŽ Ð¾ ÑÐ²Ð¾ÐµÐ¹ ÑƒÑ‡ÐµÑ‚Ð½Ð¾Ð¹ Ð·Ð°Ð¿Ð¸ÑÐ¸.
         """
         response = self.client.post(
             "/api/v1/auth/token/login/", {"username": "manager1", "password": "secret"}
@@ -572,7 +492,7 @@ class TokenAPITest(TestCase):
 
     def test_token_login_failure_return_401(self):
         """
-        В случае если пользователь вводит неправильные учетные данные, то он не может получить токен
+        Ð’ ÑÐ»ÑƒÑ‡Ð°Ðµ ÐµÑÐ»Ð¸ Ð¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»ÑŒ Ð²Ð²Ð¾Ð´Ð¸Ñ‚ Ð½ÐµÐ¿Ñ€Ð°Ð²Ð¸Ð»ÑŒÐ½Ñ‹Ðµ ÑƒÑ‡ÐµÑ‚Ð½Ñ‹Ðµ Ð´Ð°Ð½Ð½Ñ‹Ðµ, Ñ‚Ð¾ Ð¾Ð½ Ð½Ðµ Ð¼Ð¾Ð¶ÐµÑ‚ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ñ‚Ð¾ÐºÐµÐ½
         """
         response = self.client.post(
             "/api/v1/auth/token/login/", {"username": "manager1", "password": "wrong"}
@@ -582,7 +502,7 @@ class TokenAPITest(TestCase):
 
     def test_manager_can_access_vehile_list_with_token_return_200(self):
         """
-        Менеджер получив токен, может получить доступ до списка машин.
+        ÐœÐµÐ½ÐµÐ´Ð¶ÐµÑ€ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ð² Ñ‚Ð¾ÐºÐµÐ½, Ð¼Ð¾Ð¶ÐµÑ‚ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð´Ð¾ÑÑ‚ÑƒÐ¿ Ð´Ð¾ ÑÐ¿Ð¸ÑÐºÐ° Ð¼Ð°ÑˆÐ¸Ð½.
         """
         response = self.client.post(
             "/api/v1/auth/token/login/", {"username": "manager1", "password": "secret"}
@@ -599,7 +519,7 @@ class TokenAPITest(TestCase):
 
     def test_cannot_access_vehile_list_with_invalid_token_return_401(self):
         """
-        С неправильным токеном, нельзя получить доступ до списка машин. Код возврата 401.
+        Ð¡ Ð½ÐµÐ¿Ñ€Ð°Ð²Ð¸Ð»ÑŒÐ½Ñ‹Ð¼ Ñ‚Ð¾ÐºÐµÐ½Ð¾Ð¼, Ð½ÐµÐ»ÑŒÐ·Ñ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð´Ð¾ÑÑ‚ÑƒÐ¿ Ð´Ð¾ ÑÐ¿Ð¸ÑÐºÐ° Ð¼Ð°ÑˆÐ¸Ð½. ÐšÐ¾Ð´ Ð²Ð¾Ð·Ð²Ñ€Ð°Ñ‚Ð° 401.
         """
 
         response = self.client.get(
@@ -609,7 +529,7 @@ class TokenAPITest(TestCase):
 
     def test_cannot_access_vehile_list_without_token_return_401(self):
         """
-        Без токена, нельзя получить доступ до списка машин. Код возврата 401.
+        Ð‘ÐµÐ· Ñ‚Ð¾ÐºÐµÐ½Ð°, Ð½ÐµÐ»ÑŒÐ·Ñ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð´Ð¾ÑÑ‚ÑƒÐ¿ Ð´Ð¾ ÑÐ¿Ð¸ÑÐºÐ° Ð¼Ð°ÑˆÐ¸Ð½. ÐšÐ¾Ð´ Ð²Ð¾Ð·Ð²Ñ€Ð°Ñ‚Ð° 401.
         """
 
         response = self.client.get("/api/v1/vehicles/")
@@ -617,7 +537,7 @@ class TokenAPITest(TestCase):
 
     def test_get_unknown_endpoint_return_404(self):
         """
-        Без токена, попытка доступа до несуществующего ресурса.
+        Ð‘ÐµÐ· Ñ‚Ð¾ÐºÐµÐ½Ð°, Ð¿Ð¾Ð¿Ñ‹Ñ‚ÐºÐ° Ð´Ð¾ÑÑ‚ÑƒÐ¿Ð° Ð´Ð¾ Ð½ÐµÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÑŽÑ‰ÐµÐ³Ð¾ Ñ€ÐµÑÑƒÑ€ÑÐ°.
         """
 
         response = self.client.get("/api/v1/unknown_endpoint/")
@@ -937,7 +857,7 @@ class TripPointAPITest(BaseAuthTestCase):
 
     def test_return_status_code_200(self):
         """
-        Получение маршрута поездки работает
+        ÐŸÐ¾Ð»ÑƒÑ‡ÐµÐ½Ð¸Ðµ Ð¼Ð°Ñ€ÑˆÑ€ÑƒÑ‚Ð° Ð¿Ð¾ÐµÐ·Ð´ÐºÐ¸ Ñ€Ð°Ð±Ð¾Ñ‚Ð°ÐµÑ‚
         """
 
         token = self.get_token(self.manager1)
@@ -1127,7 +1047,7 @@ class TripAPITest(BaseAuthTestCase):
 
     def test_list_trips_returns_200_for_manager(self):
         """
-        Менеджер может получить список поездок автомобиля
+        ÐœÐµÐ½ÐµÐ´Ð¶ÐµÑ€ Ð¼Ð¾Ð¶ÐµÑ‚ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ ÑÐ¿Ð¸ÑÐ¾Ðº Ð¿Ð¾ÐµÐ·Ð´Ð¾Ðº Ð°Ð²Ñ‚Ð¾Ð¼Ð¾Ð±Ð¸Ð»Ñ
         """
         response = self.client_get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1
@@ -1140,7 +1060,7 @@ class TripAPITest(BaseAuthTestCase):
 
     def test_trip_list_contains_start_point(self):
         """
-        В информации по поездке есть стартовая точка
+        Ð’ Ð¸Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸Ð¸ Ð¿Ð¾ Ð¿Ð¾ÐµÐ·Ð´ÐºÐµ ÐµÑÑ‚ÑŒ ÑÑ‚Ð°Ñ€Ñ‚Ð¾Ð²Ð°Ñ Ñ‚Ð¾Ñ‡ÐºÐ°
         """
         response = self.client_get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1
@@ -1157,7 +1077,7 @@ class TripAPITest(BaseAuthTestCase):
 
     def test_trip_list_contains_end_point(self):
         """
-        В информации по поездке есть последняя точка
+        Ð’ Ð¸Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸Ð¸ Ð¿Ð¾ Ð¿Ð¾ÐµÐ·Ð´ÐºÐµ ÐµÑÑ‚ÑŒ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½ÑÑ Ñ‚Ð¾Ñ‡ÐºÐ°
         """
         response = self.client_get(
             f"/api/v1/vehicles/{self.vehicle1.pk}/trips/", self.manager1
