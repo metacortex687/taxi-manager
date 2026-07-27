@@ -27,6 +27,7 @@ from taxi_manager.infrastructure.geo_tracking.models import Trip, VehicleLocatio
 class DemoDataGenerator:
     def __init__(self, stdout=None):
         self.stdout = stdout
+        self._random = random.Random()
 
     def write(self, message):
         if self.stdout:
@@ -37,11 +38,11 @@ class DemoDataGenerator:
         fake = Faker(["en_US", "ru_RU"])
 
         Faker.seed(0)
-        random.seed(0)
+        self._random.seed(0)
 
         if seed is not None:
             Faker.seed(seed)
-            random.seed(seed)
+            self._random.seed(seed)
 
         models = self._generate_models()
 
@@ -73,12 +74,12 @@ class DemoDataGenerator:
         drivers = self._generate_drivers(count_drivers, enterprise, fake)
         vehicles = self._generate_vehicles(count_vehicles, enterprise, fake, models)
 
-        random.shuffle(vehicles)
-        random.shuffle(drivers)
+        self._random.shuffle(vehicles)
+        self._random.shuffle(drivers)
 
         pairs = self._generate_vehicle_driver_pairs(drivers, vehicles, enterprise)
 
-        random.shuffle(pairs)
+        self._random.shuffle(pairs)
 
         need_active_vehicle = 1 + len(vehicles) // 10
 
@@ -125,7 +126,7 @@ class DemoDataGenerator:
             if len(drivers) == 0:
                 continue
 
-            count_assigned_drivers = min(len(drivers), random.randint(1, 5))
+            count_assigned_drivers = min(len(drivers), self._random.randint(1, 5))
             end_idx_driver = min(
                 len(drivers) - 1,
                 start_idx_driver + count_assigned_drivers,
@@ -156,9 +157,9 @@ class DemoDataGenerator:
 
         for i in range(count_vehicles):
             vehicle = Vehicle.objects.create(
-                price=random.randint(500, 6000000),
-                year_of_manufacture=random.randint(1980, 2026),
-                mileage=random.randint(1, 300000),
+                price=self._random.randint(500, 6000000),
+                year_of_manufacture=self._random.randint(1980, 2026),
+                mileage=self._random.randint(1, 300000),
                 number=fake.bothify(text="?###??"),
                 vin=fake.vin(),
                 model=models[i % len(models)],
