@@ -7,6 +7,7 @@ pipeline {
         TEST_CONTAINER       = "taxi-manager-ci-tests-${BUILD_NUMBER}"
         APP_IMAGE            = "taxi-manager-ci:${BUILD_NUMBER}"
         BASE_URL             = 'http://taxi-app:8000'
+        TEMPO_URL            = 'http://tempo:3200'
     }
 
     stages {
@@ -51,6 +52,40 @@ pipeline {
                     junit testResults: 'reports/**/*.xml',
                         allowEmptyResults: true
                 }
+            }
+        }
+
+        stage('Check N+1') {
+            steps {
+                sh '''
+                    set -e
+                    sleep 10
+
+                    FILTER="resource.service.name = \\"taxi-manager-ci\\" && resource.build = \\"${BUILD_TAG}\\""
+                    TRACES="{ ${FILTER} && span:kind = server }"
+                    N_PLUS_ONE="${TRACES} >> { ${FILTER} && span:name =~ \\"SELECT.*\\" && span.db.statement != nil } | by(span.db.statement) | count() > 2"
+
+                    search() {
+                        curl -fsS --get "${TEMPO_URL}/api/search" \
+                            --data-urlencode "q=$1" \
+                            --data-urlencode "limit=20"
+                    }
+
+                    search "$TRACES" | grep -q '"traceID"' || {
+                        echo "Трейсы сборки ${BUILD_TAG} не найдены"
+                        exit 1
+                    }
+
+                    RESULT=$(search "$N_PLUS_ONE")
+
+                    if printf '%s' "$RESULT" | grep -q '"traceID"'; then
+                        echo "Обнаружена возможная проблема N+1"
+                        printf '%s\n' "$RESULT"
+                        exit 1
+                    fi
+
+                    echo "N+1 не обнаружен"
+                '''
             }
         }
 
