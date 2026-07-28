@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label 'slave'
+    }
 
     environment {
         COMPOSE_FILE         = 'compose.jenkins-ci.yaml'
@@ -56,6 +58,10 @@ pipeline {
         }
 
         stage('Check N+1') {
+            agent {
+                label 'master'
+            }
+
             steps {
                 sh '''
                     set -e
