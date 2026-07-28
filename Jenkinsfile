@@ -10,6 +10,9 @@ pipeline {
         APP_IMAGE            = "taxi-manager-ci:${BUILD_NUMBER}"
         BASE_URL             = 'http://taxi-app:8000'
         TEMPO_URL            = 'http://tempo:3200'
+        DEPLOY_COMPOSE_FILE  = 'compose.deploy.yaml'
+        DEPLOY_PROJECT_NAME  = 'taxi-manager-deploy'
+        DEPLOY_PORT          = '8080'
     }
 
     stages {
@@ -132,6 +135,32 @@ pipeline {
                         allowEmptyArchive: true
                     )
                 }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    set -e
+
+                    deploy() {
+                        docker compose \
+                            -p "$DEPLOY_PROJECT_NAME" \
+                            -f "$COMPOSE_FILE" \
+                            -f "$DEPLOY_COMPOSE_FILE" \
+                            "$@"
+                    }
+
+                    deploy up -d --wait --no-build db
+
+                    deploy run --rm --no-deps \
+                        taxi-app \
+                        sh -c 'make migrate && make ensure-demo-data'
+
+                    deploy up -d --wait --no-build taxi-app
+
+                    echo "Приложение доступно на порту ${DEPLOY_PORT}"
+                '''
             }
         }
     }

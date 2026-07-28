@@ -1,0 +1,13 @@
+services:
+  db:
+    restart: unless-stopped
+    volumes:
+      - deploy-db:/var/lib/postgresql/data
+
+  taxi-app:
+    restart: unless-stopped
+    ports:
+      - "8080:8000"
+
+volumes:
+  deploy-db:
