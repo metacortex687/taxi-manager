@@ -143,8 +143,8 @@ pipeline {
                     set -e
 
                     export DEPLOY_COMMIT_HASH="$(git rev-parse HEAD)"
-                    export DEPLOY_COMMIT_TIME="$(git show -s --format=%cI HEAD)"
-                    export DEPLOY_TIME="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+                    export DEPLOY_COMMIT_TIME="$(TZ=Europe/Moscow date -d "$(git show -s --format=%cI HEAD)" +'%Y-%m-%dT%H:%M:%S%:z')"
+                    export DEPLOY_TIME="$(TZ=Europe/Moscow date +'%Y-%m-%dT%H:%M:%S%:z')"
 
                     deploy() {
                         docker compose \
