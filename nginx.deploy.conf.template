@@ -1,0 +1,23 @@
+server {
+    listen 8080;
+    server_name _;
+
+    location = /deploy-info {
+        return 308 /deploy-info/;
+    }
+
+    location = /deploy-info/ {
+        default_type text/html;
+        charset utf-8;
+        add_header Cache-Control "no-store";
+        return 200 '<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Информация о деплое</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:64px auto;padding:0 24px;color:#172033}h1{margin-bottom:32px}dt{font-weight:700;margin-top:20px}dd{margin:6px 0 0}code{overflow-wrap:anywhere}a{color:#1264d1}</style></head><body><main><h1>Информация о деплое</h1><dl><dt>Хэш коммита</dt><dd><code>${DEPLOY_COMMIT_HASH}</code></dd><dt>Дата и время коммита</dt><dd>${DEPLOY_COMMIT_TIME}</dd><dt>Дата и время деплоя</dt><dd>${DEPLOY_TIME}</dd></dl><p><a href="/">Открыть приложение</a></p></main></body></html>';
+    }
+    
+    location / {
+        proxy_pass http://taxi-app:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

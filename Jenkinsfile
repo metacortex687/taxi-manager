@@ -142,6 +142,10 @@ pipeline {
                 sh '''
                     set -e
 
+                    export DEPLOY_COMMIT_HASH="$(git rev-parse HEAD)"
+                    export DEPLOY_COMMIT_TIME="$(git show -s --format=%cI HEAD)"
+                    export DEPLOY_TIME="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
                     deploy() {
                         docker compose \
                             -p "$DEPLOY_PROJECT_NAME" \

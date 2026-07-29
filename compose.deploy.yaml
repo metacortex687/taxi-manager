@@ -10,13 +10,18 @@ services:
   nginx:
     image: nginx:alpine
     restart: unless-stopped
+    environment:
+      DEPLOY_COMMIT_HASH: "${DEPLOY_COMMIT_HASH}"
+      DEPLOY_COMMIT_TIME: "${DEPLOY_COMMIT_TIME}"
+      DEPLOY_TIME: "${DEPLOY_TIME}"
+      NGINX_ENVSUBST_FILTER: "^DEPLOY_"
     depends_on:
       taxi-app:
         condition: service_healthy
     ports:
       - "8080:8080"
     volumes:
-      - ./nginx.deploy.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx.deploy.conf.template:/etc/nginx/templates/default.conf.template:ro
     healthcheck:
       test:
         - CMD
