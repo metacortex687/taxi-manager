@@ -157,7 +157,7 @@ pipeline {
                         taxi-app \
                         sh -c 'make migrate && make ensure-demo-data'
 
-                    deploy up -d --wait --no-build taxi-app
+                    deploy up -d --wait --no-build taxi-app nginx
 
                     echo "Приложение доступно на порту ${DEPLOY_PORT}"
                 '''
