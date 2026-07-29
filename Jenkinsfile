@@ -174,6 +174,9 @@ pipeline {
                 docker rm -f "$TEST_CONTAINER" 2>/dev/null || true
                 docker compose down -v --remove-orphans || true
                 docker image rm "$APP_IMAGE" 2>/dev/null || true
+                docker builder prune -af || true
+                docker container prune -f || true
+                docker image prune -af || true
             '''
         }
     }
