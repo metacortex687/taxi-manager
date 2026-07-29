@@ -21,6 +21,27 @@ pipeline {
             }
         }
 
+        stage('Check migrations') {
+            steps {
+                sh '''
+                    set -e
+
+                    docker compose up -d --wait db
+
+                    docker compose run --rm --no-deps \
+                        taxi-app \
+                        sh -c '
+                            set -e
+                            uv run manage.py makemigrations --check --noinput
+                            uv run manage.py migrate --noinput
+                            uv run manage.py showmigrations
+                            uv run manage.py migrate --check
+                            uv run manage.py check --database default
+                        '
+                '''
+            }
+        }
+
         stage('Django tests') {
             steps {
                 sh '''
