@@ -12,7 +12,6 @@ pipeline {
         TEMPO_URL            = 'http://tempo:3200'
         DEPLOY_COMPOSE_FILE  = 'compose.deploy.yaml'
         DEPLOY_PROJECT_NAME  = 'taxi-manager-deploy'
-        DEPLOY_PORT          = '8080'
     }
 
     stages {
@@ -159,7 +158,7 @@ pipeline {
 
                     deploy up -d --wait --no-build taxi-app nginx
 
-                    echo "Приложение доступно на порту ${DEPLOY_PORT}"
+                    echo "Приложение доступно на порту 8080"
                 '''
             }
         }
