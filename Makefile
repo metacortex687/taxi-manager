@@ -70,6 +70,31 @@ dev-down:
 		down
 	docker network rm taxi-manager_default 2>/dev/null || true
 
+dump-sqlite-demo-data:
+	docker compose \
+		-p taxi-manager \
+		-f docker-compose.dev-local.yaml \
+		exec taxi-manager \
+		uv run manage.py dumpdata \
+			--exclude contenttypes \
+			--exclude auth.permission \
+			--exclude admin.logentry \
+			--exclude sessions.session \
+			--exclude django_pgwatch \
+			--exclude vk_bot \
+			--indent 2 \
+			--verbosity 1 \
+			--output=/tmp/sqlite_demo_data.json
+
+	docker compose \
+		-p taxi-manager \
+		-f docker-compose.dev-local.yaml \
+		cp \
+		taxi-manager:/tmp/sqlite_demo_data.json \
+		cypress/sqlite_demo_data.json
+
+	@echo "Выгрузка завершена:"
+	@ls -lh cypress/sqlite_demo_data.json
 kafka-up:
 	docker compose -f docker-compose.kafka.yaml up -d
 
