@@ -30,4 +30,6 @@ install-spatialite:
 
 cypress-install:
 	npm install cypress --save-dev
- 
+
+cypress-open:
+	npx cypress open
