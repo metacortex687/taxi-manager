@@ -28,7 +28,6 @@ install-spatialite:
 	apt install -y libsqlite3-mod-spatialite spatialite-bin	
 	find /usr/lib -name 'mod_spatialite.so*'
 
-
-
-
+cypress-install:
+	npm install cypress --save-dev
  

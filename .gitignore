@@ -26,3 +26,4 @@ staticfiles/
 data/
 performance/results/summary.json
 .load-testing.env
+cypress/node_modules/
