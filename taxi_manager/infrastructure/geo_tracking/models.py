@@ -33,7 +33,7 @@ class VehicleLocation(models.Model):
         verbose_name="Автомобиль",
     )
     location = models.PointField(
-        srid=4326, geography=True
+        srid=4326
     )  # 4326 идентификатор системы координат для GPS
     tracked_at = models.DateTimeField()
 

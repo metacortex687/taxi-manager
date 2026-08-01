@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='vehiclelocation',
             name='location',
-            field=django.contrib.gis.db.models.fields.PointField(geography=True, srid=4326),
+            field=django.contrib.gis.db.models.fields.PointField(srid=4326),
         ),
     ]

@@ -233,11 +233,11 @@ class TripListAPIView(generics.ListAPIView):
         radius_search_m = 150
         start_point_ref = ExpressionWrapper(
             OuterRef("start_point"),
-            output_field=PointField(srid=4326, geography=True),
+            output_field=PointField(srid=4326),
         )
         end_point_ref = ExpressionWrapper(
             OuterRef("end_point"),
-            output_field=PointField(srid=4326, geography=True),
+            output_field=PointField(srid=4326),
         )
         near_start_address = (
             GeoAddress.objects.filter(

@@ -16,7 +16,7 @@ def make_point_buffer_polygon(point, radius_m):
 
 class GeoAddress(models.Model):
     display_name = models.CharField(max_length=500)
-    area = models.PolygonField(srid=4326, geography=True)
+    area = models.PolygonField(srid=4326)
 
     @staticmethod
     def load_address_for_points(points):

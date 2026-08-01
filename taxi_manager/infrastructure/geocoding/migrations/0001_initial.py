@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('display_name', models.CharField(max_length=500)),
-                ('area', django.contrib.gis.db.models.fields.PolygonField(geography=True, srid=4326)),
+                ('area', django.contrib.gis.db.models.fields.PolygonField(srid=4326)),
             ],
         ),
     ]
