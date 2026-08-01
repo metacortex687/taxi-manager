@@ -33,3 +33,6 @@ cypress-install:
 
 cypress-open:
 	npx cypress open
+
+cypress-run:
+	npx cypress run
