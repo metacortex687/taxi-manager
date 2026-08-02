@@ -14,8 +14,6 @@ reset-and-start-sqlite-demo:
 	uv run ../manage.py shell --no-imports $(SETTINGS) \
 		-c 'from django.db import connection; connection.cursor().execute("SELECT InitSpatialMetaData(1)")'
 
-	uv run ../manage.py migrate geo_tracking 0002 $(SETTINGS)
-	uv run ../manage.py migrate geo_tracking 0003 --fake $(SETTINGS)
 	uv run ../manage.py migrate $(SETTINGS)
 
 	uv run ../manage.py loaddata sqlite_demo_data.json $(SETTINGS)
