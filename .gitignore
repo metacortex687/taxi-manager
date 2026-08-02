@@ -27,3 +27,5 @@ data/
 performance/results/summary.json
 .load-testing.env
 cypress/node_modules/
+cypress/sqlite_demo_data.json
+cypress/demo.db

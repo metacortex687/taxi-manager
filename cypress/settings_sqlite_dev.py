@@ -1,3 +1,4 @@
+import os
 from taxi_manager.infrastructure.settings_base import *  # noqa: F403,F401
 
 print("from ..taxi_manager.infrastructure.settings_base import * ")
@@ -7,7 +8,7 @@ AUTO_CLEAR_CACHE_ON_SQL_WRITE = False
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.spatialite',
-        'NAME': '/dev/shm/cypress_tests.sqlite3',  
+        'NAME': os.environ["SQLITE_DB_PATH"],  
     }
 }
 
