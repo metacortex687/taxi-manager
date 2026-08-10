@@ -7,6 +7,28 @@ services:
   taxi-app:
     restart: unless-stopped
 
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    restart: unless-stopped
+    environment:
+      URLS: >-
+        [
+          {
+            "name": "Rust API",
+            "url": "/swagger/rust-open-api-schema.yml"
+          },
+          {
+            "name": "Django API",
+            "url": "/api/v1/schema/"
+          }
+        ]
+      URLS_PRIMARY_NAME: "Django API"
+    volumes:
+      - ./rust-api/rust-open-api-schema.yml:/usr/share/nginx/html/rust-open-api-schema.yml:ro
+    depends_on:
+      taxi-app:
+        condition: service_healthy
+
   nginx:
     image: nginx:alpine
     restart: unless-stopped
@@ -18,6 +40,8 @@ services:
     depends_on:
       taxi-app:
         condition: service_healthy
+      swagger-ui:
+        condition: service_started
     ports:
       - "8080:8080"
     volumes:
