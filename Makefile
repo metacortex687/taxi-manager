@@ -53,10 +53,10 @@ dev-up:
 		-f docker-compose.dev-local.observability.yaml \
 		-f docker-compose.dev-local.yaml \
 		up -d --build --force-recreate --remove-orphans
-	docker compose \
-		-p taxi-manager-kafka \
-		-f docker-compose.kafka.yaml \
-		up -d --build
+# 	docker compose \
+# 		-p taxi-manager-kafka \
+# 		-f docker-compose.kafka.yaml \
+# 		up -d --build
 
 dev-down:
 	docker compose \
@@ -64,10 +64,10 @@ dev-down:
 		-f docker-compose.dev-local.observability.yaml \
 		-f docker-compose.dev-local.yaml \
 		down
-	docker compose \
-		-p taxi-manager-kafka \
-		-f docker-compose.kafka.yaml \
-		down
+# 	docker compose \
+# 		-p taxi-manager-kafka \
+# 		-f docker-compose.kafka.yaml \
+# 		down
 	docker network rm taxi-manager_default 2>/dev/null || true
 
 dump-sqlite-demo-data:
@@ -100,16 +100,16 @@ delete-test-data:
 	uv run manage.py shell -c "from taxi_manager.infrastructure.vehicle.models import Model; deleted, _ = Model.objects.filter(name__startswith='perf_test_').delete(); print(f'Удалено тестовых моделей: {deleted}')"
 
 kafka-up:
-	docker compose -f docker-compose.kafka.yaml up -d
+	docker compose -p taxi-manager-kafka -f docker-compose.kafka.yaml up -d --build
 
 kafka-down:
-	docker compose -f docker-compose.kafka.yaml down 
+	docker compose -p taxi-manager-kafka -f docker-compose.kafka.yaml down
 
 kafka-drop:
-	docker compose -f docker-compose.kafka.yaml down -v
+	docker compose -p taxi-manager-kafka -f docker-compose.kafka.yaml down -v
 
 kafka-reset-offsets:
-	docker compose -f docker-compose.kafka.yaml exec kafka \
+	docker compose -p taxi-manager-kafka -f docker-compose.kafka.yaml exec kafka \
 		/opt/kafka/bin/kafka-consumer-groups.sh \
 		--bootstrap-server kafka:9092 \
 		--group vk-bot-notification \
