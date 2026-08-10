@@ -95,6 +95,10 @@ dump-sqlite-demo-data:
 
 	@echo "Выгрузка завершена:"
 	@ls -lh cypress/sqlite_demo_data.json
+
+delete-test-data:
+	uv run manage.py shell -c "from taxi_manager.infrastructure.vehicle.models import Model; deleted, _ = Model.objects.filter(name__startswith='perf_test_').delete(); print(f'Удалено тестовых моделей: {deleted}')"
+
 kafka-up:
 	docker compose -f docker-compose.kafka.yaml up -d
 
