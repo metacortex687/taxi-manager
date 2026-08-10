@@ -48,6 +48,30 @@ services:
       memcached:
         condition: service_started
 
+  swagger-ui:
+      image: swaggerapi/swagger-ui
+
+      environment:
+        URLS: >-
+          [
+            {
+              "name": "Rust API",
+              "url": "/swagger/rust-open-api-schema.yml"
+            },
+            {
+              "name": "Django API",
+              "url": "/api/v1/schema/"
+            }
+          ]
+        URLS_PRIMARY_NAME: "Django API"
+
+      volumes:
+        - ./rust-api/rust-open-api-schema.yml:/usr/share/nginx/html/rust-open-api-schema.yml:ro
+
+      depends_on:
+        - taxi-manager
+
+
   taxi-manager-asgi:
     build: .
     image: metacortex687/taxi-manager-dev
