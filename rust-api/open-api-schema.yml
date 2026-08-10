@@ -1,0 +1,260 @@
+openapi: 3.0.3
+
+info:
+  title: Taxi Manager Rust API
+  description: |
+    API для чтения и создания моделей транспортных средств.
+
+    Маршруты `batch-queue` принимают отдельные HTTP-запросы, но объединяют
+    обращения к PostgreSQL в пакеты внутри Rust-приложения.
+  version: 1.0.0
+
+servers:
+  - url: /api/v1/rust
+    description: Fast Rust API
+
+tags:
+  - name: Health
+    description: Проверка состояния сервиса
+  - name: Models
+    description: Обычные операции с моделями транспортных средств
+  - name: Models batch queue
+    description: Операции, пакетируемые во внутренней очереди Rust API
+
+paths:
+  /healthz:
+    get:
+      tags:
+        - Health
+      summary: Проверить состояние сервиса
+      operationId: healthz
+      responses:
+        "200":
+          description: Сервис работает
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: ok
+
+  /models/{id}/:
+    get:
+      tags:
+        - Models
+      summary: Получить модель по идентификатору
+      operationId: getModelById
+      parameters:
+        - $ref: "#/components/parameters/ModelId"
+      responses:
+        "200":
+          description: Модель найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /models/:
+    post:
+      tags:
+        - Models
+      summary: Создать модель
+      operationId: createModel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateModelRequest"
+            example:
+              name: Городской автобус
+              type: BUS
+              number_of_seats: 45
+              tank_capacity_l: 200
+              load_capacity_kg: 3500
+      responses:
+        "201":
+          description: Модель создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /models/batch-queue/{id}/:
+    get:
+      tags:
+        - Models batch queue
+      summary: Получить модель через пакетную очередь
+      description: |
+        Запрос помещается во внутреннюю очередь. Rust API объединяет несколько
+        запросов чтения в один SQL-запрос и возвращает каждому клиенту его ответ.
+      operationId: getModelByIdBatchQueue
+      parameters:
+        - $ref: "#/components/parameters/ModelId"
+      responses:
+        "200":
+          description: Модель найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /models/batch-queue/:
+    post:
+      tags:
+        - Models batch queue
+      summary: Создать модель через пакетную очередь
+      description: |
+        Запрос помещается во внутреннюю очередь. Rust API объединяет несколько
+        операций создания в один SQL-запрос и возвращает результат каждого
+        создания отдельному клиенту.
+      operationId: createModelBatchQueue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateModelRequest"
+            example:
+              name: Легковой автомобиль
+              type: PCR
+              number_of_seats: 5
+              tank_capacity_l: 60
+              load_capacity_kg: 450
+      responses:
+        "201":
+          description: Модель создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  parameters:
+    ModelId:
+      name: id
+      in: path
+      required: true
+      description: Идентификатор модели
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+      example: 1
+
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+
+    CreateModelRequest:
+      type: object
+      required:
+        - name
+        - type
+        - number_of_seats
+        - tank_capacity_l
+        - load_capacity_kg
+      properties:
+        name:
+          type: string
+          minLength: 1
+          pattern: ".*\\S.*"
+          description: Название модели; пробелы по краям удаляются
+        type:
+          type: string
+          description: Тип транспортного средства
+          enum:
+            - PCR
+            - BUS
+            - LRR
+        number_of_seats:
+          type: integer
+          format: int32
+          description: Количество посадочных мест
+        tank_capacity_l:
+          type: integer
+          format: int32
+          description: Объём топливного бака в литрах
+        load_capacity_kg:
+          type: integer
+          format: int32
+          description: Грузоподъёмность в килограммах
+
+    ModelResponse:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 42
+        name:
+          type: string
+          example: Городской автобус
+
+    NotFoundResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          example: Not found.
+
+    ValidationErrorResponse:
+      type: object
+      description: Ошибки проверки, сгруппированные по именам полей
+      additionalProperties:
+        type: array
+        items:
+          type: string
+      example:
+        type:
+          - "Expected one of: PCR, BUS, LRR."
+
+  responses:
+    NotFound:
+      description: Модель не найдена
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotFoundResponse"
+
+    ValidationError:
+      description: Ошибка проверки входных данных
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+
+    InternalServerError:
+      description: Внутренняя ошибка сервиса или базы данных
+      content:
+        text/plain:
+          schema:
+            type: string
