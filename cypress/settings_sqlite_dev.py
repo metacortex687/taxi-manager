@@ -12,6 +12,8 @@ DATABASES = {
     }
 }
 
+SQLITE_DEMO_DB_PATH = os.environ.get("SQLITE_DEMO_DB_PATH")
+
 SPATIALITE_LIBRARY_PATH = "/usr/lib/x86_64-linux-gnu/mod_spatialite.so"
 
 INSTALLED_APPS.remove("django_pgwatch")
