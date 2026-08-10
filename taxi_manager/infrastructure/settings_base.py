@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'django_pgwatch',
     "django_prometheus",
     "django_tasks_db",
+    "drf_spectacular",
     # "silk",
     # 'dj_rest_auth',
     "taxi_manager.infrastructure.users",
@@ -186,6 +187,20 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.OrderingFilter",
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Taxi-manager',
+    'DESCRIPTION': 'REST API для клиента управления автопарком такси',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    "SERVERS": [
+        {
+            "url": "/",
+            "description": "Текущий сервер",
+        },
     ],
 }
 

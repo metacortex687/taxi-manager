@@ -1,4 +1,5 @@
 from django.urls import path, include, re_path
+from drf_spectacular.views import SpectacularAPIView
 
 from taxi_manager.infrastructure.api_v1.views.views_async import async_model_detail_view, async_model_list_create_view
 
@@ -31,6 +32,7 @@ router.register(r"vehicles", VehicleViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path("drivers/<int:driver_id>/vehicles/", VehicleViewSet.as_view({"get": "list"})),
     path("drivers/<int:pk>/", DriverDetailAPIView.as_view()),
     path("drivers/", DriverListAPIView.as_view()),
