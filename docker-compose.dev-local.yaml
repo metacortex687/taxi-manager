@@ -395,6 +395,8 @@ services:
       taxi-manager-asgi:
         condition: service_started
         restart: true
+      swagger-ui:
+        condition: service_started
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter:1.4.2
     command:
