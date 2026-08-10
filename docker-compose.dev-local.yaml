@@ -107,15 +107,17 @@ services:
       - OTEL_PYTHON_LOG_LEVEL=info
       - OTEL_PYTHON_LOG_FORMAT=%(asctime)s %(levelname)s [%(name)s] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service_name=%(otelServiceName)s] %(message)s
 
+      - OTEL_SDK_DISABLED=true
+
       - PYROSCOPE_ENABLED=true
       - PYROSCOPE_APPLICATION_NAME=taxi-manager-django
       - PYROSCOPE_SERVER_ADDRESS=http://alloy:9999
       - PYROSCOPE_SAMPLE_RATE=100
       - DEPLOYMENT_ENVIRONMENT=dev
 
-    command: sh -c "uv run opentelemetry-instrument make run-asgi"
+    command: sh -c "make run-asgi"
     depends_on:
-      db:
+      pgbouncer:
         condition: service_healthy
       memcached:
         condition: service_started
