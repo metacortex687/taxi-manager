@@ -376,6 +376,10 @@ services:
     image: nginx
     labels:
       logging: "alloy"
+    environment:
+      DEV_UI_PATH_SUFFIX: ${DEV_UI_PATH_SUFFIX}
+      NGINX_ENVSUBST_FILTER: ^DEV_UI_PATH_SUFFIX$
+      NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - static_volume:/static
