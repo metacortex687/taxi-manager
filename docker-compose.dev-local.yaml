@@ -193,6 +193,7 @@ services:
       - /:/host/root:ro
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
+      - ./data/logs/nginx/:/var/log/nginx/:ro
     environment:
       - LOKI_URL=${LOKI_URL:-http://loki:3100/loki/api/v1/push}
       - TEMPO_ENDPOINT=${TEMPO_ENDPOINT:-tempo:4317}
