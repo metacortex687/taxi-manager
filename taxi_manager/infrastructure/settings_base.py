@@ -196,9 +196,12 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'REST API для клиента управления автопарком такси',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    "SCHEMA_PATH_PREFIX": r"^/api/v1",
+    "SCHEMA_PATH_PREFIX_TRIM": True,
+
     "SERVERS": [
         {
-            "url": "/",
+            "url": "/api/v1",
             "description": "Текущий сервер",
         },
     ],
