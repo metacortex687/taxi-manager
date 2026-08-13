@@ -18,6 +18,9 @@ from .views.main import (
     delete_test_models,
     sse_vehicle_location,
 )
+
+from .views import diagnostic_views
+
 from .views.trip import (
     TripPointListAPIView,
     TripListAPIView,
@@ -33,6 +36,8 @@ router.register(r"vehicles", VehicleViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('diagnostics/sql-error/', diagnostic_views.trigger_sql_error),
+    path('diagnostics/application-error/', diagnostic_views.trigger_application_error),
     path("drivers/<int:driver_id>/vehicles/", VehicleViewSet.as_view({"get": "list"})),
     path("drivers/<int:pk>/", DriverDetailAPIView.as_view()),
     path("drivers/", DriverListAPIView.as_view()),
