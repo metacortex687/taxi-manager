@@ -1,6 +1,8 @@
 services:
   db:
     image: postgis/postgis:16-3.5
+    labels:
+      logging: "alloy"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-taxi_manager}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
