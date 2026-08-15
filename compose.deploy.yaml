@@ -45,6 +45,8 @@ services:
   nginx:
     image: nginx:alpine
     restart: unless-stopped
+    labels:
+      logging: "alloy"
     environment:
       DEPLOY_COMMIT_HASH: "${DEPLOY_COMMIT_HASH}"
       DEPLOY_COMMIT_TIME: "${DEPLOY_COMMIT_TIME}"
