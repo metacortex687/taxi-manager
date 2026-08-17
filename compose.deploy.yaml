@@ -20,6 +20,55 @@ services:
   taxi-app:
     restart: unless-stopped
 
+  task-worker:
+    image: taxi-manager-ci:${BUILD_NUMBER:-local}
+    restart: unless-stopped
+    labels:
+      logging: "alloy"
+    environment:
+      DATABASE_URL: postgis://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-taxi_manager}
+      SECRET_KEY: ${DJANGO_SECRET_KEY}
+      LOCATIONIQ_KEY: ${LOCATIONIQ_KEY}
+      PYTHONUNBUFFERED: "1"
+
+      OTEL_SERVICE_NAME: taxi-manager-task-worker
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_PROPAGATORS: tracecontext,baggage
+      OTEL_TRACES_SAMPLER: parentbased_traceidratio
+      OTEL_TRACES_SAMPLER_ARG: "1.0"
+      DJANGO_SETTINGS_MODULE: taxi_manager.infrastructure.settings_wsgi
+      OTEL_PYTHON_LOG_CORRELATION: "true"
+      OTEL_PYTHON_LOG_LEVEL: info
+      OTEL_PYTHON_LOG_FORMAT: >-
+        %(asctime)s %(levelname)s [%(name)s]
+        [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s
+        service_name=%(otelServiceName)s] %(message)s
+
+      PYROSCOPE_ENABLED: "false"
+      PYROSCOPE_APPLICATION_NAME: taxi-manager-task-worker
+      PYROSCOPE_SERVER_ADDRESS: http://alloy:9999
+      PYROSCOPE_SAMPLE_RATE: "100"
+      DEPLOYMENT_ENVIRONMENT: ${DEPLOYMENT_ENVIRONMENT:-dev}
+    command:
+      - uv
+      - run
+      - opentelemetry-instrument
+      - python
+      - manage.py
+      - db_worker
+      - --queue-name
+      - reports,geocoding,default
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - default
+      - observability
+
   swagger-ui:
     image: swaggerapi/swagger-ui
     restart: unless-stopped
