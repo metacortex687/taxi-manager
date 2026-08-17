@@ -159,6 +159,9 @@ pipeline {
         }
 
         stage('Deploy') {
+            environment {
+                LOCATIONIQ_KEY = credentials('locationiq-key')
+            }
             steps {
                 sh '''
                     set -e
