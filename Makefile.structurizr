@@ -1,6 +1,14 @@
 STRUCTURIZR_COMPOSE := docker compose -f compose.c4-architecture.yaml
+STRUCTURIZR_DIAGRAMS_URL ?= http://structurizr:8080/workspace/1/diagrams
+STRUCTURIZR_NETWORK ?= taxi-manager-architecture_default
+STRUCTURIZR_PNG_OUTPUT ?= docs/images/c4
+STRUCTURIZR_EXPORT_TIMEOUT_MS ?= 120000
+STRUCTURIZR_EXPORTER_IMAGE ?= taxi-manager-structurizr-png-exporter:1.61.0
+STRUCTURIZR_EXPORTER_CONTEXT := tools/structurizr-png-exporter
 
-.PHONY: architecture architecture-down architecture-status
+.PHONY: architecture architecture-down architecture-status \
+	architecture-export-mermaid architecture-export-png \
+	architecture-export-png-image
 
 architecture:
 	$(STRUCTURIZR_COMPOSE) up --pull missing
@@ -18,3 +26,21 @@ architecture-export-mermaid:
 		-workspace workspace.dsl \
 		-format mermaid \
 		-output exports/mermaid
+
+architecture-export-png-image:
+	docker build \
+		--file $(STRUCTURIZR_EXPORTER_CONTEXT)/Dockerfile \
+		--tag $(STRUCTURIZR_EXPORTER_IMAGE) \
+		$(STRUCTURIZR_EXPORTER_CONTEXT)
+
+architecture-export-png: architecture-export-png-image
+	$(STRUCTURIZR_COMPOSE) up -d --pull missing
+	mkdir -p $(STRUCTURIZR_PNG_OUTPUT)
+	docker run --rm --ipc=host \
+		--network $(STRUCTURIZR_NETWORK) \
+		--user "$$(id -u):$$(id -g)" \
+		--env STRUCTURIZR_EXPORT_TIMEOUT_MS=$(STRUCTURIZR_EXPORT_TIMEOUT_MS) \
+		--volume "$(CURDIR)/$(STRUCTURIZR_PNG_OUTPUT):/output" \
+		$(STRUCTURIZR_EXPORTER_IMAGE) \
+		$(STRUCTURIZR_DIAGRAMS_URL) \
+		/output

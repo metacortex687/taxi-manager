@@ -1,0 +1,8 @@
+{
+  "name": "taxi-manager-structurizr-png-exporter",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright-core": "1.61.0"
+  }
+}
