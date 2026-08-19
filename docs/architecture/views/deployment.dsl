@@ -18,3 +18,10 @@ deployment taxiManager targetRuntimeEnvironment "TargetRuntimeDeployment" {
     include *
     autoLayout tb 300 220
 }
+
+deployment * ciCdDeploymentEnvironment "CiCdDeployment" {
+    title "CI/CD и развёртывание Taxi-manager"
+    description "Jenkins-контроллер (master) назначает этапы постоянному SSH-агенту. Агент собирает и тестирует приложение, затем обновляет Compose-проект taxi-manager-deploy."
+    include *
+    autoLayout lr 300 220
+}

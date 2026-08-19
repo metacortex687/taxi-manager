@@ -1,5 +1,5 @@
 notificationSystem = softwareSystem "Подсистема уведомлений" {
-    description "Целевая подключаемая подсистема, получающая изменения PostgreSQL через CDC и формирующая уведомления. Не требуется для работы основного приложения."
+    description "Подключаемая подсистема, преобразующая технические CDC-события PostgreSQL в события предметной области и формирующая уведомления."
     tags "Target Optional"
 
     debezium = container "CDC-коннектор" {
@@ -8,14 +8,26 @@ notificationSystem = softwareSystem "Подсистема уведомлений
         tags "Target Optional"
     }
 
-    kafka = container "Брокер событий" {
-        description "Хранит и передаёт события изменения данных потребителям."
-        technology "Apache Kafka 4, KRaft"
+    rawEvents = container "Kafka: исходные CDC-события" {
+        description "Хранит технические события изменения строк, опубликованные Debezium. Эти события не передаются сервису уведомлений напрямую."
+        technology "Apache Kafka 4, KRaft, CDC topic"
+        tags "Target Optional"
+    }
+
+    flink = container "Потоковая обработка" {
+        description "Читает исходные CDC-события из Kafka, фильтрует и преобразует их в события предметной области для уведомлений."
+        technology "Apache Flink, Flink SQL"
+        tags "Target Optional"
+    }
+
+    processedEvents = container "Kafka: обработанные события" {
+        description "Хранит подготовленные Flink события, контракт которых соответствует требованиям сервиса уведомлений."
+        technology "Apache Kafka 4, KRaft, notification topic"
         tags "Target Optional"
     }
 
     notificationService = container "Сервис уведомлений" {
-        description "Получает события, формирует уведомления и при необходимости обращается к API Taxi-manager."
+        description "Получает из Kafka только обработанные события, формирует уведомления и при необходимости обращается к REST API Taxi-manager."
         technology "Python 3.13, uv, Kafka client"
         tags "Target Optional"
     }
@@ -27,24 +39,18 @@ notificationSystem = softwareSystem "Подсистема уведомлений
     }
 
     kafkaUi = container "Интерфейс Kafka" {
-        description "Предоставляет технический интерфейс для просмотра брокера, топиков и сообщений."
+        description "Предоставляет технический интерфейс для просмотра исходного и обработанного топиков Kafka."
         technology "Kafka UI"
         tags "Auxiliary,Target Optional"
     }
-
-    flink = container "Потоковая обработка" {
-        description "Учебный эксперимент по обработке событий и запросам Flink SQL; не требуется для базового контура уведомлений."
-        technology "Apache Flink, Flink SQL"
-        tags "Experimental"
-    }
 }
 
-taxiManager -> notificationSystem.debezium "Предоставляет изменения PostgreSQL через журнал WAL" "PostgreSQL CDC"
-notificationSystem.debezium -> notificationSystem.kafka "Публикует события изменения данных" "Kafka protocol, JSON"
-notificationSystem.kafka -> notificationSystem.notificationService "Передаёт события потребителю" "Kafka protocol, JSON"
+notificationSystem.debezium -> taxiManager.database "Читает журнал WAL" "PostgreSQL logical replication"
+notificationSystem.debezium -> notificationSystem.rawEvents "Публикует технические CDC-события" "Kafka protocol, JSON"
+notificationSystem.rawEvents -> notificationSystem.flink "Передаёт исходные события для обработки" "Kafka protocol, JSON"
+notificationSystem.flink -> notificationSystem.processedEvents "Публикует преобразованные события" "Kafka protocol, JSON"
+notificationSystem.processedEvents -> notificationSystem.notificationService "Передаёт события предметной области" "Kafka protocol, JSON"
 notificationSystem.notificationService -> notificationSystem.notificationDatabase "Сохраняет состояние обработки" "SQLite"
-notificationSystem.notificationService -> taxiManager "Обращается к API аутентификации и данным приложения" "REST/JSON over HTTPS"
-notificationSystem.kafkaUi -> notificationSystem.kafka "Читает метаданные и сообщения" "Kafka protocol"
-notificationSystem.kafka -> notificationSystem.flink "Передаёт поток событий для экспериментальной обработки" "Kafka protocol, JSON" {
-    tags "Experimental Flow"
-}
+notificationSystem.notificationService -> taxiManager.nginx "Получает необходимые данные приложения" "REST/JSON over HTTPS"
+notificationSystem.kafkaUi -> notificationSystem.rawEvents "Показывает исходные события" "Kafka protocol"
+notificationSystem.kafkaUi -> notificationSystem.processedEvents "Показывает обработанные события" "Kafka protocol"

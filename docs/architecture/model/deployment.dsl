@@ -48,3 +48,25 @@ targetRuntimeEnvironment = deploymentEnvironment "Target runtime" {
         }
     }
 }
+
+ciCdDeploymentEnvironment = deploymentEnvironment "CI/CD deployment" {
+    jenkinsControllerHost = deploymentNode "Хост Jenkins-контроллера" "Узел, на котором работает Jenkins-контроллер (master)" "Linux, Docker" {
+        jenkinsControllerRuntime = deploymentNode "Jenkins controller" "Контейнер управления основным pipeline Taxi-manager" "Docker Compose" {
+            containerInstance jenkins.controller
+        }
+    }
+
+    jenkinsAgentHost = deploymentNode "Сервер Jenkins-агента и приложения" "Удалённый Docker-хост, на котором постоянный SSH-агент выполняет сборку, тесты и развёртывание" "Linux, Docker" {
+        jenkinsAgentRuntime = deploymentNode "Jenkins SSH agent" "Постоянный агент Jenkins с доступом к Docker Engine" "Docker Compose" {
+            containerInstance jenkins.agent
+        }
+
+        ciCdApplicationCompose = deploymentNode "taxi-manager-deploy" "Compose-проект, обновляемый Jenkins-агентом после успешных проверок" "Docker Compose" {
+            containerInstance taxiManager.nginx
+            containerInstance taxiManager.djangoWsgi
+            containerInstance taxiManager.taskWorker
+            containerInstance taxiManager.swaggerUi
+            containerInstance taxiManager.database
+        }
+    }
+}
