@@ -1,0 +1,20 @@
+STRUCTURIZR_COMPOSE := docker compose -f compose.c4-architecture.yaml
+
+.PHONY: architecture architecture-down architecture-status
+
+architecture:
+	$(STRUCTURIZR_COMPOSE) up --pull missing
+
+architecture-down:
+	$(STRUCTURIZR_COMPOSE) down
+
+architecture-status:
+	$(STRUCTURIZR_COMPOSE) ps
+
+architecture-export-mermaid:
+	mkdir -p docs/architecture/exports/mermaid
+	$(STRUCTURIZR_COMPOSE) run --rm --no-deps structurizr \
+		export \
+		-workspace workspace.dsl \
+		-format mermaid \
+		-output exports/mermaid

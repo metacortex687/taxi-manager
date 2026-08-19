@@ -29,3 +29,6 @@ performance/results/summary.json
 cypress/node_modules/
 cypress/sqlite_demo_data.json
 cypress/demo.db
+docs/architecture/.structurizr/
+docs/architecture/exports/
+docs/architecture/workspace.json

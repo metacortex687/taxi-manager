@@ -2,6 +2,8 @@
 
 K6_SCRIPT ?= load_test_rps_ladder_simple.js
 
+include Makefile.structurizr
+
 start-vite:
 	echo "Starting Vite watcher..."
 	cd /home/taxi-manager/taxi_manager/infrastructure/react_frontend && npm run dev -- --host 0.0.0.0

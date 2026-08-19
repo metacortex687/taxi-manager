@@ -1,0 +1,11 @@
+name: taxi-manager-architecture
+
+services:
+  structurizr:
+    image: structurizr/structurizr:2026.06.28-noble
+    command: ["local"]
+    ports:
+      - "127.0.0.1:${STRUCTURIZR_PORT:-8085}:8080"
+    volumes:
+      - ./docs/architecture:/usr/local/structurizr
+
