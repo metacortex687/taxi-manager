@@ -4,13 +4,13 @@ styles {
         color #ffffff
         stroke #0b4884
         strokeWidth 2
-        shape roundedbox
+        shape RoundedBox
     }
 
     element "Person" {
         background #08427b
         color #ffffff
-        shape person
+        shape Person
     }
 
     element "External System" {
@@ -32,7 +32,7 @@ styles {
     element "Database" {
         background #2e7d32
         color #ffffff
-        shape cylinder
+        shape Cylinder
     }
 
     element "Auxiliary" {
@@ -40,9 +40,55 @@ styles {
         color #ffffff
     }
 
-    element "Boundary" {
-        stroke #1168bd
+    element "Observability" {
+        background #00695c
+        color #ffffff
+    }
+
+    element "CI/CD" {
+        background #5b3f8c
+        color #ffffff
+    }
+
+    element "Current" {
+        stroke #0b4884
         strokeWidth 3
+        border solid
+    }
+
+    element "Implemented Not Deployed" {
+        stroke #7c3aed
+        strokeWidth 4
+        border dashed
+    }
+
+    element "Prototype" {
+        background #d97706
+        color #ffffff
+        stroke #92400e
+        strokeWidth 4
+        border dashed
+    }
+
+    element "Target Optional" {
+        stroke #6b7280
+        strokeWidth 4
+        border dotted
+    }
+
+    element "Experimental" {
+        background #be185d
+        color #ffffff
+        stroke #831843
+        strokeWidth 4
+        border dotted
+    }
+
+    element "Deployment Node" {
+        background #e5e7eb
+        color #111827
+        stroke #6b7280
+        strokeWidth 2
     }
 
     relationship "Relationship" {
@@ -60,5 +106,16 @@ styles {
         thickness 3
         style dashed
     }
-}
 
+    relationship "Optional Path" {
+        color #6b7280
+        thickness 2
+        style dashed
+    }
+
+    relationship "Experimental Flow" {
+        color #be185d
+        thickness 2
+        style dotted
+    }
+}
