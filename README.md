@@ -237,9 +237,278 @@ REST API возвращает значения даты и времени в ф�
 
 </details>
 
+## Архитектура, интерфейсы и технологический стек
 
-## Архитектура и технологический стек
+Архитектура Taxi-manager описана набором взаимодополняющих представлений C4. Основным считается логическое представление: оно показывает назначение контейнеров и связи между ними независимо от конкретного способа развёртывания. Схемы развёртывания, наблюдаемости, CI/CD и целевой подсистемы уведомлений вынесены отдельно, чтобы не смешивать работающую часть приложения с прототипами и планируемыми расширениями.
 
+Исходный код моделей хранится в [`docs/architecture`](docs/architecture/), точка входа — [`workspace.dsl`](docs/architecture/workspace.dsl). PNG-версии представлений экспортируются в `docs/images/c4/`. Имя PNG совпадает с ключом соответствующего Structurizr view, поэтому ссылки из README не требуется изменять после повторной генерации схем.
+
+### Статус архитектурных элементов
+
+| Статус | Значение | Примеры |
+| --- | --- | --- |
+| **Текущий** | Реализован и входит в действующий контур приложения | React UI, Nginx, Django WSGI, task worker, PostgreSQL/PostGIS, Swagger UI |
+| **Реализован, не включён в Jenkins deployment** | Работает в расширенном локальном окружении, но пока отсутствует в актуальном Jenkins-развёртывании | Django ASGI и передача данных через SSE |
+| **Прототип** | Можно запустить отдельно, однако основной пользовательский поток его пока не использует | Rust API |
+| **Целевой, подключаемый** | Предусмотрен целевой архитектурой и может быть включён при необходимости | сервис уведомлений, Debezium, Kafka; часть компонентов кеширования |
+| **Эксперимент** | Используется для проверки технологии и не является обязательной частью системы | Flink/Flink SQL, отдельное Cypress-окружение |
+
+Статусы зафиксированы непосредственно в C4-модели и визуально различаются стилем границ и цветом элементов.
+
+### Контекст системы
+
+Taxi-manager используется сотрудником автопарка и администратором приложения. Точки местоположения поступают от внешнего клиента телеметрии. Для обратного геокодирования система обращается к LocationIQ. Подсистема уведомлений показана как целевая подключаемая система и не требуется для запуска основного приложения.
+
+![C1 — контекст системы Taxi-manager](docs/images/c4/TaxiManagerSystemContext.png)
+
+### Основная логическая архитектура
+
+![C2 — основная логическая архитектура Taxi-manager](docs/images/c4/TaxiManagerLogicalContainers.png)
+
+Основной функциональный контур образуют:
+
+| Контейнер | Ответственность | Текущий статус |
+| --- | --- | --- |
+| **Веб-интерфейс** | Пользовательский интерфейс, работа с REST API, отображение карт и получение онлайн-обновлений | текущий |
+| **Nginx** | Единая HTTP-точка входа, раздача статических файлов и маршрутизация запросов | текущий |
+| **Django WSGI** | Синхронный REST API, аутентификация, разграничение доступа, Django Admin и основная бизнес-логика | текущий |
+| **Django ASGI** | Длительные SSE-соединения и передача точек выбранного автомобиля | реализован, пока не включён в Jenkins deployment |
+| **Task worker** | Обработка очередей `reports`, `geocoding` и `default`, включая обращения к LocationIQ | текущий |
+| **Rust API** | Прототип переноса операций, которые измерения производительности определят как узкие места Django | прототип, не используется основным приложением |
+| **PostgreSQL/PostGIS** | Доменные, географические и служебные данные, точки телеметрии и задания фоновой очереди | текущий |
+| **Swagger UI** | Просмотр OpenAPI-схем Django REST API и Rust API | текущий |
+| **Подсистема уведомлений** | Получение изменений PostgreSQL через CDC и формирование уведомлений | целевая, подключаемая |
+
+Логическое представление намеренно не фиксирует один WSGI-сервер. В демонстрационном и расширенном локальном Compose-профилях WSGI-приложение запускается через uWSGI. В `Makefile` также определён запуск через Gunicorn. ASGI-приложение запускается Gunicorn с `uvicorn-worker`. Актуальный Jenkins deployment наследует `make run-dev` из `compose.jenkins-ci.yaml`, то есть сейчас использует Django development server; это отражено на отдельной схеме развёртывания как текущее состояние, а не как целевая production-конфигурация.
+
+### Интерфейсы системы
+
+| Интерфейс | Назначение | Реализация |
+| --- | --- | --- |
+| **REST API** | Управление организациями, автомобилями, поездками и телеметрией; синхронные операции | Django REST Framework через WSGI |
+| **SSE** | Однонаправленная передача новых точек выбранного автомобиля в браузер | Django ASGI, `text/event-stream` |
+| **OpenAPI** | Машиночитаемый контракт REST API | `drf-spectacular` для Django; отдельная статическая схема для Rust API |
+| **Swagger UI** | Интерактивный просмотр и ручная проверка OpenAPI-описаний | отдельный контейнер `swaggerapi/swagger-ui` |
+
+OpenAPI является описанием интерфейса, а Swagger UI — пользовательским инструментом отображения этого описания; поэтому на C4-схеме они показаны раздельно.
+
+### Ключевые сценарии взаимодействия
+
+При онлайн-отслеживании браузер открывает SSE-соединение для выбранного автомобиля. Nginx направляет его в ASGI-приложение, которое читает доступные точки и начинает передавать события клиенту. Новые точки поступают через REST API WSGI-приложения и сохраняются в PostgreSQL. Конкретный механизм обнаружения ASGI-приложением очередной записи необходимо окончательно сверить с реализацией endpoint; схема фиксирует подтверждённый внешний контракт, не предполагая неподтверждённую внутреннюю технологию.
+
+![Онлайн-отслеживание автомобиля через SSE](docs/images/c4/TaxiManagerLiveTrackingFlow.png)
+
+<details>
+<summary>Фоновое обратное геокодирование</summary>
+
+WSGI-приложение сохраняет фоновое задание в базе данных. Task worker получает его, обращается к LocationIQ и сохраняет результат. Внешний сервис не имеет прямого доступа к PostgreSQL.
+
+![Геокодирование через фоновое задание](docs/images/c4/TaxiManagerGeocodingFlow.png)
+
+</details>
+
+### Компоненты основного Django-приложения
+
+Компонентная схема является предварительной. Она показывает предполагаемое разделение на REST API, контроль доступа, Django Admin, прикладные сценарии, доменную модель, репозитории, постановку фоновых заданий и формирование OpenAPI-схемы. Перед тем как считать C3-представление окончательным, его следует сверить с реальными границами Python-пакетов и направлением зависимостей в исходном коде.
+
+![C3 — компоненты основного Django-приложения](docs/images/c4/TaxiManagerWsgiComponents.png)
+
+### Целевая подсистема уведомлений
+
+Подсистема уведомлений отделена от основного приложения: тяжёлый событийный стек не нужен для базового запуска Taxi-manager. Целевой поток имеет вид `PostgreSQL → Debezium → Kafka → сервис уведомлений`. Сервис может обращаться к REST API Taxi-manager и хранит собственное состояние в SQLite. Flink/Flink SQL остаётся самостоятельным учебным экспериментом.
+
+![Целевой контур уведомлений](docs/images/c4/NotificationContainers.png)
+
+![Формирование уведомления из изменения PostgreSQL](docs/images/c4/NotificationFlow.png)
+
+<details>
+<summary>Дополнительные архитектурные представления</summary>
+
+#### Расширенный runtime без наблюдаемости
+
+Схема дополняет основной логический контур PgBouncer, Memcached и Varnish. Эти компоненты присутствуют не во всех профилях и не нужны для минимальной демо-версии.
+
+![Расширенный runtime Taxi-manager](docs/images/c4/TaxiManagerExtendedRuntime.png)
+
+#### Наблюдаемость
+
+Первое представление показывает границы Taxi-manager и подсистемы наблюдаемости на уровне программных систем, второе — поток метрик, логов, трассировок и профилей между контейнерами.
+
+![Taxi-manager и контур наблюдаемости](docs/images/c4/RuntimeWithObservability.png)
+
+![Контейнеры наблюдаемости Taxi-manager](docs/images/c4/ObservabilityContainers.png)
+
+#### CI/CD и наблюдаемость
+
+Основной CI/CD-контур построен на Jenkins. Контроллер назначает этапы постоянному SSH-агенту; агент собирает образы, запускает проверки и тесты и выполняет Compose-развёртывание. Jenkins использует трассировки Tempo для поиска возможных N+1-запросов. GitHub Actions разворачивает и обновляет Jenkins-агент, но не заменяет основной pipeline.
+
+Конфигурация Jenkins-контроллера и агента хранится в отдельном репозитории [`jenkins-config`](https://github.com/metacortex687/jenkins-config).
+
+![CI/CD, наблюдаемость и Taxi-manager](docs/images/c4/CiCdLandscape.png)
+
+![Контейнеры CI/CD Taxi-manager](docs/images/c4/CiCdContainers.png)
+
+![Основной Jenkins pipeline Taxi-manager](docs/images/c4/CiCdPipeline.png)
+
+#### Варианты развёртывания
+
+Схемы развёртывания не заменяют логическую архитектуру: они показывают, какие контейнеры включены в конкретное окружение.
+
+![Развёртывание демонстрационной версии](docs/images/c4/DemoDeployment.png)
+
+![Актуальное развёртывание через Jenkins](docs/images/c4/JenkinsDeployment.png)
+
+![Целевое расширенное развёртывание](docs/images/c4/TargetRuntimeDeployment.png)
+
+</details>
+
+### Технологический стек основного приложения
+
+| Область | Основные технологии |
+| --- | --- |
+| **Backend** | Python 3.12, Django 6.0, Django REST Framework 3.16, GeoDjango, Django ORM |
+| **Frontend** | React 19, Vite 8, Mantine 9, TanStack Query 5, React Router 7, Leaflet/React Leaflet |
+| **Данные и география** | PostgreSQL 16, PostGIS 3.5, GDAL, GEOS, PROJ, geopy, OSMnx, NetworkX |
+| **Процессы приложения** | WSGI, ASGI, SSE, task worker на `django-tasks-db` |
+| **Веб-контур** | Nginx, uWSGI, Gunicorn, Uvicorn Worker, WhiteNoise |
+| **Интерфейсы и документация** | REST, OpenAPI, `drf-spectacular`, Swagger UI |
+| **Сборка и запуск** | `uv`, npm, Make, Docker, Docker Compose |
+
+<details>
+<summary>Полный перечень технологий по назначению</summary>
+
+#### Backend и REST API
+
+- Python 3.12;
+- Django 6.0: веб-фреймворк, ORM, миграции, аутентификация и Django Admin;
+- Django REST Framework 3.16.1;
+- GeoDjango и `djangorestframework-gis` 1.2;
+- Djoser 2.3.3;
+- `django-filter` 25.2;
+- `drf-spectacular` 0.30 и OpenAPI;
+- `django-import-export` 4.4;
+- `django-tasks-db` 0.12;
+- fpdf2 2.8;
+- Faker 40.4;
+- `dj-database-url` 3.1;
+- `psycopg2-binary` 2.9;
+- WhiteNoise 6.12;
+- `django-bootstrap5` 26.2;
+- `uv` и `uv.lock` для воспроизводимого управления Python-зависимостями.
+
+#### Географические данные
+
+- PostgreSQL 16 и PostGIS 3.5;
+- GDAL, GEOS и PROJ;
+- geopy 2.4;
+- OSMnx 2.1;
+- NetworkX 3.6;
+- внешний сервис обратного геокодирования LocationIQ;
+- Leaflet 1.9 и React Leaflet 5 для отображения карт.
+
+#### Пользовательский интерфейс
+
+- Node.js 22 на этапе Docker-сборки;
+- React 19.2 и React DOM 19.2;
+- Vite 8 и `@vitejs/plugin-react` 6;
+- Mantine 9;
+- Bootstrap 5.3 и React Bootstrap 2.10;
+- TanStack React Query 5.99;
+- React Router 7.14;
+- Day.js 1.11;
+- React Hot Toast 2.6;
+- npm и `package-lock.json`.
+
+#### Серверы и инфраструктура выполнения
+
+- Nginx;
+- uWSGI 2.0;
+- Gunicorn 25.3;
+- Uvicorn 0.49 и `uvicorn-worker` 0.4 для ASGI;
+- Django development server для локальной разработки, CI и текущего Jenkins deployment;
+- Docker и Docker Compose;
+- PgBouncer 1.25 в режиме транзакций;
+- Memcached 1.6 и PyMemcache 4;
+- Varnish;
+- Swagger UI;
+- Make.
+
+#### Прототип производительного API
+
+- Rust edition 2021;
+- Actix Web 4;
+- Tokio 1;
+- SQLx 0.8 с PostgreSQL и Rustls;
+- Serde и Serde JSON;
+- `env_logger` и `log`.
+
+Rust API обращается к PostgreSQL напрямую. Решение о переносе конкретных операций принимается только по результатам нагрузочных измерений и поиска узких мест; основной поток приложения сервис пока не использует.
+
+#### Целевая событийная подсистема и уведомления
+
+- Apache Kafka 4.3 в режиме KRaft;
+- Kafka Connect;
+- Debezium 3.6 и логическая репликация PostgreSQL;
+- Kafka UI;
+- JSON-сериализация событий;
+- сервис уведомлений на Python 3.13 с `uv`, Kafka-клиентом и SQLite;
+- Apache Flink и Flink SQL — отдельный учебный эксперимент.
+
+Старый VK-бот исключён из актуальной архитектуры. Пока очистка исходного кода не завершена, в `pyproject.toml` ещё могут присутствовать переходные зависимости `vk-api` и `django-pgwatch`; они не считаются частью целевого стека.
+
+#### Наблюдаемость и производительность
+
+- OpenTelemetry SDK и автоматическая инструментация Django, WSGI, ASGI, PostgreSQL, Memcached и HTTP-клиентов;
+- OTLP over gRPC, W3C Trace Context и Baggage;
+- Grafana Alloy;
+- Prometheus и `django-prometheus`;
+- Grafana Loki;
+- Grafana Tempo и TraceQL;
+- Grafana Pyroscope и `pyroscope-io`;
+- Grafana;
+- cAdvisor;
+- Nginx Prometheus Exporter;
+- Varnish exporter;
+- GoAccess;
+- k6 и Prometheus Remote Write;
+- Django Debug Toolbar и Django Silk.
+
+#### Тестирование и CI/CD
+
+- Django Test Framework;
+- pytest 9 и pytest-django 4;
+- Ruff 0.14;
+- `unittest-xml-reporting` и JUnit XML;
+- Playwright 1.61 — актуальные E2E-тесты Jenkins pipeline;
+- Cypress 15 — отдельный учебный эксперимент с SQLite и SpatiaLite;
+- Jenkins Pipeline, Jenkins Configuration as Code и Job DSL;
+- Jenkins controller и постоянный SSH agent на JDK 21;
+- Docker CLI, Docker Buildx и Docker Compose на Jenkins-агенте;
+- GitHub Actions — только доставка Jenkins-агента;
+- Git, GitHub, Docker Hub и Microsoft Container Registry.
+
+#### Архитектурная документация
+
+- C4 Model;
+- Structurizr DSL;
+- ADR для значимых архитектурных решений.
+
+Эти инструменты документируют систему и не являются частью её runtime-стека.
+
+</details>
+
+### Источники и границы достоверности
+
+Полный состав и точные версии зависимостей следует проверять по исходным файлам, а не по этому обзорному списку:
+
+- [`pyproject.toml`](pyproject.toml) и [`uv.lock`](uv.lock);
+- [`package.json`](taxi_manager/infrastructure/react_frontend/package.json) и [`package-lock.json`](taxi_manager/infrastructure/react_frontend/package-lock.json);
+- [`rust-api/Cargo.toml`](rust-api/Cargo.toml);
+- [`Makefile`](Makefile);
+- [`Jenkinsfile`](Jenkinsfile) и Docker Compose-файлы;
+- [`docs/architecture/workspace.dsl`](docs/architecture/workspace.dsl).
+
+Архитектурная документация фиксирует несколько состояний системы одновременно, но не выдаёт планы за уже развёрнутую функциональность. При изменении кода сначала обновляются манифесты и модель, затем повторно экспортируются PNG. Требуют дополнительной сверки по коду: внутренние границы C3-компонентов и механизм, с помощью которого ASGI endpoint обнаруживает появление новой точки телеметрии.
 
 
 ## Быстрый запуск демо-версии
