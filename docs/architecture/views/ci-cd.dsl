@@ -1,14 +1,14 @@
 systemLandscape "CiCdLandscape" {
     title "CI/CD, наблюдаемость и Taxi-manager"
     description "Показывает репозиторий, GitHub Actions, Jenkins, приложение, контур наблюдаемости и внешние реестры на уровне программных систем."
-    include developer sourceRepository githubActions containerRegistry jenkins taxiManager observability
+    include sourceRepository githubActions containerRegistry jenkins taxiManager observability
     autoLayout lr 340 230
 }
 
 container jenkins "CiCdContainers" {
     title "Контейнеры CI/CD Taxi-manager"
     description "Основной pipeline выполняется Jenkins; GitHub Actions используется для развёртывания постоянного Jenkins-агента."
-    include developer sourceRepository githubActions containerRegistry taxiManager observability.tempo
+    include sourceRepository githubActions containerRegistry taxiManager observability.tempo
     include jenkins.controller jenkins.agent
     autoLayout lr 320 220
 }

@@ -6,8 +6,8 @@ administrator = person "Администратор приложения" {
     description "Управляет данными и пользователями через Django Admin."
 }
 
-developer = person "Разработчик" {
-    description "Изучает документацию, тестирует REST API и сопровождает приложение."
+externalServiceDeveloper = person "Разработчик внешних сервисов" {
+    description "Разрабатывает интеграции, использующие OpenAPI-документацию и REST API Taxi-manager."
 }
 
 telemetryClient = softwareSystem "Клиент телеметрии" {
@@ -133,7 +133,7 @@ taxiManager = softwareSystem "Taxi-manager" {
 
 fleetEmployee -> taxiManager.webUi "Управляет автопарком и просматривает маршруты" "HTTPS"
 administrator -> taxiManager.nginx "Открывает Django Admin" "HTTPS"
-developer -> taxiManager.nginx "Открывает Swagger UI и вызывает REST API" "HTTPS"
+externalServiceDeveloper -> taxiManager.nginx "Изучает OpenAPI-документацию и вызывает REST API при разработке интеграций" "HTTPS"
 telemetryClient -> taxiManager.nginx "Отправляет точки местоположения" "REST/JSON over HTTPS"
 
 taxiManager.nginx -> taxiManager.webUi "Раздаёт статические файлы и передаёт ответы браузеру" "HTTP/HTTPS"

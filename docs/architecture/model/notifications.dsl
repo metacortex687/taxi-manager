@@ -27,7 +27,7 @@ notificationSystem = softwareSystem "Подсистема уведомлений
     }
 
     kafkaUi = container "Интерфейс Kafka" {
-        description "Предоставляет разработчику просмотр брокера, топиков и сообщений."
+        description "Предоставляет технический интерфейс для просмотра брокера, топиков и сообщений."
         technology "Kafka UI"
         tags "Auxiliary,Target Optional"
     }
@@ -44,7 +44,6 @@ notificationSystem.debezium -> notificationSystem.kafka "Публикует со
 notificationSystem.kafka -> notificationSystem.notificationService "Передаёт события потребителю" "Kafka protocol, JSON"
 notificationSystem.notificationService -> notificationSystem.notificationDatabase "Сохраняет состояние обработки" "SQLite"
 notificationSystem.notificationService -> taxiManager "Обращается к API аутентификации и данным приложения" "REST/JSON over HTTPS"
-developer -> notificationSystem.kafkaUi "Просматривает топики и сообщения" "HTTPS"
 notificationSystem.kafkaUi -> notificationSystem.kafka "Читает метаданные и сообщения" "Kafka protocol"
 notificationSystem.kafka -> notificationSystem.flink "Передаёт поток событий для экспериментальной обработки" "Kafka protocol, JSON" {
     tags "Experimental Flow"

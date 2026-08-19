@@ -30,7 +30,6 @@ jenkins = softwareSystem "CI/CD Taxi-manager" {
     }
 }
 
-developer -> sourceRepository "Публикует изменения" "Git/SSH"
 jenkins.controller -> sourceRepository "Получает Jenkinsfile и описание pipeline" "Git/SSH"
 jenkins.controller -> jenkins.agent "Назначает этапы сборки" "Jenkins Remoting over SSH"
 jenkins.agent -> sourceRepository "Клонирует исходный код" "Git/SSH"

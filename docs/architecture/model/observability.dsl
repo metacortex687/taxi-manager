@@ -87,4 +87,3 @@ observability.grafana -> observability.prometheus "Запрашивает мет
 observability.grafana -> observability.loki "Запрашивает логи" "LogQL"
 observability.grafana -> observability.tempo "Запрашивает трассировки" "TraceQL/HTTP"
 observability.grafana -> observability.pyroscope "Запрашивает профили" "HTTP API"
-developer -> observability.grafana "Анализирует состояние приложения и результаты тестов" "HTTPS"

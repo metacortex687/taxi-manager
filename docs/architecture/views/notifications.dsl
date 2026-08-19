@@ -1,3 +1,10 @@
+systemContext notificationSystem "NotificationSystemContext" {
+    title "C1 — Контекст подсистемы уведомлений"
+    description "Подсистема уведомлений является рассматриваемой системой; Taxi-manager предоставляет изменения PostgreSQL и REST API. Канал доставки уведомлений будет добавлен после его выбора."
+    include notificationSystem taxiManager
+    autoLayout lr 300 220
+}
+
 container notificationSystem "NotificationContainers" {
     title "Целевой контур уведомлений"
     description "Подключаемая подсистема CDC и событийной доставки. Flink показан как отдельный учебный эксперимент и не требуется для базового потока уведомлений."

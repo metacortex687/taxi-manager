@@ -1,7 +1,7 @@
 systemContext taxiManager "TaxiManagerSystemContext" {
     title "C1 — Контекст системы Taxi-manager"
-    description "Показывает пользователей, границу Taxi-manager и внешние программные системы. Подсистема уведомлений обозначена как подключаемая целевая система."
-    include taxiManager fleetEmployee administrator developer telemetryClient locationIq
+    description "Показывает пользователей, границу работающего приложения Taxi-manager и непосредственно используемые им внешние программные системы."
+    include taxiManager fleetEmployee administrator externalServiceDeveloper telemetryClient locationIq
     exclude notificationSystem
     autoLayout lr 300 220
     default
@@ -9,17 +9,19 @@ systemContext taxiManager "TaxiManagerSystemContext" {
 
 container taxiManager "TaxiManagerLogicalContainers" {
     title "C2 — Основная логическая архитектура Taxi-manager"
-    description "Показывает основной функциональный контур, обязательное ASGI-приложение, прототип Rust API и свёрнутую целевую подсистему уведомлений. Статус элементов задаётся стилем и описанием."
-    include fleetEmployee administrator developer telemetryClient locationIq notificationSystem
+    description "Показывает основной функциональный контур, ASGI-приложение и прототип Rust API. Целевая подсистема уведомлений вынесена в собственный набор представлений. Статус элементов задаётся стилем и описанием."
+    include fleetEmployee administrator externalServiceDeveloper telemetryClient locationIq
     include taxiManager.webUi taxiManager.nginx taxiManager.djangoWsgi taxiManager.djangoAsgi taxiManager.taskWorker taxiManager.rustApi taxiManager.database taxiManager.swaggerUi
+    exclude notificationSystem
     autoLayout tb 320 220
 }
 
 container taxiManager "TaxiManagerExtendedRuntime" {
     title "Расширенный контур выполнения Taxi-manager"
     description "Показывает логические контейнеры приложения и дополнительные компоненты выполнения без стека наблюдаемости и CI/CD."
-    include telemetryClient locationIq notificationSystem
+    include telemetryClient locationIq
     include taxiManager.webUi taxiManager.varnish taxiManager.nginx taxiManager.djangoWsgi taxiManager.djangoAsgi taxiManager.taskWorker taxiManager.rustApi taxiManager.swaggerUi taxiManager.pgbouncer taxiManager.memcached taxiManager.database
+    exclude notificationSystem
     autoLayout tb 320 220
 }
 
