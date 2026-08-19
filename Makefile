@@ -46,10 +46,10 @@ demo-up:
 	docker compose -f docker-compose.demo.yaml up --build
 
 dev-up:
-	docker compose \
-		-p taxi-manager-kafka \
-		-f docker-compose.kafka.yaml \
-		up -d --build kafka kafka-ui flink-jobmanager flink-taskmanager
+# 	docker compose \
+# 		-p taxi-manager-kafka \
+# 		-f docker-compose.kafka.yaml \
+# 		up -d --build kafka kafka-ui flink-jobmanager flink-taskmanager
 	docker compose \
 		-p taxi-manager \
 		-f docker-compose.dev-local.observability.yaml \
