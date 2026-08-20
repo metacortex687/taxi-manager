@@ -27,6 +27,7 @@ include Makefile.structurizr
 make architecture
 make architecture-status
 make architecture-down
+make architecture-export-png #обновляет картинки в docs/images/c4
 ```
 
 Откройте <http://127.0.0.1:8085>.
