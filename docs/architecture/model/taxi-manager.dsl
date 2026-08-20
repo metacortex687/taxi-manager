@@ -112,10 +112,34 @@ taxiManager = softwareSystem "Taxi-manager" {
         tags "Auxiliary,Current"
     }
 
-    alloy = container "Коллектор телеметрии" {
-        description "Собирает метрики, логи и распределённые трассировки контейнеров Taxi-manager и передаёт их во внешнюю Платформу наблюдаемости."
+    alloy = container "Коллектор наблюдаемости" {
+        description "Собирает метрики, логи и трассировки Taxi-manager, включая трассировки обращений Django к PostgreSQL, и передаёт их во внешнюю Платформу наблюдаемости."
         technology "Grafana Alloy, OpenTelemetry, OTLP/gRPC"
         tags "Observability,Current"
+    }
+
+    cadvisor = container "Метрики контейнеров" {
+        description "Предоставляет Grafana Alloy сведения об использовании ресурсов Docker-контейнерами."
+        technology "cAdvisor"
+        tags "Observability,Auxiliary"
+    }
+
+    nginxExporter = container "Экспортёр Nginx" {
+        description "Преобразует показатели Nginx в метрики, которые собирает Grafana Alloy."
+        technology "Nginx Prometheus Exporter"
+        tags "Observability,Auxiliary"
+    }
+
+    varnishExporter = container "Экспортёр Varnish" {
+        description "Преобразует показатели Varnish в метрики, которые собирает Grafana Alloy."
+        technology "Varnish exporter"
+        tags "Observability,Auxiliary,Target Optional"
+    }
+
+    goAccess = container "Анализ журналов доступа" {
+        description "Формирует локальную дополнительную статистику по access-логам Nginx и не передаёт данные в Платформу наблюдаемости."
+        technology "GoAccess"
+        tags "Observability,Auxiliary"
     }
 
     pgbouncer = container "Пул соединений" {
