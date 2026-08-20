@@ -9,7 +9,7 @@ systemContext taxiManager "TaxiManagerSystemContext" {
 
 container taxiManager "TaxiManagerLogicalContainers" {
     title "C2 — Основная логическая архитектура Taxi-manager"
-    description "Показывает основной функциональный контур, контейнер «Коллектор наблюдаемости» на Grafana Alloy, подключение Асинхронного Django-приложения к PostgreSQL через PgBouncer и прототип Высокопроизводительного API. Подсистема уведомлений вынесена в собственный набор представлений."
+    description "Показывает основной функциональный контур, контейнер «Коллектор наблюдаемости» на Grafana Alloy, подключение Асинхронного Django-приложения к PostgreSQL через PgBouncer и прототип Высокопроизводительного API. Отдельная файловая связь показывает монтирование статической OpenAPI-схемы Высокопроизводительного API в Документацию API только для чтения. Подсистема уведомлений вынесена в собственный набор представлений."
     include fleetEmployee administrator externalServiceDeveloper telemetryClient locationIq observability
     include taxiManager.webUi taxiManager.nginx taxiManager.djangoWsgi taxiManager.djangoAsgi taxiManager.taskWorker taxiManager.rustApi taxiManager.pgbouncer taxiManager.database taxiManager.swaggerUi taxiManager.alloy
     exclude notificationSystem

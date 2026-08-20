@@ -107,7 +107,7 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     swaggerUi = container "Документация API" {
-        description "Показывает автоматически сформированную OpenAPI-схему Django и статическую OpenAPI-схему Rust API."
+        description "Показывает автоматически сформированную OpenAPI-схему Django и статическую OpenAPI-схему Высокопроизводительного API из файла rust-open-api-schema.yml, смонтированного только для чтения."
         technology "Swagger UI, OpenAPI"
         tags "Auxiliary,Current"
     }
@@ -233,3 +233,6 @@ taxiManager.djangoWsgi.taskPublisher -> taxiManager.database "Сохраняет
 }
 taxiManager.djangoWsgi.openApiSchema -> taxiManager.djangoWsgi.restApi "Описывает операции и структуры данных"
 taxiManager.swaggerUi -> taxiManager.djangoWsgi.openApiSchema "Загружает схему Django API" "OpenAPI/HTTP"
+taxiManager.swaggerUi -> taxiManager.rustApi "Читает статическую OpenAPI-схему из смонтированного файла" "Docker bind mount (read-only), OpenAPI/YAML" {
+    tags "File Mount"
+}

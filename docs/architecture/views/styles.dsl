@@ -107,6 +107,12 @@ styles {
         style dashed
     }
 
+    relationship "File Mount" {
+        color #6b7280
+        thickness 2
+        style dashed
+    }
+
     relationship "Optional Path" {
         color #6b7280
         thickness 2
