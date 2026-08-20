@@ -1,7 +1,7 @@
 systemContext taxiManager "TaxiManagerSystemContext" {
     title "C1 — Контекст системы Taxi-manager"
-    description "Показывает пользователей, границу работающего приложения Taxi-manager и непосредственно используемые им внешние программные системы."
-    include taxiManager fleetEmployee administrator externalServiceDeveloper telemetryClient locationIq
+    description "Показывает пользователей, границу работающего приложения Taxi-manager, непосредственно используемые внешние системы и Платформу наблюдаемости."
+    include taxiManager fleetEmployee administrator externalServiceDeveloper telemetryClient locationIq observability
     exclude notificationSystem
     autoLayout lr 300 220
     default
@@ -9,10 +9,11 @@ systemContext taxiManager "TaxiManagerSystemContext" {
 
 container taxiManager "TaxiManagerLogicalContainers" {
     title "C2 — Основная логическая архитектура Taxi-manager"
-    description "Показывает основной функциональный контур, ASGI-приложение и прототип Rust API. Целевая подсистема уведомлений вынесена в собственный набор представлений. Статус элементов задаётся стилем и описанием."
+    description "Показывает основной функциональный контур, подключение Асинхронного Django-приложения к PostgreSQL через PgBouncer и прототип Высокопроизводительного API. Подсистема уведомлений вынесена в собственный набор представлений."
     include fleetEmployee administrator externalServiceDeveloper telemetryClient locationIq
-    include taxiManager.webUi taxiManager.nginx taxiManager.djangoWsgi taxiManager.djangoAsgi taxiManager.taskWorker taxiManager.rustApi taxiManager.database taxiManager.swaggerUi
+    include taxiManager.webUi taxiManager.nginx taxiManager.djangoWsgi taxiManager.djangoAsgi taxiManager.taskWorker taxiManager.rustApi taxiManager.pgbouncer taxiManager.database taxiManager.swaggerUi
     exclude notificationSystem
+    exclude "relationship.tag==Optional Path"
     autoLayout tb 320 220
 }
 
@@ -26,7 +27,7 @@ container taxiManager "TaxiManagerExtendedRuntime" {
 }
 
 component taxiManager.djangoWsgi "TaxiManagerWsgiComponents" {
-    title "C3 — Компоненты основного Django-приложения"
+    title "C3 — Компоненты Синхронного Django-приложения"
     description "Предварительное компонентное представление. Его следует сверить с фактической структурой пакетов и уточнить после просмотра исходного кода."
     include taxiManager.djangoWsgi.restApi taxiManager.djangoWsgi.accessControl taxiManager.djangoWsgi.djangoAdmin taxiManager.djangoWsgi.applicationServices taxiManager.djangoWsgi.domainModel taxiManager.djangoWsgi.repositories taxiManager.djangoWsgi.taskPublisher taxiManager.djangoWsgi.openApiSchema
     include administrator telemetryClient taxiManager.nginx taxiManager.swaggerUi taxiManager.database
@@ -35,19 +36,18 @@ component taxiManager.djangoWsgi "TaxiManagerWsgiComponents" {
 
 dynamic taxiManager "TaxiManagerLiveTrackingFlow" {
     title "Онлайн-отслеживание автомобиля через SSE"
-    description "Клиент запрашивает данные выбранного автомобиля, после чего ASGI-приложение начинает передавать точки через SSE. Способ обнаружения очередной записи оставлен на уровне чтения данных и должен быть уточнён по реализации endpoint."
-    1: taxiManager.webUi -> taxiManager.nginx "Открывает поток отслеживания выбранного автомобиля"
-    2: taxiManager.nginx -> taxiManager.djangoAsgi "Маршрутизирует запрос онлайн-отслеживания"
-    3: taxiManager.djangoAsgi -> taxiManager.database "Получает доступные точки выбранного автомобиля"
-    4: taxiManager.djangoAsgi -> taxiManager.nginx "Начинает передавать события"
-    5: taxiManager.nginx -> taxiManager.webUi "Передаёт события браузеру"
-    6: telemetryClient -> taxiManager.nginx "Отправляет очередную точку местоположения"
-    7: taxiManager.nginx -> taxiManager.djangoWsgi "Маршрутизирует запрос телеметрии"
-    8: taxiManager.djangoWsgi -> taxiManager.database "Сохраняет точку"
-    9: taxiManager.djangoAsgi -> taxiManager.database "Получает очередные точки выбранного автомобиля"
-    10: taxiManager.djangoAsgi -> taxiManager.nginx "Передаёт новые события"
-    11: taxiManager.nginx -> taxiManager.webUi "Обновляет поток в браузере"
-    autoLayout lr 260 180
+    description "Сотрудник автопарка отслеживает выбранный автомобиль через веб-интерфейс. Клиент телеметрии отправляет новые точки через Синхронное Django-приложение, а Асинхронное Django-приложение читает их из PostgreSQL через PgBouncer и передаёт браузеру по SSE."
+    1: fleetEmployee -> taxiManager.webUi "Открывает отслеживание выбранного автомобиля"
+    2: taxiManager.webUi -> taxiManager.nginx "Открывает SSE-соединение"
+    3: taxiManager.nginx -> taxiManager.djangoAsgi "Передаёт запрос онлайн-отслеживания"
+    4: telemetryClient -> taxiManager.nginx "Отправляет новую точку автомобиля"
+    5: taxiManager.nginx -> taxiManager.djangoWsgi "Передаёт точку через REST API"
+    6: taxiManager.djangoWsgi -> taxiManager.database "Сохраняет точку"
+    7: taxiManager.djangoAsgi -> taxiManager.pgbouncer "Запрашивает новые точки выбранного автомобиля"
+    8: taxiManager.pgbouncer -> taxiManager.database "Передаёт запрос через пул соединений"
+    9: taxiManager.djangoAsgi -> taxiManager.nginx "Передаёт новые точки по SSE"
+    10: taxiManager.nginx -> taxiManager.webUi "Доставляет SSE-события браузеру"
+    autoLayout tb 280 200
 }
 
 dynamic taxiManager "TaxiManagerGeocodingFlow" {

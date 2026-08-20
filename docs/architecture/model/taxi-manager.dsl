@@ -21,7 +21,7 @@ locationIq = softwareSystem "LocationIQ" {
 }
 
 taxiManager = softwareSystem "Taxi-manager" {
-    description "Веб-система для управления автопарком, хранения поездок и точек телеметрии, геокодирования и отслеживания автомобилей."
+    description "Веб-система для управления автопарком, хранения поездок и точек телеметрии, геокодирования, формирования отчётов и отслеживания автомобилей."
     tags "Current System"
 
     webUi = container "Веб-интерфейс" {
@@ -36,7 +36,7 @@ taxiManager = softwareSystem "Taxi-manager" {
         tags "Gateway,Current"
     }
 
-    djangoWsgi = container "Основное Django-приложение" {
+    djangoWsgi = container "Синхронное Django-приложение" {
         description "Реализует синхронный REST API, аутентификацию, разграничение доступа, Django Admin, бизнес-логику и приём телеметрии."
         technology "Python 3.12, Django 6, Django REST Framework, GeoDjango, WSGI"
         tags "Current"
@@ -72,7 +72,7 @@ taxiManager = softwareSystem "Taxi-manager" {
         }
 
         taskPublisher = component "Постановка фоновых заданий" {
-            description "Создаёт задания в очередях reports, geocoding и default."
+            description "Создаёт задания для формирования отчётов, обратного геокодирования и других фоновых операций."
             technology "django-tasks-db"
         }
 
@@ -89,7 +89,7 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     taskWorker = container "Фоновый обработчик заданий" {
-        description "Обрабатывает очереди reports, geocoding и default; выполняет геокодирование через LocationIQ и сохраняет результаты."
+        description "Формирует отчёты и выполняет обратное геокодирование по заданиям из фоновых очередей."
         technology "Python 3.12, Django management command, django-tasks-db"
         tags "Worker,Current"
     }
@@ -100,7 +100,7 @@ taxiManager = softwareSystem "Taxi-manager" {
         tags "Prototype"
     }
 
-    database = container "База данных Taxi-manager" {
+    database = container "База данных" {
         description "Хранит доменные и географические данные, поездки, точки телеметрии, задания фоновой очереди и результаты геокодирования."
         technology "PostgreSQL 16, PostGIS 3.5"
         tags "Database,Current"
@@ -112,10 +112,16 @@ taxiManager = softwareSystem "Taxi-manager" {
         tags "Auxiliary,Current"
     }
 
+    alloy = container "Коллектор телеметрии" {
+        description "Собирает метрики, логи и распределённые трассировки контейнеров Taxi-manager и передаёт их во внешнюю Платформу наблюдаемости."
+        technology "Grafana Alloy, OpenTelemetry, OTLP/gRPC"
+        tags "Observability,Current"
+    }
+
     pgbouncer = container "Пул соединений" {
-        description "Переиспользует соединения приложения с PostgreSQL в расширенном окружении."
+        description "Переиспользует соединения Асинхронного Django-приложения с PostgreSQL и предотвращает исчерпание лимита подключений."
         technology "PgBouncer 1.25"
-        tags "Target Optional"
+        tags "Current"
     }
 
     memcached = container "Кеш приложения" {
@@ -131,7 +137,7 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 }
 
-fleetEmployee -> taxiManager.webUi "Управляет автопарком и просматривает маршруты" "HTTPS"
+fleetEmployee -> taxiManager.webUi "Управляет автопарком, просматривает маршруты и получает сформированные отчёты" "HTTPS"
 administrator -> taxiManager.nginx "Открывает Django Admin" "HTTPS"
 externalServiceDeveloper -> taxiManager.nginx "Изучает OpenAPI-документацию и вызывает REST API при разработке интеграций" "HTTPS"
 telemetryClient -> taxiManager.nginx "Отправляет точки местоположения" "REST/JSON over HTTPS"
@@ -145,10 +151,6 @@ taxiManager.nginx -> taxiManager.rustApi "Маршрутизирует высо�
 taxiManager.nginx -> taxiManager.swaggerUi "Маршрутизирует веб-интерфейс документации" "HTTP"
 
 taxiManager.djangoWsgi -> taxiManager.database "Читает и изменяет доменные данные; сохраняет фоновые задания" "Django ORM, SQL" {
-    tags "Database Access"
-}
-
-taxiManager.djangoAsgi -> taxiManager.database "Получает точки выбранного автомобиля для передачи через SSE" "Django ORM, SQL" {
     tags "Database Access"
 }
 
@@ -172,8 +174,8 @@ taxiManager.djangoWsgi -> taxiManager.pgbouncer "Использует пул с�
     tags "Optional Path"
 }
 
-taxiManager.djangoAsgi -> taxiManager.pgbouncer "Использует пул соединений в расширенном окружении" "PostgreSQL protocol" {
-    tags "Optional Path"
+taxiManager.djangoAsgi -> taxiManager.pgbouncer "Читает точки выбранного автомобиля через пул соединений" "PostgreSQL protocol" {
+    tags "Database Access"
 }
 
 taxiManager.taskWorker -> taxiManager.pgbouncer "Использует пул соединений в расширенном окружении" "PostgreSQL protocol" {
@@ -181,7 +183,7 @@ taxiManager.taskWorker -> taxiManager.pgbouncer "Использует пул с�
 }
 
 taxiManager.pgbouncer -> taxiManager.database "Переиспользует соединения" "PostgreSQL protocol" {
-    tags "Database Access,Optional Path"
+    tags "Database Access"
 }
 
 taxiManager.djangoWsgi -> taxiManager.memcached "Читает и сохраняет кешированные данные" "Memcached protocol" {
