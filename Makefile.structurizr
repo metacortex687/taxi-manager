@@ -44,3 +44,6 @@ architecture-export-png: architecture-export-png-image
 		$(STRUCTURIZR_EXPORTER_IMAGE) \
 		$(STRUCTURIZR_DIAGRAMS_URL) \
 		/output
+
+architecture-restart:
+	$(STRUCTURIZR_COMPOSE) restart structurizr

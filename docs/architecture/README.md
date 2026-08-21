@@ -27,7 +27,9 @@ include Makefile.structurizr
 make architecture
 make architecture-status
 make architecture-down
+make architecture-restart # перезапуск после внесения изменения в DSL файлы C4
 make architecture-export-png #обновляет картинки в docs/images/c4
+
 ```
 
 Откройте <http://127.0.0.1:8085>.
