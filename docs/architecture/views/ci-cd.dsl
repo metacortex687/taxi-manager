@@ -1,12 +1,12 @@
 systemLandscape "CiCdLandscape" {
     title "CI/CD, наблюдаемость и Taxi-manager"
-    description "Показывает отдельный от эксплуатационного C1 CI/CD-контур: репозиторий с Jenkinsfile и файлами Compose, GitHub Actions, Jenkins, приложение, Платформу наблюдаемости и внешние реестры."
+    description "Показывает отдельный от эксплуатационного представления CI/CD-контур: репозиторий с Jenkinsfile и файлами Compose, GitHub Actions, Jenkins, приложение, Систему хранения и анализа данных мониторинга и внешние реестры."
     include sourceRepository githubActions containerRegistry jenkins taxiManager observability
     autoLayout lr 340 230
 }
 
 container jenkins "CiCdContainers" {
-    title "C2 — Диаграмма контейнеров CI/CD Taxi-manager"
+    title "Диаграмма контейнеров CI/CD Taxi-manager"
     description "Основной pipeline выполняется Jenkins. Контроллер получает Jenkinsfile, агент клонирует исходный код и файлы Compose для CI и CD; GitHub Actions используется только для развёртывания постоянного Jenkins-агента."
     include sourceRepository githubActions containerRegistry taxiManager observability.tempo
     include jenkins.controller jenkins.agent

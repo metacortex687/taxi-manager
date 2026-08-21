@@ -3,11 +3,11 @@ supportSpecialist = person "Специалист сопровождения" {
 }
 
 mailService = softwareSystem "Почтовый сервис" {
-    description "Внешний SMTP-сервис доставляет email-оповещения Платформы наблюдаемости Специалисту сопровождения."
+    description "Внешний SMTP-сервис доставляет email-оповещения Системы хранения и анализа данных мониторинга Специалисту сопровождения."
     tags "External System"
 }
 
-observability = softwareSystem "Платформа наблюдаемости" {
+observability = softwareSystem "Система хранения и анализа данных мониторинга" {
     description "Принимает телеметрию от коллектора, хранит и визуализирует её, оповещает специалиста сопровождения."
     tags "Observability"
 

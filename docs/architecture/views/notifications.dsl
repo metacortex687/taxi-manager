@@ -1,12 +1,12 @@
 systemContext notificationSystem "NotificationSystemContext" {
-    title "C1 — Диаграмма контекста системы уведомлений менеджеров"
+    title "Диаграмма контекста системы уведомлений менеджеров"
     description "Система уведомлений менеджеров получает изменения основного приложения через CDC, авторизует пользователей через REST API и отправляет сообщения во внешний Чат уведомлений."
     include notificationSystem taxiManager notificationChat fleetEmployee
     autoLayout lr 300 220
 }
 
 container notificationSystem "NotificationContainers" {
-    title "C2 — Диаграмма контейнеров системы уведомлений менеджеров"
+    title "Диаграмма контейнеров системы уведомлений менеджеров"
     description "База данных основного приложения является внешним источником CDC. Debezium публикует исходные события таблиц в Kafka, Flink преобразует их и возвращает в обработанные топики того же кластера. Сервис уведомлений самостоятельно читает обработанные топики по контракту at-least-once, обновляет локальный контекст организаций и привязок и отправляет сообщения в Чат уведомлений; повторная доставка события допустима."
     include fleetEmployee notificationChat
     include taxiManager.nginx taxiManager.djangoWsgi taxiManager.database

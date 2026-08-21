@@ -42,7 +42,7 @@ taxiManager = softwareSystem "Taxi-manager" {
         tags "Current"
     }
 
-    djangoAsgi = container "Асинхронное Django-приложение" {
+    djangoAsgi = container "Django ASGI" {
         description "Обслуживает длительные SSE-соединения и передаёт координаты выбранного автомобиля в браузер в режиме реального времени. Реализовано, но ещё не включено в Jenkins-развёртывание."
         technology "Python 3.12, Django 6, ASGI, Gunicorn, Uvicorn Worker"
         tags "Implemented Not Deployed"
@@ -54,7 +54,7 @@ taxiManager = softwareSystem "Taxi-manager" {
         tags "Worker,Current"
     }
 
-    rustApi = container "Высокопроизводительный API" {
+    rustApi = container "Rust API" {
         description "Прототип для операций, которые по результатам измерений будут определены как узкие места Django API. Текущая реализация читает и создаёт vehicle_model одиночными и пакетными запросами."
         technology "Rust 2021, Actix Web 4, Tokio, SQLx 0.8"
         tags "Prototype"
@@ -67,13 +67,13 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     swaggerUi = container "Документация API" {
-        description "Показывает автоматически сформированную OpenAPI-схему Django и статическую OpenAPI-схему Высокопроизводительного API из файла rust-open-api-schema.yml, смонтированного только для чтения."
+        description "Показывает автоматически сформированную OpenAPI-схему Django и статическую OpenAPI-схему Rust API из файла rust-open-api-schema.yml, смонтированного только для чтения."
         technology "Swagger UI, OpenAPI"
         tags "Auxiliary,Current"
     }
 
     alloy = container "Коллектор наблюдаемости" {
-        description "Собирает метрики, логи и трассировки контейнеров приложения, включая трассировки обращений Django к PostgreSQL, и передаёт их во внешнюю Платформу наблюдаемости."
+        description "Собирает метрики, логи и трассировки контейнеров приложения, включая трассировки обращений Django к PostgreSQL, и передаёт их во внешнюю Систему хранения и анализа данных мониторинга."
         technology "Grafana Alloy, OpenTelemetry, OTLP/gRPC"
         tags "Observability,Current"
     }
@@ -97,13 +97,13 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     goAccess = container "Анализ журналов доступа" {
-        description "Формирует локальную дополнительную статистику по access-логам Nginx и не передаёт данные в Платформу наблюдаемости."
+        description "Формирует локальную дополнительную статистику по access-логам Nginx и не передаёт данные в Систему хранения и анализа данных мониторинга."
         technology "GoAccess"
         tags "Observability,Auxiliary"
     }
 
     pgbouncer = container "Пул соединений" {
-        description "Переиспользует соединения Асинхронного Django-приложения с PostgreSQL и предотвращает исчерпание лимита подключений."
+        description "Переиспользует соединения Django ASGI с PostgreSQL и предотвращает исчерпание лимита подключений."
         technology "PgBouncer 1.25"
         tags "Current"
     }
