@@ -36,7 +36,7 @@ taxiManager = softwareSystem "Taxi-manager" {
         tags "Gateway,Current"
     }
 
-    djangoWsgi = container "Синхронное Django-приложение" {
+    djangoWsgi = container "Django WSGI" {
         description "Реализует синхронный REST API, аутентификацию, разграничение доступа, Django Admin, бизнес-логику и приём телеметрии."
         technology "Python 3.12, Django 6, Django REST Framework, GeoDjango, WSGI"
         tags "Current"
@@ -73,7 +73,7 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     alloy = container "Коллектор наблюдаемости" {
-        description "Собирает метрики, логи и трассировки контейнеров приложения, включая трассировки обращений Django к PostgreSQL, и передаёт их во внешнюю Систему хранения и анализа данных мониторинга."
+        description "Собирает метрики, логи и трассировки контейнеров приложения, включая трассировки обращений Django к PostgreSQL, и передаёт их во внешний Сервис хранения и визуализации данных мониторинга."
         technology "Grafana Alloy, OpenTelemetry, OTLP/gRPC"
         tags "Observability,Current"
     }
@@ -97,7 +97,7 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     goAccess = container "Анализ журналов доступа" {
-        description "Формирует локальную дополнительную статистику по access-логам Nginx и не передаёт данные в Систему хранения и анализа данных мониторинга."
+        description "Формирует локальную дополнительную статистику по access-логам Nginx и не передаёт данные в Сервис хранения и визуализации данных мониторинга."
         technology "GoAccess"
         tags "Observability,Auxiliary"
     }
@@ -127,9 +127,9 @@ externalServiceDeveloper -> taxiManager.nginx "Изучает OpenAPI-докум
 telemetryClient -> taxiManager.nginx "Отправляет точки местоположения" "REST/JSON over HTTP"
 
 taxiManager.nginx -> taxiManager.webUi "Раздаёт статические файлы и передаёт ответы браузеру" "HTTP"
-taxiManager.webUi -> taxiManager.nginx "Вызывает REST API и открывает SSE-соединение" "HTTP/JSON, SSE"
+taxiManager.webUi -> taxiManager.nginx "Вызывает REST API и открывает SSE-соединение" "HTTP/JSON, SSE over HTTP"
 taxiManager.nginx -> taxiManager.djangoWsgi "Маршрутизирует REST API и Django Admin" "uWSGI или HTTP"
-taxiManager.nginx -> taxiManager.djangoAsgi "Маршрутизирует запросы онлайн-отслеживания" "HTTP/SSE"
+taxiManager.nginx -> taxiManager.djangoAsgi "Маршрутизирует запросы онлайн-отслеживания" "HTTP"
 taxiManager.djangoAsgi -> taxiManager.nginx "Передаёт поток событий выбранного автомобиля" "SSE over HTTP"
 taxiManager.nginx -> taxiManager.rustApi "Маршрутизирует высоконагруженные операции прототипа" "HTTP/JSON"
 taxiManager.nginx -> taxiManager.swaggerUi "Маршрутизирует веб-интерфейс документации" "HTTP"

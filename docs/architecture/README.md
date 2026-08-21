@@ -6,8 +6,8 @@
 
 - `workspace.dsl` — точка входа Structurizr;
 - `model/taxi-manager.dsl` — элементы и связи работающего приложения;
-- `model/notifications.dsl` и `views/notifications.dsl` — подключаемая система уведомлений менеджеров, её C1, C2 и сценарий формирования уведомления;
-- `model/observability.dsl` и `views/observability.dsl` — система хранения и анализа данных мониторинга и её представления;
+- `model/notifications.dsl` и `views/notifications.dsl` — подключаемый сервис уведомлений менеджеров, его контекст, контейнеры и сценарий формирования уведомления;
+- `model/observability.dsl` и `views/observability.dsl` — сервис хранения и визуализации данных мониторинга и его представления;
 - `model/ci-cd.dsl` и `views/ci-cd.dsl` — Jenkins-конвейер, его представления и сценарий выполнения;
 - `model/deployment.dsl` и `views/deployment.dsl` — варианты физического развёртывания;
 - `views/taxi-manager.dsl` — C1, C2 и ключевые сценарии основной системы;
