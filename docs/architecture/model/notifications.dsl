@@ -3,44 +3,44 @@ notificationChat = softwareSystem "Чат уведомлений" {
     tags "External System"
 }
 
-notificationSystem = softwareSystem "Подсистема уведомлений" {
-    description "Подключаемая подсистема, преобразующая технические CDC-события PostgreSQL в события предметной области и отправляющая уведомления сотрудникам автопарка."
-    tags "Target Optional"
+notificationSystem = softwareSystem "Подсистема уведомлений менеджеров" {
+    description "Подключаемая подсистема, преобразующая технические CDC-события PostgreSQL в события предметной области и отправляющая менеджерам уведомления об изменениях автомобилей."
+    tags "Implemented Not Deployed"
 
     debezium = container "CDC-коннектор" {
         description "Читает изменения из журнала WAL PostgreSQL посредством логической репликации и публикует исходные CDC-события в Kafka."
         technology "Kafka Connect, Debezium 3.6, PostgreSQL logical replication"
-        tags "Target Optional"
+        tags "Implemented Not Deployed"
     }
 
     kafka = container "Брокер сообщений" {
-        description "Один Kafka-кластер хранит исходный топик с техническими CDC-событиями и обработанный топик с событиями для уведомлений."
+        description "Один Kafka-кластер хранит исходные топики с техническими CDC-событиями отдельных таблиц, обработанные топики организаций, назначений менеджеров, моделей автомобилей и автомобилей, а также позиции чтения consumer groups."
         technology "Apache Kafka 4, KRaft"
-        tags "Target Optional"
+        tags "Implemented Not Deployed"
     }
 
     flink = container "Потоковая обработка" {
-        description "Читает исходные CDC-события из Kafka, фильтрует их и преобразует значимые изменения в события для уведомлений."
+        description "Читает исходные CDC-топики Kafka, фильтрует события и преобразует значимые изменения в обработанные топики для уведомлений и локального контекста."
         technology "Apache Flink, Flink SQL"
-        tags "Target Optional"
+        tags "Implemented Not Deployed"
     }
 
     notificationService = container "Сервис уведомлений" {
-        description "Запускается как Django management command, читает обработанные события, определяет получателей по организациям и отправляет сообщения в Чат уведомлений."
+        description "Запускается как Django management command, читает обработанные топики Kafka, обновляет локальный контекст, определяет получателей по UUID организации, формирует человекочитаемое сообщение и отправляет его в Чат уведомлений."
         technology "Python 3.13, Django, uv, Kafka client, VK API"
-        tags "Target Optional"
+        tags "Implemented Not Deployed"
     }
 
-    notificationDatabase = container "Локальное хранилище привязок" {
-        description "Хранит привязки пользователей Taxi-manager к чатам и организациям, а также состояние обработки уведомлений; логины и пароли не сохраняются."
+    notificationDatabase = container "Локальное хранилище контекста и привязок" {
+        description "Хранит UUID и наименования организаций и моделей автомобилей, назначения менеджеров организациям и привязки пользователей Taxi-manager к учётным записям чата. Используется для выбора получателей и формирования сообщений; состояние чтения Kafka, логины и пароли не сохраняются."
         technology "SQLite"
-        tags "Database,Target Optional"
+        tags "Database,Implemented Not Deployed"
     }
 
     kafkaUi = container "Интерфейс Kafka" {
-        description "Предоставляет технический интерфейс для просмотра исходного и обработанного топиков Kafka."
+        description "Предоставляет технический интерфейс для просмотра исходных и обработанных топиков Kafka."
         technology "Kafka UI"
-        tags "Auxiliary,Target Optional"
+        tags "Auxiliary,Implemented Not Deployed"
     }
 }
 
@@ -48,11 +48,11 @@ fleetEmployee -> notificationChat "Привязывает учётную зап�
 notificationChat -> notificationSystem.notificationService "Передаёт команды и данные для первичной привязки" "VK API"
 
 notificationSystem.debezium -> taxiManager.database "Читает изменения из журнала WAL" "PostgreSQL logical replication"
-notificationSystem.debezium -> notificationSystem.kafka "Публикует исходные технические CDC-события" "Kafka protocol, JSON"
-notificationSystem.kafka -> notificationSystem.flink "Передаёт события из исходного топика" "Kafka protocol, JSON"
-notificationSystem.flink -> notificationSystem.kafka "Публикует события в обработанный топик" "Kafka protocol, JSON"
-notificationSystem.kafka -> notificationSystem.notificationService "Передаёт обработанные события для уведомлений" "Kafka protocol, JSON"
-notificationSystem.notificationService -> notificationSystem.notificationDatabase "Хранит привязки и состояние обработки" "SQLite"
-notificationSystem.notificationService -> taxiManager.nginx "Авторизует пользователя и получает доступные ему организации" "REST/JSON over HTTPS"
+notificationSystem.debezium -> notificationSystem.kafka "Публикует исходные технические CDC-события по таблицам" "Kafka protocol, JSON"
+notificationSystem.kafka -> notificationSystem.flink "Предоставляет события из исходных топиков" "Kafka protocol, JSON"
+notificationSystem.flink -> notificationSystem.kafka "Публикует события в обработанные топики" "Kafka protocol, JSON"
+notificationSystem.notificationService -> notificationSystem.kafka "Читает обработанные события для локального контекста и уведомлений" "Kafka protocol, JSON"
+notificationSystem.notificationService -> notificationSystem.notificationDatabase "Обновляет и читает локальный контекст организаций, моделей и привязок" "SQLite"
+notificationSystem.notificationService -> taxiManager.nginx "Авторизует пользователя и получает доступные ему организации" "REST/JSON over HTTP"
 notificationSystem.notificationService -> notificationChat "Отправляет уведомления об изменениях автомобилей" "VK API"
-notificationSystem.kafkaUi -> notificationSystem.kafka "Показывает исходный и обработанный топики" "Kafka protocol"
+notificationSystem.kafkaUi -> notificationSystem.kafka "Показывает исходные и обработанные топики" "Kafka protocol"

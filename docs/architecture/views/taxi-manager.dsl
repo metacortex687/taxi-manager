@@ -1,6 +1,6 @@
 systemContext taxiManager "TaxiManagerSystemContext" {
     title "C1 — Контекст системы Taxi-manager"
-    description "Показывает пользователей, границу работающего приложения Taxi-manager, непосредственно используемые внешние системы и Платформу наблюдаемости."
+    description "Показывает пользователей, границу работающего приложения Taxi-manager, непосредственно используемые внешние системы и Платформу наблюдаемости. Специалист сопровождения, CI/CD и Подсистема уведомлений менеджеров вынесены в отдельные представления."
     include taxiManager fleetEmployee administrator externalServiceDeveloper telemetryClient locationIq observability
     exclude notificationSystem
     autoLayout lr 300 220
@@ -9,7 +9,7 @@ systemContext taxiManager "TaxiManagerSystemContext" {
 
 container taxiManager "TaxiManagerLogicalContainers" {
     title "C2 — Основная логическая архитектура Taxi-manager"
-    description "Показывает основной функциональный контур, контейнер «Коллектор наблюдаемости» на Grafana Alloy, подключение Асинхронного Django-приложения к PostgreSQL через PgBouncer и прототип Высокопроизводительного API. Отдельная файловая связь показывает монтирование статической OpenAPI-схемы Высокопроизводительного API в Документацию API только для чтения. Подсистема уведомлений вынесена в собственный набор представлений."
+    description "Показывает основной функциональный контур, контейнер «Коллектор наблюдаемости» на Grafana Alloy, подключение Асинхронного Django-приложения к PostgreSQL через PgBouncer и прототип Высокопроизводительного API. Отдельная файловая связь показывает монтирование статической OpenAPI-схемы Высокопроизводительного API в Документацию API только для чтения. Подсистема уведомлений менеджеров вынесена в собственный набор представлений."
     include fleetEmployee administrator externalServiceDeveloper telemetryClient locationIq observability
     include taxiManager.webUi taxiManager.nginx taxiManager.djangoWsgi taxiManager.djangoAsgi taxiManager.taskWorker taxiManager.rustApi taxiManager.pgbouncer taxiManager.database taxiManager.swaggerUi taxiManager.alloy
     exclude notificationSystem
@@ -52,10 +52,11 @@ dynamic taxiManager "TaxiManagerLiveTrackingFlow" {
 
 dynamic taxiManager "TaxiManagerGeocodingFlow" {
     title "Геокодирование адреса через фоновое задание"
-    description "LocationIQ взаимодействует только с фоновым обработчиком и не имеет прямого доступа к PostgreSQL."
-    1: taxiManager.djangoWsgi -> taxiManager.database "Сохраняет задание геокодирования"
-    2: taxiManager.taskWorker -> taxiManager.database "Получает задание из очереди"
-    3: taxiManager.taskWorker -> locationIq "Запрашивает и получает результат геокодирования"
-    4: taxiManager.taskWorker -> taxiManager.database "Сохраняет результат геокодирования"
+    description "Синхронное Django-приложение сначала ищет сохранённый адрес. При его отсутствии создаётся фоновое задание; обработчик повторно проверяет базу, обращается к LocationIQ только при отсутствии результата и сохраняет адрес для повторного использования."
+    1: taxiManager.djangoWsgi -> taxiManager.database "Ищет сохранённые адреса начальной и конечной точек"
+    2: taxiManager.djangoWsgi -> taxiManager.database "При отсутствии адреса сохраняет задание геокодирования"
+    3: taxiManager.taskWorker -> taxiManager.database "Получает задание и повторно проверяет наличие адреса"
+    4: taxiManager.taskWorker -> locationIq "При отсутствии адреса запрашивает обратное геокодирование"
+    5: taxiManager.taskWorker -> taxiManager.database "Сохраняет адрес и его географическую область для повторного использования"
     autoLayout lr 280 200
 }
