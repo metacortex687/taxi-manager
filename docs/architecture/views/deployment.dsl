@@ -7,7 +7,7 @@ deployment taxiManager demoEnvironment "DemoDeployment" {
 
 deployment taxiManager jenkinsDeploymentEnvironment "JenkinsDeployment" {
     title "Актуальное развёртывание через Jenkins"
-    description "Фактически разворачиваемые контейнеры приложения. Django-контейнер наследует make run-dev из compose.jenkins-ci.yaml; Асинхронное Django-приложение и Высокопроизводительный API пока не включены в это развёртывание."
+    description "Фактически разворачиваемые контейнеры приложения. Контейнеры приложения обновляются образом успешно проверенной сборки, постоянный том PostgreSQL сохраняется. Django-контейнер наследует make run-dev из compose.jenkins-ci.yaml; Асинхронное Django-приложение и Высокопроизводительный API пока не включены в это развёртывание."
     include *
     autoLayout tb 300 220
 }
@@ -21,7 +21,7 @@ deployment taxiManager targetRuntimeEnvironment "TargetRuntimeDeployment" {
 
 deployment * ciCdDeploymentEnvironment "CiCdDeployment" {
     title "CI/CD и развёртывание Taxi-manager"
-    description "GitHub Actions разворачивает и обновляет постоянный Jenkins SSH Agent. Jenkins-контроллер назначает агенту этапы основного pipeline, а агент собирает и тестирует приложение, затем обновляет Compose-проект taxi-manager-deploy."
+    description "Упрощённое представление физического размещения CI/CD. GitHub Actions разворачивает и обновляет постоянный Jenkins SSH Agent. Jenkins-контроллер назначает агенту этапы основного pipeline, а агент собирает и тестирует приложение, затем обновляет Compose-проект taxi-manager-deploy с сохранением постоянного тома PostgreSQL."
     include *
     autoLayout lr 300 220
 }

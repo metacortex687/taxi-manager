@@ -1,5 +1,14 @@
+supportSpecialist = person "Специалист сопровождения" {
+    description "Контролирует техническое состояние приложения и получает эксплуатационные оповещения."
+}
+
+mailService = softwareSystem "Почтовый сервис" {
+    description "Внешний SMTP-сервис доставляет email-оповещения Платформы наблюдаемости Специалисту сопровождения."
+    tags "External System"
+}
+
 observability = softwareSystem "Платформа наблюдаемости" {
-    description "Принимает от встроенного коллектора наблюдаемости Taxi-manager метрики, логи и распределённые трассировки, хранит их и предоставляет средства визуализации и оповещения."
+    description "Принимает телеметрию от коллектора, хранит и визуализирует её, оповещает специалиста сопровождения."
     tags "Observability"
 
     prometheus = container "Хранилище метрик" {
@@ -21,7 +30,7 @@ observability = softwareSystem "Платформа наблюдаемости" {
     }
 
     grafana = container "Интерфейс наблюдаемости" {
-        description "Предоставляет дашборды, исследование телеметрии и правила оповещений."
+        description "Предоставляет дашборды, исследование телеметрии и правила оповещений; при срабатывании правила отправляет email через Почтовый сервис."
         technology "Grafana"
         tags "Observability"
     }
@@ -51,3 +60,5 @@ taxiManager.goAccess -> taxiManager.nginx "Анализирует access-лог�
 observability.grafana -> observability.prometheus "Запрашивает метрики" "PromQL"
 observability.grafana -> observability.loki "Запрашивает логи" "LogQL"
 observability.grafana -> observability.tempo "Запрашивает трассировки" "TraceQL/HTTP"
+observability.grafana -> mailService "Отправляет эксплуатационные оповещения" "SMTP"
+mailService -> supportSpecialist "Доставляет оповещения" "Email"

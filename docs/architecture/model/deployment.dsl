@@ -18,7 +18,7 @@ jenkinsDeploymentEnvironment = deploymentEnvironment "Jenkins deployment" {
     }
 
     deployedHost = deploymentNode "Сервер приложения" "Удалённый Docker-хост, на котором Jenkins-агент выполняет развёртывание" "Linux, Docker" {
-        deployedCompose = deploymentNode "taxi-manager-deploy" "Compose-проект развёрнутого приложения" "Docker Compose" {
+        deployedCompose = deploymentNode "taxi-manager-deploy" "Фактически развёрнутый Compose-проект: контейнеры приложения обновляются образом проверенной сборки, а постоянный том базы данных сохраняется" "Docker Compose" {
             containerInstance taxiManager.nginx
             containerInstance taxiManager.djangoWsgi
             containerInstance taxiManager.taskWorker
@@ -55,7 +55,7 @@ ciCdDeploymentEnvironment = deploymentEnvironment "CI/CD deployment" {
     }
 
     jenkinsControllerHost = deploymentNode "Хост Jenkins-контроллера" "Узел, на котором работает Jenkins-контроллер (master)" "Linux, Docker" {
-        jenkinsControllerRuntime = deploymentNode "Jenkins controller" "Контейнер управления основным pipeline Taxi-manager" "Docker Compose" {
+        jenkinsControllerRuntime = deploymentNode "Jenkins controller" "Контейнер управления основным pipeline приложения" "Docker Compose" {
             containerInstance jenkins.controller
         }
     }
@@ -65,7 +65,7 @@ ciCdDeploymentEnvironment = deploymentEnvironment "CI/CD deployment" {
             jenkinsAgentInstance = containerInstance jenkins.agent
         }
 
-        ciCdApplicationCompose = deploymentNode "taxi-manager-deploy" "Compose-проект, обновляемый Jenkins-агентом после успешных проверок" "Docker Compose" {
+        ciCdApplicationCompose = deploymentNode "taxi-manager-deploy" "Compose-проект, обновляемый Jenkins-агентом образом успешно проверенной сборки с сохранением постоянного тома PostgreSQL" "Docker Compose" {
             containerInstance taxiManager.nginx
             containerInstance taxiManager.djangoWsgi
             containerInstance taxiManager.taskWorker

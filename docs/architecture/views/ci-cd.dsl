@@ -6,7 +6,7 @@ systemLandscape "CiCdLandscape" {
 }
 
 container jenkins "CiCdContainers" {
-    title "Контейнеры CI/CD Taxi-manager"
+    title "Контейнеры CI/CD-контура"
     description "Основной pipeline выполняется Jenkins. Контроллер получает Jenkinsfile, агент клонирует исходный код и файлы Compose для CI и CD; GitHub Actions используется только для развёртывания постоянного Jenkins-агента."
     include sourceRepository githubActions containerRegistry taxiManager observability.tempo
     include jenkins.controller jenkins.agent
@@ -14,7 +14,7 @@ container jenkins "CiCdContainers" {
 }
 
 dynamic jenkins "CiCdPipeline" {
-    title "Основной Jenkins pipeline Taxi-manager"
+    title "Основной Jenkins pipeline"
     description "Последовательность сборки, тестирования, проверки трассировок и развёртывания. После успешных проверок контейнеры приложения обновляются образом текущей сборки, а постоянный том PostgreSQL сохраняется."
     1: jenkins.controller -> sourceRepository "Получает Jenkinsfile с описанием pipeline"
     2: jenkins.controller -> jenkins.agent "Назначает этапы сборки"

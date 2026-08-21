@@ -1,4 +1,4 @@
-workspace "Taxi-manager" "Многопредставленческая C4-модель приложения Taxi-manager, подключаемой подсистемы уведомлений менеджеров, наблюдаемости и CI/CD." {
+workspace "Taxi-manager" "Многопредставленческая C4-модель основного приложения, подключаемой подсистемы уведомлений менеджеров, наблюдаемости и CI/CD." {
 
     !identifiers hierarchical
     !impliedRelationships true

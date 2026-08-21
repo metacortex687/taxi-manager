@@ -4,7 +4,7 @@ sourceRepository = softwareSystem "Репозиторий Taxi-manager" {
 }
 
 githubActions = softwareSystem "GitHub Actions" {
-    description "Разворачивает и обновляет постоянный Jenkins-агент; не выполняет основной pipeline Taxi-manager."
+    description "Разворачивает и обновляет постоянный Jenkins-агент; не выполняет основной pipeline приложения."
     tags "External System,CI/CD"
 }
 
@@ -14,7 +14,7 @@ containerRegistry = softwareSystem "Реестры контейнеров" {
 }
 
 jenkins = softwareSystem "CI/CD Taxi-manager" {
-    description "Автоматизирует сборку, проверки, тестирование и развёртывание Taxi-manager. Конфигурация контроллера и агента хранится в отдельном репозитории jenkins-config."
+    description "Автоматизирует сборку, проверки, тестирование и развёртывание приложения. Конфигурация контроллера и агента хранится в отдельном репозитории jenkins-config."
     tags "CI/CD"
 
     controller = container "Jenkins-контроллер" {
