@@ -40,46 +40,6 @@ taxiManager = softwareSystem "Taxi-manager" {
         description "Реализует синхронный REST API, аутентификацию, разграничение доступа, Django Admin, бизнес-логику и приём телеметрии."
         technology "Python 3.12, Django 6, Django REST Framework, GeoDjango, WSGI"
         tags "Current"
-
-        restApi = component "REST API" {
-            description "Предоставляет операции управления организациями, автомобилями, поездками и точками телеметрии."
-            technology "Django REST Framework, django-filter, djangorestframework-gis"
-        }
-
-        accessControl = component "Аутентификация и контроль доступа" {
-            description "Аутентифицирует пользователей и ограничивает доступ набором назначенных организаций."
-            technology "Django authentication, Djoser, DRF permissions"
-        }
-
-        djangoAdmin = component "Административный интерфейс" {
-            description "Предоставляет администратору полный доступ к данным и пользователям."
-            technology "Django Admin"
-        }
-
-        applicationServices = component "Прикладные сценарии" {
-            description "Координирует операции управления автопарком, поездками, геотрекингом, геокодированием и отчётами."
-            technology "Python, Django application layer"
-        }
-
-        domainModel = component "Доменная модель" {
-            description "Содержит модели и правила предметной области управления автопарком."
-            technology "Python, Django models"
-        }
-
-        repositories = component "Репозитории и Unit of Work" {
-            description "Инкапсулирует доступ к данным и границы транзакций."
-            technology "Django ORM, PostgreSQL, Unit of Work"
-        }
-
-        taskPublisher = component "Постановка фоновых заданий" {
-            description "Создаёт задания для формирования отчётов, обратного геокодирования и других фоновых операций."
-            technology "django-tasks-db"
-        }
-
-        openApiSchema = component "Формирование OpenAPI-схемы" {
-            description "Формирует машиночитаемое описание REST API Django."
-            technology "drf-spectacular, OpenAPI"
-        }
     }
 
     djangoAsgi = container "Асинхронное Django-приложение" {
@@ -214,25 +174,7 @@ taxiManager.djangoWsgi -> taxiManager.memcached "Читает и сохраня�
     tags "Optional Path"
 }
 
-taxiManager.nginx -> taxiManager.djangoWsgi.restApi "Направляет запросы REST API" "HTTP/uWSGI"
-taxiManager.nginx -> taxiManager.djangoWsgi.djangoAdmin "Направляет административные запросы" "HTTP/uWSGI"
-telemetryClient -> taxiManager.djangoWsgi.restApi "Передаёт точки телеметрии через внешний шлюз" "REST/JSON"
-administrator -> taxiManager.djangoWsgi.djangoAdmin "Управляет пользователями и данными" "HTTP через Nginx"
-
-taxiManager.djangoWsgi.restApi -> taxiManager.djangoWsgi.accessControl "Проверяет аутентификацию и доступ к организациям"
-taxiManager.djangoWsgi.restApi -> taxiManager.djangoWsgi.applicationServices "Запускает прикладные сценарии"
-taxiManager.djangoWsgi.djangoAdmin -> taxiManager.djangoWsgi.applicationServices "Выполняет административные операции"
-taxiManager.djangoWsgi.applicationServices -> taxiManager.djangoWsgi.domainModel "Применяет правила предметной области"
-taxiManager.djangoWsgi.applicationServices -> taxiManager.djangoWsgi.repositories "Читает и сохраняет данные"
-taxiManager.djangoWsgi.applicationServices -> taxiManager.djangoWsgi.taskPublisher "Создаёт фоновые задания"
-taxiManager.djangoWsgi.repositories -> taxiManager.database "Выполняет транзакции и запросы" "Django ORM, SQL" {
-    tags "Database Access"
-}
-taxiManager.djangoWsgi.taskPublisher -> taxiManager.database "Сохраняет задания очереди" "Django ORM, SQL" {
-    tags "Database Access"
-}
-taxiManager.djangoWsgi.openApiSchema -> taxiManager.djangoWsgi.restApi "Описывает операции и структуры данных"
-taxiManager.swaggerUi -> taxiManager.djangoWsgi.openApiSchema "Загружает схему Django API" "OpenAPI/HTTP"
+taxiManager.swaggerUi -> taxiManager.djangoWsgi "Загружает автоматически сформированную схему Django API" "OpenAPI/HTTP"
 taxiManager.swaggerUi -> taxiManager.rustApi "Читает статическую OpenAPI-схему из смонтированного файла" "Docker bind mount (read-only), OpenAPI/YAML" {
     tags "File Mount"
 }

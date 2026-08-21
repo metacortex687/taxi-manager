@@ -1,17 +1,17 @@
 # Архитектура Taxi-manager
 
-Этот каталог содержит небольшую C4-модель проекта в нотации Structurizr DSL.
+Этот каталог содержит C4-модель проекта в нотации Structurizr DSL. Основные архитектурные уровни — диаграмма контекста системы C1 и диаграммы контейнеров C2; динамические представления поясняют ключевые сценарии, а deployment views — варианты физического развёртывания по мере роста нагрузки.
 
 ## Структура
 
 - `workspace.dsl` — точка входа Structurizr;
 - `model/taxi-manager.dsl` — элементы и связи работающего приложения;
-- `views/taxi-manager.dsl` — C1, C2 и сценарий геокодирования;
-- `model/observability.dsl` и `views/observability.dsl` — заготовки для наблюдаемости;
-- `model/ci-cd.dsl` и `views/ci-cd.dsl` — заготовки для CI/CD;
+- `model/notifications.dsl` и `views/notifications.dsl` — подключаемая система уведомлений менеджеров, её C1, C2 и сценарий формирования уведомления;
+- `model/observability.dsl` и `views/observability.dsl` — платформа наблюдаемости и её представления;
+- `model/ci-cd.dsl` и `views/ci-cd.dsl` — Jenkins-конвейер, его представления и сценарий выполнения;
+- `model/deployment.dsl` и `views/deployment.dsl` — варианты физического развёртывания;
+- `views/taxi-manager.dsl` — C1, C2 и ключевые сценарии основной системы;
 - `views/styles.dsl` — общие стили диаграмм.
-
-Наблюдаемость и CI/CD подключены как пустые фрагменты. Пока они не заполнены, они не добавляют элементы и диаграммы в текущую модель.
 
 ## Запуск
 
@@ -28,7 +28,7 @@ make architecture
 make architecture-status
 make architecture-down
 make architecture-restart # перезапуск после внесения изменения в DSL файлы C4
-make architecture-export-png #обновляет картинки в docs/images/c4
+make architecture-export-png # обновляет картинки в docs/images/c4
 
 ```
 

@@ -6,7 +6,7 @@ systemLandscape "CiCdLandscape" {
 }
 
 container jenkins "CiCdContainers" {
-    title "Контейнеры CI/CD-контура"
+    title "C2 — Диаграмма контейнеров CI/CD Taxi-manager"
     description "Основной pipeline выполняется Jenkins. Контроллер получает Jenkinsfile, агент клонирует исходный код и файлы Compose для CI и CD; GitHub Actions используется только для развёртывания постоянного Jenkins-агента."
     include sourceRepository githubActions containerRegistry taxiManager observability.tempo
     include jenkins.controller jenkins.agent
@@ -21,7 +21,7 @@ dynamic jenkins "CiCdPipeline" {
     3: jenkins.agent -> sourceRepository "Клонирует код, Dockerfile и файлы Compose для CI и CD"
     4: jenkins.agent -> containerRegistry "Получает базовые и тестовые образы"
     5: jenkins.agent -> taxiManager "Собирает нумерованный образ и запускает изолированное CI-окружение"
-    6: jenkins.controller -> observability "Проверяет трассировки тестов на возможные N+1-запросы"
+    6: jenkins.controller -> observability.tempo "Проверяет трассировки тестов на возможные N+1-запросы"
     7: jenkins.agent -> taxiManager "Обновляет контейнеры проверенным образом, сохраняя том базы данных"
     autoLayout lr 300 200
 }

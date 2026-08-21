@@ -40,9 +40,10 @@ observability = softwareSystem "Платформа наблюдаемости" {
 taxiManager -> observability "Передаёт метрики, распределённые трассировки и логи" "OTLP, Prometheus Remote Write, Loki push API"
 alloyToObservability = taxiManager.alloy -> observability "Передаёт метрики, распределённые трассировки и логи" "OTLP, Prometheus Remote Write, Loki push API"
 
-taxiManager.djangoWsgi -> taxiManager.alloy "Передаёт метрики и трассировки HTTP-запросов, включая SQL-операции Django → PostgreSQL" "OpenTelemetry, OTLP/gRPC"
-taxiManager.djangoAsgi -> taxiManager.alloy "Передаёт метрики и трассировки асинхронных запросов, включая обращения к PostgreSQL" "OpenTelemetry, OTLP/gRPC"
-taxiManager.taskWorker -> taxiManager.alloy "Передаёт метрики и трассировки фоновых заданий" "OTLP/gRPC"
+taxiManager.djangoWsgi -> taxiManager.alloy "Передаёт трассировки HTTP-запросов, включая SQL-операции Django → PostgreSQL" "OpenTelemetry, OTLP/gRPC"
+taxiManager.djangoAsgi -> taxiManager.alloy "Передаёт трассировки асинхронных запросов, включая обращения к PostgreSQL" "OpenTelemetry, OTLP/gRPC"
+taxiManager.taskWorker -> taxiManager.alloy "Передаёт трассировки фоновых заданий" "OpenTelemetry, OTLP/gRPC"
+taxiManager.alloy -> taxiManager.djangoWsgi "Собирает метрики приложения" "Prometheus scrape"
 taxiManager.alloy -> taxiManager.nginx "Собирает структурированные access-логи" "Docker logs, logfmt"
 taxiManager.alloy -> taxiManager.database "Собирает журналы ошибок PostgreSQL" "Docker logs"
 taxiManager.alloy -> taxiManager.rustApi "Собирает журналы высокопроизводительного API" "Docker logs"

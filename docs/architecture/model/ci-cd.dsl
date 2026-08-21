@@ -36,5 +36,4 @@ jenkins.agent -> sourceRepository "Клонирует исходный код, D
 jenkins.agent -> containerRegistry "Получает базовые и тестовые образы" "Docker Registry API"
 jenkins.agent -> taxiManager "Собирает и тестирует нумерованный образ, затем пересоздаёт контейнеры приложения с сохранением тома базы данных" "Docker, Docker Compose"
 jenkins.controller -> observability.tempo "Ищет трассировки с признаками N+1" "Tempo HTTP API, TraceQL"
-jenkins.controller -> observability "Использует трассировки тестового окружения для проверки N+1" "Tempo HTTP API, TraceQL"
 githubActions -> jenkins.agent "Разворачивает и обновляет агент на удалённом сервере" "SSH, Docker Compose"

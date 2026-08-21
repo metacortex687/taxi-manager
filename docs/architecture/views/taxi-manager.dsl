@@ -1,6 +1,6 @@
 systemContext taxiManager "TaxiManagerSystemContext" {
-    title "C1 — Контекст системы Taxi-manager"
-    description "Показывает пользователей, границу работающего приложения, непосредственно используемые внешние системы и Платформу наблюдаемости. Специалист сопровождения, CI/CD и Подсистема уведомлений менеджеров вынесены в отдельные представления."
+    title "C1 — Диаграмма контекста системы Taxi-manager"
+    description "Показывает пользователей, границу Taxi-manager, непосредственно используемые внешние системы и Платформу наблюдаемости. Специалист сопровождения, CI/CD и Система уведомлений менеджеров вынесены в отдельные представления."
     include taxiManager fleetEmployee administrator externalServiceDeveloper telemetryClient locationIq observability
     exclude notificationSystem
     autoLayout lr 300 220
@@ -8,8 +8,8 @@ systemContext taxiManager "TaxiManagerSystemContext" {
 }
 
 container taxiManager "TaxiManagerLogicalContainers" {
-    title "C2 — Основная логическая архитектура Taxi-manager"
-    description "Показывает основной функциональный контур, контейнер «Коллектор наблюдаемости» на Grafana Alloy, подключение Асинхронного Django-приложения к PostgreSQL через PgBouncer и прототип Высокопроизводительного API. Отдельная файловая связь показывает монтирование статической OpenAPI-схемы Высокопроизводительного API в Документацию API только для чтения. Подсистема уведомлений менеджеров вынесена в собственный набор представлений."
+    title "C2 — Диаграмма контейнеров Taxi-manager"
+    description "Показывает основной функциональный контур, контейнер «Коллектор наблюдаемости» на Grafana Alloy, подключение Асинхронного Django-приложения к PostgreSQL через PgBouncer и прототип Высокопроизводительного API. Отдельная файловая связь показывает монтирование статической OpenAPI-схемы Высокопроизводительного API в Документацию API только для чтения. Система уведомлений менеджеров вынесена в собственный набор представлений."
     include fleetEmployee administrator externalServiceDeveloper telemetryClient locationIq observability
     include taxiManager.webUi taxiManager.nginx taxiManager.djangoWsgi taxiManager.djangoAsgi taxiManager.taskWorker taxiManager.rustApi taxiManager.pgbouncer taxiManager.database taxiManager.swaggerUi taxiManager.alloy
     exclude notificationSystem
@@ -18,20 +18,12 @@ container taxiManager "TaxiManagerLogicalContainers" {
 }
 
 container taxiManager "TaxiManagerExtendedRuntime" {
-    title "Расширенный контур выполнения Taxi-manager"
+    title "C2 — Расширенная диаграмма контейнеров Taxi-manager"
     description "Показывает логические контейнеры приложения и дополнительные компоненты выполнения без стека наблюдаемости и CI/CD."
     include telemetryClient locationIq
     include taxiManager.webUi taxiManager.varnish taxiManager.nginx taxiManager.djangoWsgi taxiManager.djangoAsgi taxiManager.taskWorker taxiManager.rustApi taxiManager.swaggerUi taxiManager.pgbouncer taxiManager.memcached taxiManager.database
     exclude notificationSystem
     autoLayout tb 320 220
-}
-
-component taxiManager.djangoWsgi "TaxiManagerWsgiComponents" {
-    title "C3 — Компоненты Синхронного Django-приложения"
-    description "Предварительное компонентное представление. Его следует сверить с фактической структурой пакетов и уточнить после просмотра исходного кода."
-    include taxiManager.djangoWsgi.restApi taxiManager.djangoWsgi.accessControl taxiManager.djangoWsgi.djangoAdmin taxiManager.djangoWsgi.applicationServices taxiManager.djangoWsgi.domainModel taxiManager.djangoWsgi.repositories taxiManager.djangoWsgi.taskPublisher taxiManager.djangoWsgi.openApiSchema
-    include administrator telemetryClient taxiManager.nginx taxiManager.swaggerUi taxiManager.database
-    autoLayout lr 320 220
 }
 
 dynamic taxiManager "TaxiManagerLiveTrackingFlow" {
