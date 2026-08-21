@@ -46,7 +46,7 @@ taxiManager.taskWorker -> taxiManager.alloy "Передаёт трассиров
 taxiManager.alloy -> taxiManager.djangoWsgi "Собирает метрики приложения" "Prometheus scrape"
 taxiManager.alloy -> taxiManager.nginx "Собирает структурированные access-логи" "Docker logs, logfmt"
 taxiManager.alloy -> taxiManager.database "Собирает журналы ошибок PostgreSQL" "Docker logs"
-taxiManager.alloy -> taxiManager.rustApi "Собирает журналы высокопроизводительного API" "Docker logs"
+taxiManager.alloy -> taxiManager.rustApi "Собирает журналы Высокопроизводительного асинхронного REST API" "Docker logs"
 taxiManager.alloy -> observability.prometheus "Передаёт метрики" "Prometheus Remote Write"
 taxiManager.alloy -> observability.loki "Передаёт логи" "Loki push API"
 taxiManager.alloy -> observability.tempo "Передаёт трассировки" "OTLP"

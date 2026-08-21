@@ -31,21 +31,21 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     nginx = container "Входной веб-шлюз" {
-        description "Принимает внешние HTTP-запросы, раздаёт статические файлы и маршрутизирует запросы к внутренним приложениям."
+        description "Принимает и обслуживает внешние HTTP-соединения, раздаёт статические файлы и маршрутизирует запросы к внутренним приложениям. Буферизует обычный HTTP-трафик и переиспользует upstream-соединения там, где настроен их пул."
         technology "Nginx"
         tags "Gateway,Current"
     }
 
-    djangoWsgi = container "Django WSGI" {
+    djangoWsgi = container "Синхронный REST API" {
         description "Реализует синхронный REST API, аутентификацию, разграничение доступа, Django Admin, бизнес-логику и приём телеметрии."
         technology "Python 3.12, Django 6, Django REST Framework, GeoDjango, WSGI"
         tags "Current"
     }
 
-    djangoAsgi = container "Django ASGI" {
-        description "Обслуживает длительные SSE-соединения и передаёт координаты выбранного автомобиля в браузер в режиме реального времени. Реализовано, но ещё не включено в Jenkins-развёртывание."
+    djangoAsgi = container "Асинхронный REST API и SSE" {
+        description "Асинхронно обрабатывает REST-запросы, обслуживает длительные SSE-соединения и передаёт координаты выбранного автомобиля в браузер в режиме реального времени. Реализовано, но ещё не включено в Jenkins-развёртывание."
         technology "Python 3.12, Django 6, ASGI, Gunicorn, Uvicorn Worker"
-        tags "Implemented Not Deployed"
+        tags "Implemented Not Deployed,Wide API"
     }
 
     taskWorker = container "Фоновый обработчик заданий" {
@@ -54,10 +54,10 @@ taxiManager = softwareSystem "Taxi-manager" {
         tags "Worker,Current"
     }
 
-    rustApi = container "Rust API" {
-        description "Прототип для операций, которые по результатам измерений будут определены как узкие места Django API. Текущая реализация читает и создаёт vehicle_model одиночными и пакетными запросами."
+    rustApi = container "Высокопроизводительный асинхронный REST API" {
+        description "Выполняет REST-операции, которые по результатам измерений определены как узкие места Синхронного REST API. Текущая реализация читает и создаёт vehicle_model одиночными и пакетными запросами."
         technology "Rust 2021, Actix Web 4, Tokio, SQLx 0.8"
-        tags "Prototype"
+        tags "Prototype,Wide API"
     }
 
     database = container "База данных" {
@@ -67,7 +67,7 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     swaggerUi = container "Документация API" {
-        description "Показывает автоматически сформированную OpenAPI-схему Django и статическую OpenAPI-схему Rust API из файла rust-open-api-schema.yml, смонтированного только для чтения."
+        description "Показывает автоматически сформированную OpenAPI-схему Django REST API и статическую OpenAPI-схему Высокопроизводительного асинхронного REST API из файла rust-open-api-schema.yml, смонтированного только для чтения."
         technology "Swagger UI, OpenAPI"
         tags "Auxiliary,Current"
     }
@@ -103,7 +103,7 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     pgbouncer = container "Пул соединений" {
-        description "Переиспользует соединения Django ASGI с PostgreSQL и предотвращает исчерпание лимита подключений."
+        description "Переиспользует соединения контейнера «Асинхронный REST API и SSE» с PostgreSQL и предотвращает исчерпание лимита подключений."
         technology "PgBouncer 1.25"
         tags "Current"
     }
@@ -128,10 +128,10 @@ telemetryClient -> taxiManager.nginx "Отправляет точки место
 
 taxiManager.nginx -> taxiManager.webUi "Раздаёт статические файлы и передаёт ответы браузеру" "HTTP"
 taxiManager.webUi -> taxiManager.nginx "Вызывает REST API и открывает SSE-соединение" "HTTP/JSON, SSE over HTTP"
-taxiManager.nginx -> taxiManager.djangoWsgi "Маршрутизирует REST API и Django Admin" "uWSGI или HTTP"
-taxiManager.nginx -> taxiManager.djangoAsgi "Маршрутизирует запросы онлайн-отслеживания" "HTTP"
+taxiManager.nginx -> taxiManager.djangoWsgi "Маршрутизирует синхронные REST-запросы и Django Admin" "uWSGI или HTTP"
+taxiManager.nginx -> taxiManager.djangoAsgi "Маршрутизирует асинхронные REST-запросы и запросы онлайн-отслеживания" "HTTP"
 taxiManager.djangoAsgi -> taxiManager.nginx "Передаёт поток событий выбранного автомобиля" "SSE over HTTP"
-taxiManager.nginx -> taxiManager.rustApi "Маршрутизирует высоконагруженные операции прототипа" "HTTP/JSON"
+taxiManager.nginx -> taxiManager.rustApi "Маршрутизирует ресурсоёмкие REST-операции" "HTTP/1.1, JSON, keep-alive"
 taxiManager.nginx -> taxiManager.swaggerUi "Маршрутизирует веб-интерфейс документации" "HTTP"
 
 taxiManager.djangoWsgi -> taxiManager.database "Читает и изменяет доменные данные; сохраняет фоновые задания" "Django ORM, SQL" {

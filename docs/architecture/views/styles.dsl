@@ -84,6 +84,10 @@ styles {
         border dotted
     }
 
+    element "Wide API" {
+        width 600
+    }
+
     element "Deployment Node" {
         background #e5e7eb
         color #111827
