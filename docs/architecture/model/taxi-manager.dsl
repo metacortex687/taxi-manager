@@ -83,7 +83,7 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     djangoAsgi = container "Асинхронное Django-приложение" {
-        description "Обслуживает длительные SSE-соединения и передаёт координаты выбранного автомобиля в браузер в режиме реального времени. Реализовано, но ещё не включено в Jenkins-развёртывание."
+        description "Обслуживает SSE-соединения и передаёт клиенту точки выбранного автомобиля по мере их получения. Реализовано, но ещё не включено в Jenkins-развёртывание."
         technology "Python 3.12, Django 6, ASGI, Gunicorn, Uvicorn Worker"
         tags "Implemented Not Deployed"
     }
@@ -107,7 +107,7 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     swaggerUi = container "Документация API" {
-        description "Показывает автоматически сформированную OpenAPI-схему Django и статическую OpenAPI-схему Высокопроизводительного API из файла rust-open-api-schema.yml, смонтированного только для чтения."
+        description "Показывает автоматически сформированную OpenAPI-схему Django и статическую OpenAPI-схему Rust API."
         technology "Swagger UI, OpenAPI"
         tags "Auxiliary,Current"
     }
@@ -161,13 +161,13 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 }
 
-fleetEmployee -> taxiManager.webUi "Управляет автопарком, просматривает маршруты и получает сформированные отчёты" "HTTP"
-administrator -> taxiManager.nginx "Открывает Django Admin" "HTTP"
-externalServiceDeveloper -> taxiManager.nginx "Изучает OpenAPI-документацию и вызывает REST API при разработке интеграций" "HTTP"
-telemetryClient -> taxiManager.nginx "Отправляет точки местоположения" "REST/JSON over HTTP"
+fleetEmployee -> taxiManager.webUi "Управляет автопарком, просматривает маршруты и получает сформированные отчёты" "HTTPS"
+administrator -> taxiManager.nginx "Открывает Django Admin" "HTTPS"
+externalServiceDeveloper -> taxiManager.nginx "Изучает OpenAPI-документацию и вызывает REST API при разработке интеграций" "HTTPS"
+telemetryClient -> taxiManager.nginx "Отправляет точки местоположения" "REST/JSON over HTTPS"
 
-taxiManager.nginx -> taxiManager.webUi "Раздаёт статические файлы и передаёт ответы браузеру" "HTTP"
-taxiManager.webUi -> taxiManager.nginx "Вызывает REST API и открывает SSE-соединение" "HTTP/JSON, SSE"
+taxiManager.nginx -> taxiManager.webUi "Раздаёт статические файлы и передаёт ответы браузеру" "HTTP/HTTPS"
+taxiManager.webUi -> taxiManager.nginx "Вызывает REST API и открывает SSE-соединение" "HTTPS/JSON, SSE"
 taxiManager.nginx -> taxiManager.djangoWsgi "Маршрутизирует REST API и Django Admin" "uWSGI или HTTP"
 taxiManager.nginx -> taxiManager.djangoAsgi "Маршрутизирует запросы онлайн-отслеживания" "HTTP/SSE"
 taxiManager.djangoAsgi -> taxiManager.nginx "Передаёт поток событий выбранного автомобиля" "SSE over HTTP"
@@ -178,7 +178,7 @@ taxiManager.djangoWsgi -> taxiManager.database "Читает и изменяет
     tags "Database Access"
 }
 
-taxiManager.taskWorker -> taxiManager.database "Получает задания, проверяет сохранённые адреса и сохраняет результаты" "Django ORM, SQL" {
+taxiManager.taskWorker -> taxiManager.database "Получает задания и сохраняет результаты" "Django ORM, SQL" {
     tags "Database Access"
 }
 
@@ -217,7 +217,7 @@ taxiManager.djangoWsgi -> taxiManager.memcached "Читает и сохраня�
 taxiManager.nginx -> taxiManager.djangoWsgi.restApi "Направляет запросы REST API" "HTTP/uWSGI"
 taxiManager.nginx -> taxiManager.djangoWsgi.djangoAdmin "Направляет административные запросы" "HTTP/uWSGI"
 telemetryClient -> taxiManager.djangoWsgi.restApi "Передаёт точки телеметрии через внешний шлюз" "REST/JSON"
-administrator -> taxiManager.djangoWsgi.djangoAdmin "Управляет пользователями и данными" "HTTP через Nginx"
+administrator -> taxiManager.djangoWsgi.djangoAdmin "Управляет пользователями и данными" "HTTPS через Nginx"
 
 taxiManager.djangoWsgi.restApi -> taxiManager.djangoWsgi.accessControl "Проверяет аутентификацию и доступ к организациям"
 taxiManager.djangoWsgi.restApi -> taxiManager.djangoWsgi.applicationServices "Запускает прикладные сценарии"
@@ -233,6 +233,3 @@ taxiManager.djangoWsgi.taskPublisher -> taxiManager.database "Сохраняет
 }
 taxiManager.djangoWsgi.openApiSchema -> taxiManager.djangoWsgi.restApi "Описывает операции и структуры данных"
 taxiManager.swaggerUi -> taxiManager.djangoWsgi.openApiSchema "Загружает схему Django API" "OpenAPI/HTTP"
-taxiManager.swaggerUi -> taxiManager.rustApi "Читает статическую OpenAPI-схему из смонтированного файла" "Docker bind mount (read-only), OpenAPI/YAML" {
-    tags "File Mount"
-}
