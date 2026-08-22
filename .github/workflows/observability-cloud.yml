@@ -1,6 +1,6 @@
 name: observability-cloud
 
-on: 
+on:
   workflow_dispatch:
   # push:
 
@@ -32,7 +32,7 @@ jobs:
           username: ${{ secrets.OBS_HOST_USER }}
           key: ${{ secrets.OBS_HOST_SSH_PRIVATE_KEY }}
           port: ${{ secrets.OBS_HOST_PORT }}
-          source: "docker-compose.dev.observability.yaml,tempo.yaml,prometheus.yml,loki-config.yaml,loki.yml,config.alloy,grafana/provisioning/datasources"
+          source: "docker-compose.dev.observability.yaml,tempo.yaml,prometheus.yml,loki-config.yaml,config.alloy,grafana/provisioning/datasources"
           target: "observability"
 
       - name: Copy load generator files
