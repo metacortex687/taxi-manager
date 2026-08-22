@@ -827,8 +827,12 @@ Jenkins-мастер координирует конвейер CI/CD Прило�
 
 ### Граф зависимостей конфигурационных файлов
 
+В Mermaid стрелка направлена от исходного файла к связанному файлу, каталогу или создаваемому файлу окружения. Табличное представление повторяет те же связи, группирует конечные узлы по исходному файлу и поясняет характер зависимости.
+
 <details>
 <summary><strong>Автоматизация и удалённые развёртывания</strong></summary>
+
+#### Mermaid
 
 ```mermaid
 flowchart TB
@@ -883,10 +887,28 @@ flowchart TB
     casc --> jenkinsfile
 ```
 
+#### Табличное представление
+
+| Исходный файл | Связанные файлы | Смысл связи |
+| --- | --- | --- |
+| `.github/workflows/main-dev.yml` | `docker-compose.dev.yaml`<br>`docker-compose.kafka.yaml`<br>`docker-compose.notification-service.yaml`<br>`.env.dev`<br>`.env.kafka`<br>`.env.notification-service` | Запускает Compose-конфигурации; создаёт файлы окружения из GitHub Actions Secrets. |
+| `.github/workflows/observability-cloud.yml` | `docker-compose.dev.observability.yaml`<br>`docker-compose.dev.observability.load-testing.yaml`<br>`.env`<br>`.load-testing.env.default` | Развёртывает стек наблюдаемости и нагрузочное окружение; создаёт `.env` и использует шаблон параметров нагрузки. |
+| `.load-testing.env.default` | `.load-testing.env` | Используется как исходный шаблон, если рабочий файл ещё не создан. |
+| `docker-compose.dev.observability.load-testing.yaml` | `.load-testing.env` | Получает параметры генератора нагрузки из рабочего файла окружения. |
+| `Jenkinsfile` | `compose.jenkins-ci.yaml`<br>`compose.deploy.yaml` | Запускает изолированное CI-окружение и применяет конфигурацию развёртывания. |
+| `compose.jenkins-ci.yaml` | `Dockerfile`<br>`Makefile` | Собирает образ приложения и запускает команды проверок и тестов. |
+| `compose.deploy.yaml` | `compose.jenkins-ci.yaml`<br>`nginx.deploy.conf.template`<br>`rust-api/rust-open-api-schema.yml` | Дополняет CI-конфигурацию настройками рабочего развёртывания, Nginx и OpenAPI. |
+| `jenkins-config/.github/workflows/deploy-agent.yml` | `jenkins-config/jenkins-agent/compose.yaml` | Развёртывает и обновляет Jenkins-агент. |
+| `jenkins-config/jenkins-agent/compose.yaml` | `jenkins-config/jenkins-agent/Dockerfile`<br>`jenkins-config/jenkins-agent/config.alloy`<br>`.env` | Собирает Jenkins-агент и подключает его телеметрию и параметры окружения. |
+| `jenkins-config/compose.yaml` | `jenkins-config/Dockerfile`<br>`jenkins-config/plugins.txt`<br>`jenkins-config/casc/jenkins.yaml`<br>`jenkins-config/.env.example`<br>`jenkins-config/observability/tempo/tempo.yml`<br>`jenkins-config/observability/grafana/provisioning/datasources/datasources.yml` | Собирает и настраивает Jenkins-мастер и связанные с ним сервисы наблюдаемости. |
+| `jenkins-config/casc/jenkins.yaml` | `Jenkinsfile` | Создаёт задание, которое получает описание конвейера из репозитория Taxi-manager. |
+
 </details>
 
 <details>
 <summary><strong>Локальный запуск, Kafka и сервис уведомлений</strong></summary>
+
+#### Mermaid
 
 ```mermaid
 flowchart TB
@@ -955,10 +977,24 @@ flowchart TB
     notification --> notificationDb
 ```
 
+#### Табличное представление
+
+| Исходный файл | Связанные файлы и каталоги | Смысл связи |
+| --- | --- | --- |
+| `docker-compose.demo.yaml` | `.env.example`<br>`Dockerfile`<br>`Makefile`<br>`nginx.conf` | Настраивает демонстрационный запуск приложения. |
+| `docker-compose.minimal.yaml` | `.env.example`<br>`Dockerfile`<br>`Makefile`<br>`nginx.conf` | Настраивает минимальный запуск без демонстрационных данных. |
+| `docker-compose.dev-local.yaml` | `.env.example`<br>`Dockerfile`<br>`rust-api/Dockerfile`<br>`varnish-exporter/Dockerfile`<br>`Makefile`<br>`uwsgi.ini`<br>`config.alloy`<br>`nginx.conf`<br>`varnish/default.vcl`<br>`rust-api/rust-open-api-schema.yml` | Собирает расширенное локальное окружение приложения и подключает конфигурации его сервисов. |
+| `docker-compose.dev-local.observability.yaml` | `docker-compose.dev-local.yaml` | Дополняет локальное окружение сервисами наблюдаемости. |
+| `docker-compose.dev-local.load-testing.yaml` | `docker-compose.dev-local.yaml`<br>`docker-compose.dev-local.observability.yaml`<br>`.load-testing.env`<br>`performance/`<br>`performance/results/` | Дополняет локальное окружение генератором нагрузки, его настройками и каталогами сценариев. |
+| `docker-compose.kafka.yaml` | `.env.kafka`<br>`kafka/debezium-postgres.json`<br>`kafka/flink/Dockerfile`<br>`kafka/flink/sql/` | Настраивает Kafka, Debezium и обработку событий во Flink. |
+| `docker-compose.notification-service.yaml` | `.env.notification-service`<br>`notification_service/Dockerfile`<br>`data/notification-service/db.sqlite3` | Собирает Обработчик уведомлений и подключает его локальное хранилище и параметры окружения. |
+
 </details>
 
 <details>
 <summary><strong>Наблюдаемость и C4-модель</strong></summary>
+
+#### Mermaid
 
 ```mermaid
 flowchart TB
@@ -977,7 +1013,8 @@ flowchart TB
     pyroscopeDatasource["grafana/provisioning/datasources/pyroscope.yaml"]
     tempoDatasource["grafana/provisioning/datasources/tempo.yaml"]
     loadDashboard["grafana/dashboards/load-testing-current-source-metrics.json"]
-    loadEnv[".load-testing.env.default"]
+    loadEnvDefault[".load-testing.env.default"]
+    loadEnv[".load-testing.env"]
     performance["performance/"]
 
     observability --> prometheus
@@ -998,6 +1035,7 @@ flowchart TB
     alloy --> loki
     alloy --> tempo
     observabilityLoad --> observability
+    loadEnvDefault --> loadEnv
     observabilityLoad --> loadEnv
     observabilityLoad --> performance
     localLoad --> localObservability
@@ -1020,6 +1058,22 @@ flowchart TB
     workspace --> viewDeployment["docs/architecture/views/deployment.dsl"]
     workspace --> viewStyles["docs/architecture/views/styles.dsl"]
 ```
+
+#### Табличное представление
+
+| Исходный файл | Связанные файлы и каталоги | Смысл связи |
+| --- | --- | --- |
+| `docker-compose.dev.observability.yaml` | `prometheus.yml`<br>`loki-config.yaml`<br>`tempo.yaml`<br>`grafana/provisioning/dashboards/dashboards.yaml`<br>`grafana/provisioning/datasources/loki.yaml`<br>`grafana/provisioning/datasources/prometheus.yaml`<br>`grafana/provisioning/datasources/tempo.yaml` | Настраивает отдельный стек наблюдаемости и подключает его источники данных Grafana. |
+| `docker-compose.dev-local.observability.yaml` | `prometheus.yml`<br>`loki-config.yaml`<br>`tempo.yaml`<br>`grafana/provisioning/datasources/pyroscope.yaml`<br>`grafana/provisioning/dashboards/dashboards.yaml` | Подключает наблюдаемость и профилирование к расширенному локальному окружению. |
+| `grafana/provisioning/dashboards/dashboards.yaml` | `grafana/dashboards/load-testing-current-source-metrics.json` | Загружает дашборд текущих метрик нагрузочного тестирования. |
+| `config.alloy` | `prometheus.yml`<br>`loki-config.yaml`<br>`tempo.yaml` | Передаёт собранные метрики, журналы и трассировки в соответствующие хранилища. |
+| `.load-testing.env.default` | `.load-testing.env` | Служит шаблоном рабочего файла параметров нагрузки. |
+| `docker-compose.dev.observability.load-testing.yaml` | `docker-compose.dev.observability.yaml`<br>`.load-testing.env`<br>`performance/` | Добавляет генератор нагрузки к отдельному стеку наблюдаемости. |
+| `docker-compose.dev-local.load-testing.yaml` | `docker-compose.dev-local.observability.yaml`<br>`.load-testing.env`<br>`performance/` | Добавляет генератор нагрузки к локальному окружению с наблюдаемостью. |
+| `Makefile` | `Makefile.structurizr` | Передаёт команды работы с C4-моделью специализированному Makefile. |
+| `Makefile.structurizr` | `compose.c4-architecture.yaml`<br>`tools/structurizr-png-exporter/Dockerfile` | Запускает Structurizr и собирает экспортёр PNG. |
+| `compose.c4-architecture.yaml` | `docs/architecture/workspace.dsl` | Подключает корневой файл C4-модели к Structurizr. |
+| `docs/architecture/workspace.dsl` | `docs/architecture/model/taxi-manager.dsl`<br>`docs/architecture/model/notifications.dsl`<br>`docs/architecture/model/observability.dsl`<br>`docs/architecture/model/ci-cd.dsl`<br>`docs/architecture/model/deployment.dsl`<br>`docs/architecture/views/taxi-manager.dsl`<br>`docs/architecture/views/notifications.dsl`<br>`docs/architecture/views/observability.dsl`<br>`docs/architecture/views/ci-cd.dsl`<br>`docs/architecture/views/deployment.dsl`<br>`docs/architecture/views/styles.dsl` | Подключает модели, представления и общие стили Structurizr DSL. |
 
 </details>
 
