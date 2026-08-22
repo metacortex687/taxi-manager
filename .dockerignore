@@ -3,5 +3,10 @@
 __pycache__
 *.pyc
 
+.env
+.env.*
+!.env.example
+.load-testing.env
+
 node_modules
 taxi_manager/infrastructure/react_frontend/node_modules
