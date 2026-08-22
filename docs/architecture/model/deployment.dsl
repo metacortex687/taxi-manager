@@ -77,3 +77,4 @@ ciCdDeploymentEnvironment = deploymentEnvironment "CI/CD deployment" {
 
     githubHost.githubActionsRunner -> jenkinsAgentHost.jenkinsAgentRuntime.jenkinsAgentInstance "Разворачивает и обновляет Jenkins-агент" "SSH, Docker Compose"
 }
+

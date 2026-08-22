@@ -4,8 +4,8 @@ notificationChat = softwareSystem "Чат уведомлений" {
 }
 
 notificationSystem = softwareSystem "Сервис уведомлений менеджеров" {
-    description "Подключаемый сервис, преобразующий технические CDC-события PostgreSQL в интеграционные события для уведомлений и отправляющий менеджерам сообщения об изменениях автомобилей."
-    tags "Implemented Not Deployed"
+    description "Преобразует CDC-события PostgreSQL в интеграционные события и отправляет менеджерам уведомления об изменениях автомобилей."
+    tags "Implemented Not Deployed,Diagram Tall"
 
     debezium = container "CDC-коннектор" {
         description "Читает изменения из журнала WAL PostgreSQL посредством логической репликации и публикует исходные CDC-события в Kafka."
@@ -14,9 +14,9 @@ notificationSystem = softwareSystem "Сервис уведомлений мен�
     }
 
     kafka = container "Брокер сообщений" {
-        description "Один Kafka-кластер хранит исходные топики с техническими CDC-событиями отдельных таблиц, обработанные топики организаций, назначений менеджеров, моделей автомобилей и автомобилей, а также позиции чтения consumer groups. Архитектурный контракт обработки — at-least-once: событие доставляется один или более раз, поэтому повторная доставка допустима."
+        description "Хранит исходные CDC-события и обработанные события домена. Использует доставку at-least-once, поэтому повторная обработка событий допустима."
         technology "Apache Kafka 4, KRaft"
-        tags "Implemented Not Deployed"
+        tags "Implemented Not Deployed,Diagram Extra Tall"
     }
 
     flink = container "Обработка событий" {
@@ -26,15 +26,15 @@ notificationSystem = softwareSystem "Сервис уведомлений мен�
     }
 
     notificationService = container "Обработчик уведомлений" {
-        description "Запускается как Django management command, читает обработанные топики Kafka, обновляет локальный контекст, определяет получателей по UUID организации, формирует человекочитаемое сообщение и отправляет его в Чат уведомлений. Для соблюдения контракта at-least-once позиция чтения фиксируется только после успешной обработки события."
-        technology "Python 3.13, Django, uv, Kafka client, VK API"
-        tags "Implemented Not Deployed"
+        description "Читает обработанные события Kafka, обновляет локальный контекст, определяет получателей, формирует сообщения и отправляет их в Чат уведомлений. Фиксирует позицию чтения только после успешной обработки."
+        technology "Python 3.13, Django, Kafka client, VK API"
+        tags "Implemented Not Deployed,Diagram Extra Tall"
     }
 
     notificationDatabase = container "Хранилище контекста" {
-        description "Хранит UUID и наименования организаций и моделей автомобилей, назначения менеджеров организациям и связи учётных записей приложения с учётными записями чата, созданные после успешной авторизации. Используется для выбора получателей и формирования сообщений; состояние чтения Kafka, логины и пароли не сохраняются."
+        description "Хранит организации, модели автомобилей, назначения менеджеров и связи учётных записей приложения с учётными записями чата. Используется для выбора получателей и формирования сообщений; учётные данные не сохраняются."
         technology "SQLite"
-        tags "Database,Implemented Not Deployed"
+        tags "Database,Implemented Not Deployed,Diagram Extra Tall"
     }
 
     kafkaUi = container "Интерфейс Kafka" {

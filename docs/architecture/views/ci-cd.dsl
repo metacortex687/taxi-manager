@@ -25,3 +25,4 @@ dynamic jenkins "CiCdPipeline" {
     7: jenkins.agent -> taxiManager "Обновляет контейнеры проверенным образом, сохраняя том базы данных"
     autoLayout lr 300 200
 }
+

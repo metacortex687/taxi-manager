@@ -26,3 +26,4 @@ dynamic notificationSystem "NotificationFlow" {
     7: notificationSystem.notificationService -> notificationChat "Отправляет человекочитаемое уведомление в чат"
     autoLayout lr 300 200
 }
+

@@ -24,3 +24,4 @@ workspace "Taxi-manager" "Многопредставленческая C4-мод
         scope none
     }
 }
+

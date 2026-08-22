@@ -52,3 +52,4 @@ dynamic taxiManager "TaxiManagerGeocodingFlow" {
     5: taxiManager.taskWorker -> taxiManager.database "Сохраняет адрес и его географическую область для повторного использования"
     autoLayout lr 280 200
 }
+

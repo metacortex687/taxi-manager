@@ -37,3 +37,4 @@ jenkins.agent -> containerRegistry "Получает базовые и тест�
 jenkins.agent -> taxiManager "Собирает и тестирует нумерованный образ, затем пересоздаёт контейнеры приложения с сохранением тома базы данных" "Docker, Docker Compose"
 jenkins.controller -> observability.tempo "Ищет трассировки с признаками N+1" "Tempo HTTP API, TraceQL"
 githubActions -> jenkins.agent "Разворачивает и обновляет Jenkins-агент на удалённом сервере" "SSH, Docker Compose"
+

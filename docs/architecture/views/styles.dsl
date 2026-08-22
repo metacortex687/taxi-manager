@@ -80,6 +80,14 @@ styles {
         width 600
     }
 
+    element "Diagram Tall" {
+        height 360
+    }
+
+    element "Diagram Extra Tall" {
+        height 440
+    }
+
     element "Deployment Node" {
         background #e5e7eb
         color #111827

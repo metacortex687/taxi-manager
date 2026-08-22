@@ -305,7 +305,7 @@ REST API возвращает значения даты и времени в ф�
 | **Асинхронный REST API и SSE** | Асинхронная обработка REST-запросов и поддержка длительных SSE-соединений для передачи координат выбранного автомобиля в браузер | API реализован с помощью Django ASGI и запускается через Gunicorn с Uvicorn Worker; SSE используется для однонаправленных онлайн-обновлений | ASGI выбран как наиболее простой способ поддерживать большое количество длительных соединений и выполнять асинхронный код в существующем Django-приложении. |
 | **Пул соединений** | Переиспользование соединений с PostgreSQL и защита от исчерпания лимита подключений | PgBouncer обслуживает прежде всего длительно работающие ASGI-процессы и применяется в расширенных вариантах развёртывания | PgBouncer выбран для предотвращения исчерпания лимита подключений к PostgreSQL при высокой нагрузке на ASGI-приложение. |
 | **Фоновый обработчик заданий** | Формирование отчётов и обратное геокодирование вне пользовательского HTTP-запроса | Django management command выполняет задания `django-tasks-db`; PostgreSQL используется как backend очереди | Фоновый обработчик используется для выполнения длительных операций и обращений к внешним сервисам вне цикла обработки пользовательского HTTP-запроса. Это сокращает время ответа приложения и позволяет отдельно масштабировать обработку ресурсоёмких операций. |
-| **Высоко&shy;производительный асинхронный REST API** | Перенос измеренных узких мест из Синхронного REST API без преждевременной декомпозиции приложения | Rust, Actix Web, Tokio и SQLx; текущая реализация проверяет одиночные и пакетные REST-операции. API обращается к PostgreSQL напрямую, при этом структура базы данных определяется моделями Django и изменяется миграциями Django | Высокопроизводительный асинхронный REST API предназначен для переноса ресурсоёмких операций, которые по результатам измерений выявлены как узкие места производительности. Actix Web выбран как высокопроизводительный асинхронный веб-фреймворк для Rust. В дальнейшем аналогичный REST API может использоваться для авторизации, если измерения подтвердят необходимость её выделения из основного приложения. |
+| **Высоко&shy;производительный асинхронный REST API** | Перенос измеренных узких мест из Синхронного REST API без преждевременной декомпозиции приложения | Rust, Actix Web, Tokio и SQLx; текущая реализация проверяет одиночные и пакетные REST-операции. API обращается к PostgreSQL напрямую, при этом структура базы данных определяется моделями Django и изменяется миграциями Django | Высокопроизводительный асинхронный REST API предназначен для переноса ресурсоёмких операций, которые по результатам измерений выявлены как узкие места производительности. Actix Web выбран как высокопроизводительный асинхронный веб-фреймворк для Rust. Выбор Rust и Actix Web подтверждается результатами [нагрузочного тестирования](#нагрузочное-тестирование), показавшими существенное увеличение пропускной способности для сценариев чтения и записи. В дальнейшем аналогичный REST API может использоваться для авторизации, если измерения подтвердят необходимость её выделения из основного приложения. |
 | **База данных** | Хранение данных автопарка, поездок, телеметрии, географии, фоновых заданий и результатов геокодирования | PostgreSQL 16 обеспечивает транзакционное хранение, PostGIS 3.5 — пространственные типы и операции | PostgreSQL выбран как распространённая и производительная реляционная СУБД, допускающая дальнейшее вертикальное и горизонтальное масштабирование. Механизм расширений позволяет добавлять специализированные возможности: например, PostGIS обеспечивает хранение и обработку географических координат. |
 | **Документация API** | Интерактивный просмотр контрактов Django REST API и Высокопроизводительного асинхронного REST API | Swagger UI загружает сгенерированную OpenAPI-схему Django REST API по HTTP и статическую OpenAPI-схему Высокопроизводительного асинхронного REST API из read-only bind mount | Для упрощения разработки внешних интеграций. |
 | **Коллектор наблюдаемости** | Единая точка сбора и маршрутизации телеметрии приложения | Grafana Alloy получает трассировки по OTLP, собирает метрики через Prometheus scrape, читает журналы контейнеров и отправляет данные в Prometheus, Loki и Tempo | Grafana Alloy выбран как единая точка сбора телеметрии — логов, метрик и распределённых трассировок — и её последующей отправки в Сервис хранения и визуализации данных мониторинга. Это позволяет понимать, что происходит в реально работающем приложении. |
@@ -430,7 +430,7 @@ Debezium выбран для получения изменений непоср�
 
 **Прикладной кэш.** Django работает с кэшируемыми данными через Django Cache API. В локальном окружении в качестве общего backend используется Memcached. Прикладной кэш следует применять к данным, повторное получение или формирование которых по результатам измерений является узким местом.
 
-**HTTP-кэш.** Varnish предназначен для возврата повторяющихся HTTP-ответов чтения без повторной обработки запроса в REST API. В базовом целевом варианте Входной веб-шлюз остаётся единой внешней HTTP-точкой входа, а один HTTP-кэш располагается после него. Общедоступные кэшируемые запросы передаются в HTTP-кэш непосредственно. Защищённые запросы могут передаваться в него только после проверки доступа; если содержимое ответа зависит от организации, области доступа или пользователя, доверенный контекст доступа должен учитываться в ключе кэша. Операции записи и остальные некэшируемые запросы обходят HTTP-кэш.
+**HTTP-кэш.** Varnish предназначен для возврата повторяющихся HTTP-ответов чтения без повторной обработки запроса в REST API. В базовом целевом варианте Входной веб-шлюз остаётся единой внешней HTTP-точкой входа, а один HTTP-кэш располагается после него. Общедоступные кэшируемые запросы передаются в HTTP-кэш непосредственно. Защищённые запросы могут передаваться в него только после проверки доступа Сервисом авторизации; если содержимое ответа зависит от организации, области доступа или пользователя, доверенный контекст доступа должен учитываться в ключе кэша. Операции записи и остальные некэшируемые запросы обходят HTTP-кэш.
 
 Количество и размещение HTTP-кэшей зависят от измеренного профиля нагрузки: соотношения общедоступных и защищённых запросов, доли операций чтения, стоимости формирования ответов и достигаемого процента попаданий в кэш. Если в профиле нагрузки преобладают повторяющиеся общедоступные запросы чтения и прохождение через Nginx становится измеренным узким местом, перед Nginx может быть добавлен отдельный граничный HTTP-кэш для общедоступных данных. Защищённые ответы при этом продолжают кэшироваться только после проверки доступа.
 
@@ -451,9 +451,9 @@ Debezium выбран для получения изменений непоср�
 
 При срабатывании правила Grafana отправляет email-оповещение через внешний Почтовый сервис Специалисту сопровождения. Это эксплуатационные оповещения о состоянии приложения; они отделены от предметных уведомлений менеджерам об изменениях автомобилей.
 
-Дополнительные метрики Grafana Alloy получает через встроенные Unix- и process-exporter, от cAdvisor, Nginx Prometheus Exporter и Varnish exporter. GoAccess используется отдельно для локального анализа журналов доступа и не входит в основной поток телеметрии.
+Дополнительные метрики Grafana Alloy получает от process-exporter, cAdvisor, Nginx Prometheus Exporter и Varnish Exporter. GoAccess используется отдельно для анализа журналов доступа и не входит в основной поток телеметрии.
 
-Наблюдаемость может быть расширена профилированием производительности с помощью Grafana Pyroscope. Этот вариант используется при локальном запуске и позволяет находить функции Django-приложений и Фонового обработчика заданий, потребляющие больше всего процессорного времени. Профили передаются в Pyroscope через Grafana Alloy. В Jenkins-развёртывании профилирование отключено, поэтому Pyroscope намеренно не показан на основной C4-диаграмме наблюдаемости.
+Наблюдаемость может быть расширена профилированием производительности с помощью Grafana Pyroscope. Оно позволяет находить функции Django-приложений и Фонового обработчика заданий, потребляющие больше всего процессорного времени. Проведённые замеры не выявили заметного увеличения времени ответа при включённом профилировании. Профили передаются в Pyroscope через Grafana Alloy. Pyroscope намеренно не показан на основной C4-диаграмме наблюдаемости.
 
 Основные технологии: OpenTelemetry, OTLP/gRPC, Grafana Alloy, Prometheus, Loki, Tempo и Grafana.
 
@@ -502,8 +502,6 @@ Jenkins-мастер координирует конвейер CI/CD Прило�
 | [`Makefile`](Makefile) | Команды сборки, проверок, запуска процессов и экспорта архитектурных схем |
 | [`docs/architecture/workspace.dsl`](docs/architecture/workspace.dsl) | Корневой файл Structurizr DSL: объединяет модель, представления, стили и архитектурную документацию через директивы `!include` |
 
-При изменении кода сначала обновляются манифесты и C4-модель, затем повторно экспортируются PNG.
-
 ## Нагрузочное тестирование
 
 Для выбора технических решений в read-heavy- и write-heavy-сценариях проведена серия нагрузочных экспериментов на эндпоинтах создания бренда и получения бренда по идентификатору. Нагрузка формировалась с помощью k6, а метрики и трассировки анализировались в Grafana, Prometheus и Tempo.
@@ -542,7 +540,7 @@ Jenkins-мастер координирует конвейер CI/CD Прило�
 
 ### HTTP-кэш Varnish
 
-При 100% попаданий в HTTP-кэш Varnish было получено около 9500 RPS. Это синтетическая верхняя граница для повторяющихся ответов, не зависящих от пользователя. Практический результат определяется процентом попаданий, стоимостью промаха и соотношением общедоступных и защищённых запросов.
+При 100% попаданий в HTTP-кэш Varnish было получено около 9500 RPS. Это синтетическая верхняя граница для повторяющихся ответов, не зависящих от пользователя. Практический результат будет определяться процентом попаданий, стоимостью промаха и соотношением общедоступных и защищённых запросов.
 
 ### Выводы
 
@@ -768,5 +766,104 @@ docker compose -f docker-compose.minimal.yaml down
 Jenkins-мастер координирует конвейер CI/CD Приложения Taxi-manager, а Jenkins-агент выполняет его этапы. GitHub Actions из репозитория `jenkins-config` развёртывает и обновляет Jenkins-агент. Сохранённый в этом репозитории workflow [`.github/workflows/main-dev.yml`](.github/workflows/main-dev.yml) использовался для прежнего сценария тестирования, сборки образов и развёртывания приложения; сейчас он запускается только вручную и не входит в Jenkins-конвейер CI/CD.
 
 ![Главная страница Jenkins с заданием taxi-manager-ci](docs/images/ci-cd/jenkins-dashboard.png)
+
+</details>
+
+
+## YAML-конфигурации и сценарии развёртывания
+
+В этом разделе перечислены сценарии развёртывания, YAML-файлы и связанные с ними конфигурации из репозиториев Taxi-manager и [`jenkins-config`](https://github.com/metacortex687/jenkins-config). Для сценариев развёртывания указаны используемые YAML-файлы, а для YAML-файлов — подключаемые конфигурации.
+
+<details>
+<summary><strong>Сценарии развёртывания</strong></summary>
+
+| Файл | Назначение | Используемые YAML-файлы |
+| --- | --- | --- |
+| [`.github/workflows/main-dev.yml`](.github/workflows/main-dev.yml) | Прежний сценарий тестирования, сборки образов и развёртывания полного окружения разработки. Использовался для развёртывания в облаке до перехода на Jenkins; сохранён для ручного запуска и изучения. Создаёт `.env.dev`, `.env.kafka` и `.env.notification-service` из GitHub Actions Secrets. | [`docker-compose.dev.yaml`](docker-compose.dev.yaml), [`docker-compose.kafka.yaml`](docker-compose.kafka.yaml), [`docker-compose.notification-service.yaml`](docker-compose.notification-service.yaml) |
+| [`.github/workflows/observability-cloud.yml`](.github/workflows/observability-cloud.yml) | Развёртывает отдельный стек наблюдаемости и подготавливает генератор нагрузки k6 к последующему ручному запуску. Создаёт `.env` для стека наблюдаемости из GitHub Actions Secrets; `.load-testing.env` создаётся из `.load-testing.env.default`, если ещё отсутствует на сервере. | [`docker-compose.dev.observability.yaml`](docker-compose.dev.observability.yaml), [`docker-compose.dev.observability.load-testing.yaml`](docker-compose.dev.observability.load-testing.yaml) |
+| [`jenkins-config/.github/workflows/deploy-agent.yml`](https://github.com/metacortex687/jenkins-config/blob/main/.github/workflows/deploy-agent.yml) | Развёртывает Jenkins-агент на удалённом хосте и создаёт его `.env` из GitHub Actions Secrets. | [`jenkins-agent/compose.yaml`](https://github.com/metacortex687/jenkins-config/blob/main/jenkins-agent/compose.yaml) |
+| [`Jenkinsfile`](Jenkinsfile) | Описывает основной Jenkins-конвейер тестирования и развёртывания приложения. Основные этапы выполняются на Jenkins-агенте, а проверка возможных N+1-запросов — на Jenkins-мастере, анализирующем трассировки в Tempo. | [`compose.jenkins-ci.yaml`](compose.jenkins-ci.yaml), [`compose.deploy.yaml`](compose.deploy.yaml) |
+
+</details>
+
+<details>
+<summary><strong>YAML-файлы Taxi-manager</strong></summary>
+
+Docker Compose позволяет объединять несколько конфигурационных файлов последовательными параметрами `-f`. Дополнительный файл может добавлять сервисы или переопределять параметры базовой конфигурации.
+
+| Файл | Назначение | Используемые конфигурационные файлы |
+| --- | --- | --- |
+| [`compose.jenkins-ci.yaml`](compose.jenkins-ci.yaml) | Создаёт изолированное окружение с приложением и PostgreSQL/PostGIS для выполнения тестов в Jenkins. | [`Dockerfile`](Dockerfile), [`Makefile`](Makefile), внешняя сеть `jenkins-ci` для передачи трассировок в Grafana Alloy |
+| [`compose.deploy.yaml`](compose.deploy.yaml) | Дополняет `compose.jenkins-ci.yaml` для развёртывания приложения: добавляет постоянный том PostgreSQL, Фоновый обработчик заданий, Swagger UI и Nginx. | [`nginx.deploy.conf.template`](nginx.deploy.conf.template), [`rust-api/rust-open-api-schema.yml`](rust-api/rust-open-api-schema.yml) |
+| [`docker-compose.dev.yaml`](docker-compose.dev.yaml) | Описывает расширенное окружение приложения, использовавшееся для развёртывания в облаке через `main-dev.yml` до перехода на Jenkins. | `.env.dev`, [`config.alloy`](config.alloy), [`nginx.conf`](nginx.conf), [`varnish/default.vcl`](varnish/default.vcl), внешняя сеть Kafka |
+| [`docker-compose.kafka.yaml`](docker-compose.kafka.yaml) | Развёртывает Kafka, Debezium, Flink и Kafka UI для обработки событий Сервиса уведомлений менеджеров. | `.env.kafka`, [`kafka/debezium-postgres.json`](kafka/debezium-postgres.json), [`kafka/flink/Dockerfile`](kafka/flink/Dockerfile), каталог [`kafka/flink/sql/`](kafka/flink/sql/) |
+| [`docker-compose.notification-service.yaml`](docker-compose.notification-service.yaml) | Запускает Обработчик уведомлений и подключает его к приложению и Kafka. | `.env.notification-service`, `data/notification-service/db.sqlite3`, сети приложения и Kafka |
+| [`docker-compose.dev.observability.yaml`](docker-compose.dev.observability.yaml) | Описывает отдельное окружение наблюдаемости для `observability-cloud.yml`. Сейчас основной стек наблюдаемости развёртывается вместе с Jenkins-мастером через `jenkins-config/compose.yaml`. | `.env`, [`prometheus.yml`](prometheus.yml), [`loki-config.yaml`](loki-config.yaml), [`tempo.yaml`](tempo.yaml), конфигурации и дашборды в [`grafana/`](grafana/) |
+| [`docker-compose.dev.observability.load-testing.yaml`](docker-compose.dev.observability.load-testing.yaml) | Добавляет к отдельному стеку наблюдаемости генератор нагрузки k6 для ручного запуска тестов. | `docker-compose.dev.observability.yaml`, `.load-testing.env`, каталоги `performance/` и `performance/results/` |
+| [`docker-compose.demo.yaml`](docker-compose.demo.yaml) | Запускает демонстрационную версию приложения и заполняет базу демонстрационными данными. | `.env` из [`.env.example`](.env.example), [`Dockerfile`](Dockerfile), [`Makefile`](Makefile), [`nginx.conf`](nginx.conf) |
+| [`docker-compose.minimal.yaml`](docker-compose.minimal.yaml) | Запускает минимально работающее приложение без загрузки демонстрационных данных. | `.env` из [`.env.example`](.env.example), [`Dockerfile`](Dockerfile), [`Makefile`](Makefile), [`nginx.conf`](nginx.conf) |
+| [`docker-compose.dev-local.yaml`](docker-compose.dev-local.yaml) | Запускает расширенное окружение приложения с дополнительными REST API, кэшированием, PgBouncer и сбором телеметрии. | `.env`, Dockerfile приложения и дополнительных сервисов, [`config.alloy`](config.alloy), [`nginx.conf`](nginx.conf), [`varnish/default.vcl`](varnish/default.vcl), [`rust-api/rust-open-api-schema.yml`](rust-api/rust-open-api-schema.yml), [`Makefile`](Makefile) |
+| [`docker-compose.dev-local.observability.yaml`](docker-compose.dev-local.observability.yaml) | Добавляет к расширенному окружению Prometheus, Loki, Tempo, Pyroscope и Grafana. | `docker-compose.dev-local.yaml`, `.env`, [`prometheus.yml`](prometheus.yml), [`loki-config.yaml`](loki-config.yaml), [`tempo.yaml`](tempo.yaml), конфигурации и дашборды в [`grafana/`](grafana/) |
+| [`docker-compose.dev-local.load-testing.yaml`](docker-compose.dev-local.load-testing.yaml) | Добавляет генератор нагрузки k6 к расширенному окружению. | `docker-compose.dev-local.yaml`, `docker-compose.dev-local.observability.yaml`, `.load-testing.env`, каталог [`performance/`](performance/) |
+| [`compose.c4-architecture.yaml`](compose.c4-architecture.yaml) | Запускает Structurizr для просмотра C4-модели приложения. | [`docs/architecture/workspace.dsl`](docs/architecture/workspace.dsl) и подключаемые им DSL-файлы; необязательная переменная `STRUCTURIZR_PORT` |
+| [`grafana/provisioning/dashboards/dashboards.yaml`](grafana/provisioning/dashboards/dashboards.yaml) | Настраивает автоматическую загрузку дашбордов из каталога `grafana/dashboards/`. | JSON-описания из [`grafana/dashboards/`](grafana/dashboards/) |
+| [`grafana/provisioning/datasources/loki.yaml`](grafana/provisioning/datasources/loki.yaml) | Настройки источника данных Loki в Grafana для просмотра журналов. | Loki |
+| [`grafana/provisioning/datasources/prometheus.yaml`](grafana/provisioning/datasources/prometheus.yaml) | Настройки источника данных Prometheus в Grafana для работы с метриками. | Prometheus |
+| [`grafana/provisioning/datasources/pyroscope.yaml`](grafana/provisioning/datasources/pyroscope.yaml) | Настройки источника данных Pyroscope в Grafana для анализа профилей производительности. | Pyroscope |
+| [`grafana/provisioning/datasources/tempo.yaml`](grafana/provisioning/datasources/tempo.yaml) | Настройки источника данных Tempo в Grafana для просмотра распределённых трассировок. | Tempo |
+| [`rust-api/rust-open-api-schema.yml`](rust-api/rust-open-api-schema.yml) | Статическое OpenAPI-описание Высокопроизводительного асинхронного REST API. | Подключается Swagger UI через read-only mount |
+
+При текущем обновлении версии контейнеры приложения пересоздаются, поэтому возможен короткий перерыв. В дальнейшем новая версия может запускаться параллельно с текущей, проверяться на готовность, после чего Nginx переключит на неё трафик. Это позволит свести паузу при смене версии к минимуму.
+
+</details>
+
+<details>
+<summary><strong>YAML-файлы Jenkins</strong></summary>
+
+| Файл | Назначение | Используемые конфигурационные файлы |
+| --- | --- | --- |
+| [`jenkins-config/jenkins-agent/compose.yaml`](https://github.com/metacortex687/jenkins-config/blob/main/jenkins-agent/compose.yaml) | Запускает Jenkins-агент и коллектор Grafana Alloy на его узле. | [`jenkins-agent/Dockerfile`](https://github.com/metacortex687/jenkins-config/blob/main/jenkins-agent/Dockerfile), [`jenkins-agent/config.alloy`](https://github.com/metacortex687/jenkins-config/blob/main/jenkins-agent/config.alloy), `.env`, создаваемый из GitHub Actions Secrets |
+| [`jenkins-config/compose.yaml`](https://github.com/metacortex687/jenkins-config/blob/main/compose.yaml) | Запускает Jenkins-мастер и стек наблюдаемости на одном узле. | `.env` из `.env.example`, `Dockerfile`, `plugins.txt`, `casc/jenkins.yaml`, SSH-ключи из `secrets/`, конфигурации Tempo и Grafana |
+| [`jenkins-config/casc/jenkins.yaml`](https://github.com/metacortex687/jenkins-config/blob/main/casc/jenkins.yaml) | Реализует подход «инфраструктура как код» для Jenkins-мастера: настраивает его, подключает Jenkins-агент и определяет задание `taxi-manager-ci`. | `.env`, SSH-ключи через Docker Secrets, [`Jenkinsfile`](Jenkinsfile) Taxi-manager |
+| [`jenkins-config/observability/grafana/provisioning/datasources/datasources.yml`](https://github.com/metacortex687/jenkins-config/blob/main/observability/grafana/provisioning/datasources/datasources.yml) | Настройки источников данных Prometheus, Tempo и Loki в Grafana. | Prometheus, Tempo и Loki из `jenkins-config/compose.yaml` |
+| [`jenkins-config/observability/tempo/tempo.yml`](https://github.com/metacortex687/jenkins-config/blob/main/observability/tempo/tempo.yml) | Настройки приёма OTLP-трассировок, их локального хранения и срока хранения 30 дней в Tempo. | Подключается `jenkins-config/compose.yaml` |
+
+Сейчас Jenkins-мастер и стек наблюдаемости размещены на одном узле. В дальнейшем их можно разнести по разным машинам. Grafana Alloy на Jenkins-агенте передаёт метрики, журналы и трассировки непосредственно в Prometheus, Loki и Tempo на узле Jenkins-мастера. Хранилища принимают телеметрию через сетевые порты, доступ к которым ограничивается средствами облачной инфраструктуры.
+
+</details>
+
+<details>
+<summary><strong>Связанные конфигурационные файлы</strong></summary>
+
+| Файл | Назначение |
+| --- | --- |
+| [`.env.example`](.env.example) | Базовый шаблон переменных окружения для PostgreSQL, Django, администратора приложения и LocationIQ. |
+| [`.load-testing.env.default`](.load-testing.env.default) | Шаблон параметров цели нагрузочного тестирования: адресов, эндпоинта и токена авторизации. |
+| [`Dockerfile`](Dockerfile) | Инструкции сборки общего образа React-интерфейса и серверных процессов Django. |
+| [`rust-api/Dockerfile`](rust-api/Dockerfile) | Инструкции сборки образа Высокопроизводительного асинхронного REST API, реализованного на Rust и Actix Web. |
+| [`notification_service/Dockerfile`](notification_service/Dockerfile) | Инструкции сборки образа Обработчика уведомлений, реализованного на Python и Django. |
+| [`kafka/flink/Dockerfile`](kafka/flink/Dockerfile) | Инструкции сборки образа Apache Flink с SQL-коннектором Kafka. |
+| [`varnish-exporter/Dockerfile`](varnish-exporter/Dockerfile) | Инструкции сборки образа экспортёра метрик Varnish для Prometheus. |
+| [`tools/structurizr-png-exporter/Dockerfile`](tools/structurizr-png-exporter/Dockerfile) | Инструкции сборки образа экспортёра C4-диаграмм в PNG на основе Playwright. |
+| [`prometheus.yml`](prometheus.yml) | Настройки интервалов сбора и вычисления метрик Prometheus и сбора его собственных метрик. |
+| [`loki-config.yaml`](loki-config.yaml) | Настройки односерверного хранения журналов Loki в файловой системе со сроком хранения семь дней. |
+| [`tempo.yaml`](tempo.yaml) | Настройки приёма OTLP-трассировок и их локального хранения в Tempo. |
+| [`config.alloy`](config.alloy) | Настройки Grafana Alloy для приёма трассировок и профилей, сбора метрик и журналов контейнеров и передачи телеметрии в Prometheus, Loki, Tempo и Pyroscope. |
+| [`nginx.conf`](nginx.conf) | Настройки Входного веб-шлюза: маршрутизация запросов в серверные REST API, раздача статических файлов, публикация документации и технических интерфейсов. |
+| [`nginx.deploy.conf.template`](nginx.deploy.conf.template) | Шаблон настроек Входного веб-шлюза для Jenkins-развёртывания: маршрутизация в приложение и Swagger UI, а также страница с информацией о развёрнутой сборке. |
+| [`varnish/default.vcl`](varnish/default.vcl) | Экспериментальные правила Varnish для кэширования выбранных GET- и HEAD-запросов и передачи остальных запросов в Nginx. |
+| [`kafka/debezium-postgres.json`](kafka/debezium-postgres.json) | Настройки CDC-коннектора Debezium для чтения изменений выбранных таблиц PostgreSQL и публикации исходных событий в Kafka. |
+| [`kafka/flink/sql/`](kafka/flink/sql/) | Каталог автоматически запускаемых Flink SQL-сценариев для преобразования CDC-событий. |
+| [`Makefile`](Makefile) | Команды сборки и запуска приложения, миграций, демонстрационных данных, Kafka и нагрузочного тестирования. |
+| [`Makefile.structurizr`](Makefile.structurizr) | Команды запуска и перезапуска Structurizr, а также экспорта C4-диаграмм в Mermaid и PNG. |
+| [`uwsgi.ini`](uwsgi.ini) | Настройки uWSGI для запуска Синхронного REST API через Unix-сокет: процессы, очередь соединений, ограничения времени запроса и перезапуск worker-процессов. |
+| [`grafana/dashboards/load-testing-current-source-metrics.json`](grafana/dashboards/load-testing-current-source-metrics.json) | Описание дашборда Grafana для анализа метрик текущего источника нагрузки при нагрузочном тестировании. |
+| [`jenkins-config/Dockerfile`](https://github.com/metacortex687/jenkins-config/blob/main/Dockerfile) | Инструкции сборки образа Jenkins-мастера с Docker CLI, Docker Buildx, Docker Compose и необходимыми плагинами; часть подхода «инфраструктура как код» для Jenkins-мастера. |
+| [`jenkins-config/plugins.txt`](https://github.com/metacortex687/jenkins-config/blob/main/plugins.txt) | Определяет плагины Jenkins, устанавливаемые при сборке образа Jenkins-мастера. |
+| [`jenkins-config/.env.example`](https://github.com/metacortex687/jenkins-config/blob/main/.env.example) | Шаблон переменных окружения для запуска Jenkins-мастера и Grafana. |
+| [`jenkins-config/jenkins-agent/Dockerfile`](https://github.com/metacortex687/jenkins-config/blob/main/jenkins-agent/Dockerfile) | Инструкции сборки образа Jenkins-агента с Docker CLI, Docker Buildx и Docker Compose и настройки доступа к Docker Engine целевого узла. |
+| [`jenkins-config/jenkins-agent/config.alloy`](https://github.com/metacortex687/jenkins-config/blob/main/jenkins-agent/config.alloy) | Определяет настройки Grafana Alloy для обработки трассировок и журналов CI-контейнеров, формирования метрик по трассировкам и передачи данных в Tempo, Loki и Prometheus. |
+
+Манифесты зависимостей и исходный код здесь повторно не перечисляются: они приведены в разделе «Источники и границы достоверности» или относятся к реализации, а не к конфигурации.
 
 </details>

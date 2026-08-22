@@ -31,9 +31,9 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     nginx = container "Входной веб-шлюз" {
-        description "Принимает и обслуживает внешние HTTP-соединения, раздаёт статические файлы и маршрутизирует запросы к внутренним приложениям. Буферизует обычный HTTP-трафик и переиспользует upstream-соединения там, где настроен их пул."
+        description "Принимает внешние HTTP-соединения, раздаёт статические файлы и маршрутизирует запросы. Буферизует обычный HTTP-трафик и переиспользует настроенные upstream-соединения."
         technology "Nginx"
-        tags "Gateway,Current"
+        tags "Gateway,Current,Diagram Tall"
     }
 
     djangoWsgi = container "Синхронный REST API" {
@@ -67,15 +67,15 @@ taxiManager = softwareSystem "Taxi-manager" {
     }
 
     swaggerUi = container "Документация API" {
-        description "Показывает автоматически сформированную OpenAPI-схему Django REST API и статическую OpenAPI-схему Высокопроизводительного асинхронного REST API из файла rust-open-api-schema.yml, смонтированного только для чтения."
+        description "Показывает автоматически сформированную OpenAPI-схему Django API и статическую схему Rust API из файла rust-open-api-schema.yml, смонтированного только для чтения."
         technology "Swagger UI, OpenAPI"
-        tags "Auxiliary,Current"
+        tags "Auxiliary,Current,Diagram Tall"
     }
 
     alloy = container "Коллектор наблюдаемости" {
-        description "Собирает метрики, логи и трассировки контейнеров приложения, включая трассировки обращений Django к PostgreSQL, и передаёт их во внешний Сервис хранения и визуализации данных мониторинга."
+        description "Собирает метрики, логи и трассировки контейнеров, включая обращения Django к PostgreSQL, и передаёт данные во внешний сервис мониторинга."
         technology "Grafana Alloy, OpenTelemetry, OTLP/gRPC"
-        tags "Observability,Current"
+        tags "Observability,Current,Diagram Tall"
     }
 
     cadvisor = container "Метрики контейнеров" {

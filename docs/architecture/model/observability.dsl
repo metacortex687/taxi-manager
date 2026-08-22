@@ -63,3 +63,4 @@ observability.grafana -> observability.loki "Запрашивает логи" "L
 observability.grafana -> observability.tempo "Запрашивает трассировки" "TraceQL/HTTP"
 observability.grafana -> mailService "Отправляет эксплуатационные оповещения" "SMTP"
 mailService -> supportSpecialist "Доставляет оповещения" "Email"
+
