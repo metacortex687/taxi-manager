@@ -823,257 +823,284 @@ Jenkins-мастер координирует конвейер CI/CD Прило�
 
 ## Конфигурационные файлы
 
-В этом разделе перечислены точки входа автоматизации, Docker Compose-файлы и связанные с ними конфигурации из репозиториев Taxi-manager и [`jenkins-config`](https://github.com/metacortex687/jenkins-config). Графы показывают направления зависимостей, а расположенные ниже таблицы содержат назначение и ссылки на каждый файл.
+В этом разделе перечислены точки входа автоматизации, Docker Compose-файлы и связанные с ними конфигурации из репозиториев Taxi-manager и [`jenkins-config`](https://github.com/metacortex687/jenkins-config). Таблицы содержат назначение и прямые зависимости файлов, а расположенные под ними графы Mermaid показывают те же связи.
 
 ### Граф зависимостей конфигурационных файлов
 
-В Mermaid стрелка направлена от исходного файла к связанному файлу, каталогу или создаваемому файлу окружения. Табличное представление повторяет те же связи, группирует конечные узлы по исходному файлу и поясняет характер зависимости.
+В таблицах для каждого **исходного файла** перечислены файлы, от которых он непосредственно зависит. На расположенной под таблицей Mermaid-диаграмме этому соответствует стрелка `A --> B`: файл `A` зависит от файла `B`.
+
+Показаны прямые зависимости, которые заданы через подключение файла, Docker build context, bind mount, `!include` либо обязательное дополнение Compose. Связи от автоматизации к создаваемым ею файлам окружения не показаны; при этом файл окружения указан как зависимость Compose-файла, если тот явно его читает. Каталоги с результатами и взаимодействия сервисов во время выполнения в граф не включены.
 
 <details>
 <summary><strong>Автоматизация и удалённые развёртывания</strong></summary>
+
+#### Табличное представление
+
+| Исходный файл | Смысл зависимости | Зависит от файлов |
+| --- | --- | --- |
+| `.github/workflows/main-dev.yml` | Собирает образы, копирует конфигурацию на сервер и запускает основной стек. | `Makefile`<br>`Dockerfile`<br>`rust-api/Dockerfile`<br>`varnish-exporter/Dockerfile`<br>`notification_service/Dockerfile`<br>`docker-compose.dev.yaml`<br>`docker-compose.kafka.yaml`<br>`docker-compose.notification-service.yaml`<br>`nginx.conf`<br>`config.alloy`<br>`varnish/default.vcl` |
+| `.github/workflows/observability-cloud.yml` | Копирует и запускает удалённый стек наблюдаемости и нагрузочного тестирования. | `docker-compose.dev.observability.yaml`<br>`docker-compose.dev.observability.load-testing.yaml`<br>`tempo.yaml`<br>`prometheus.yml`<br>`loki-config.yaml`<br>`config.alloy`<br>`grafana/provisioning/datasources/loki.yaml`<br>`grafana/provisioning/datasources/prometheus.yaml`<br>`grafana/provisioning/datasources/pyroscope.yaml`<br>`grafana/provisioning/datasources/tempo.yaml`<br>`Makefile`<br>`.load-testing.env.default` |
+| `Jenkinsfile` | Запускает CI-стек и применяет конфигурацию развёртывания. | `compose.jenkins-ci.yaml`<br>`compose.deploy.yaml` |
+| `compose.jenkins-ci.yaml` | Собирает основной образ приложения из корневого Dockerfile. | `Dockerfile` |
+| `compose.deploy.yaml` | Дополняет CI-стек настройками развёртывания и монтируемыми файлами API и Nginx. | `compose.jenkins-ci.yaml`<br>`nginx.deploy.conf.template`<br>`rust-api/rust-open-api-schema.yml` |
+| `jenkins-config/.github/workflows/deploy-agent.yml` | Развёртывает Jenkins-агент через Compose-файл каталога jenkins-agent. | `jenkins-config/jenkins-agent/compose.yaml` |
+| `jenkins-config/jenkins-agent/compose.yaml` | Собирает образ Jenkins-агента и подключает его конфигурацию Alloy. | `jenkins-config/jenkins-agent/Dockerfile`<br>`jenkins-config/jenkins-agent/config.alloy` |
+| `jenkins-config/compose.yaml` | Собирает Jenkins-мастер и подключает JCasC и конфигурацию наблюдаемости. | `jenkins-config/Dockerfile`<br>`jenkins-config/casc/jenkins.yaml`<br>`jenkins-config/observability/tempo/tempo.yml`<br>`jenkins-config/observability/grafana/provisioning/datasources/datasources.yml` |
+| `jenkins-config/Dockerfile` | Устанавливает плагины Jenkins из фиксированного списка. | `jenkins-config/plugins.txt` |
+| `jenkins-config/casc/jenkins.yaml` | Настраивает multibranch pipeline Taxi-manager и указывает его Script Path. | `Jenkinsfile` |
 
 #### Mermaid
 
 ```mermaid
 flowchart TB
     mainDev[".github/workflows/main-dev.yml"]
-    observabilityWorkflow[".github/workflows/observability-cloud.yml"]
-    jenkinsfile["Jenkinsfile"]
-    deployAgentWorkflow["jenkins-config/.github/workflows/deploy-agent.yml"]
-
-    devCloud["docker-compose.dev.yaml"]
+    makefile["Makefile"]
+    appDockerfile["Dockerfile"]
+    rustDockerfile["rust-api/Dockerfile"]
+    varnishExporterDockerfile["varnish-exporter/Dockerfile"]
+    notificationDockerfile["notification_service/Dockerfile"]
+    devCompose["docker-compose.dev.yaml"]
     kafkaCompose["docker-compose.kafka.yaml"]
     notificationCompose["docker-compose.notification-service.yaml"]
-    observabilityCompose["docker-compose.dev.observability.yaml"]
-    observabilityLoad["docker-compose.dev.observability.load-testing.yaml"]
+    nginxConfig["nginx.conf"]
+    alloyConfig["config.alloy"]
+    varnishConfig["varnish/default.vcl"]
+    obsWorkflow[".github/workflows/observability-cloud.yml"]
+    remoteObs["docker-compose.dev.observability.yaml"]
+    remoteLoad["docker-compose.dev.observability.load-testing.yaml"]
+    tempoConfig["tempo.yaml"]
+    prometheusConfig["prometheus.yml"]
+    lokiConfig["loki-config.yaml"]
+    dsLoki["grafana/provisioning/datasources/loki.yaml"]
+    dsPrometheus["grafana/provisioning/datasources/prometheus.yaml"]
+    dsPyroscope["grafana/provisioning/datasources/pyroscope.yaml"]
+    dsTempo["grafana/provisioning/datasources/tempo.yaml"]
+    loadEnvDefault[".load-testing.env.default"]
+    jenkinsfile["Jenkinsfile"]
     jenkinsCi["compose.jenkins-ci.yaml"]
     deployCompose["compose.deploy.yaml"]
+    nginxDeploy["nginx.deploy.conf.template"]
+    rustSchema["rust-api/rust-open-api-schema.yml"]
+    deployAgentWorkflow["jenkins-config/.github/workflows/deploy-agent.yml"]
     agentCompose["jenkins-config/jenkins-agent/compose.yaml"]
-    jenkinsCompose["jenkins-config/compose.yaml"]
+    agentDockerfile["jenkins-config/jenkins-agent/Dockerfile"]
+    agentAlloy["jenkins-config/jenkins-agent/config.alloy"]
+    jenkinsMasterCompose["jenkins-config/compose.yaml"]
+    jenkinsMasterDockerfile["jenkins-config/Dockerfile"]
+    casc["jenkins-config/casc/jenkins.yaml"]
+    jenkinsTempo["jenkins-config/observability/tempo/tempo.yml"]
+    jenkinsGrafanaDatasources["jenkins-config/observability/grafana/provisioning/datasources/datasources.yml"]
+    plugins["jenkins-config/plugins.txt"]
 
-    mainDev --> devCloud
+    mainDev --> makefile
+    mainDev --> appDockerfile
+    mainDev --> rustDockerfile
+    mainDev --> varnishExporterDockerfile
+    mainDev --> notificationDockerfile
+    mainDev --> devCompose
     mainDev --> kafkaCompose
     mainDev --> notificationCompose
-    mainDev --> envDev[".env.dev из GitHub Actions Secrets"]
-    mainDev --> envKafka[".env.kafka из GitHub Actions Secrets"]
-    mainDev --> envNotification[".env.notification-service из GitHub Actions Secrets"]
-
-    observabilityWorkflow --> observabilityCompose
-    observabilityWorkflow --> observabilityLoad
-    observabilityWorkflow --> envObservability[".env из GitHub Actions Secrets"]
-    observabilityWorkflow --> loadEnvDefault[".load-testing.env.default"]
-    loadEnvDefault --> loadEnvGenerated[".load-testing.env"]
-    observabilityLoad --> loadEnvGenerated
-
+    mainDev --> nginxConfig
+    mainDev --> alloyConfig
+    mainDev --> varnishConfig
+    obsWorkflow --> remoteObs
+    obsWorkflow --> remoteLoad
+    obsWorkflow --> tempoConfig
+    obsWorkflow --> prometheusConfig
+    obsWorkflow --> lokiConfig
+    obsWorkflow --> alloyConfig
+    obsWorkflow --> dsLoki
+    obsWorkflow --> dsPrometheus
+    obsWorkflow --> dsPyroscope
+    obsWorkflow --> dsTempo
+    obsWorkflow --> makefile
+    obsWorkflow --> loadEnvDefault
     jenkinsfile --> jenkinsCi
     jenkinsfile --> deployCompose
-    jenkinsCi --> appDockerfile["Dockerfile"]
-    jenkinsCi --> makefile["Makefile"]
+    jenkinsCi --> appDockerfile
     deployCompose --> jenkinsCi
-    deployCompose --> nginxDeploy["nginx.deploy.conf.template"]
-    deployCompose --> rustSchema["rust-api/rust-open-api-schema.yml"]
-
+    deployCompose --> nginxDeploy
+    deployCompose --> rustSchema
     deployAgentWorkflow --> agentCompose
-    agentCompose --> agentDockerfile["jenkins-config/jenkins-agent/Dockerfile"]
-    agentCompose --> agentAlloy["jenkins-config/jenkins-agent/config.alloy"]
-    agentCompose --> agentEnv[".env из GitHub Actions Secrets"]
-
-    jenkinsCompose --> jenkinsDockerfile["jenkins-config/Dockerfile"]
-    jenkinsCompose --> plugins["jenkins-config/plugins.txt"]
-    jenkinsCompose --> casc["jenkins-config/casc/jenkins.yaml"]
-    jenkinsCompose --> jenkinsEnv["jenkins-config/.env.example"]
-    jenkinsCompose --> jenkinsTempo["jenkins-config/observability/tempo/tempo.yml"]
-    jenkinsCompose --> jenkinsGrafana["jenkins-config/observability/grafana/provisioning/datasources/datasources.yml"]
+    agentCompose --> agentDockerfile
+    agentCompose --> agentAlloy
+    jenkinsMasterCompose --> jenkinsMasterDockerfile
+    jenkinsMasterCompose --> casc
+    jenkinsMasterCompose --> jenkinsTempo
+    jenkinsMasterCompose --> jenkinsGrafanaDatasources
+    jenkinsMasterDockerfile --> plugins
     casc --> jenkinsfile
 ```
-
-#### Табличное представление
-
-| Исходный файл | Смысл связи | Связанные файлы |
-| --- | --- | --- |
-| `.github/workflows/main-dev.yml` | Запускает Compose-конфигурации; создаёт файлы окружения из GitHub Actions Secrets. | `docker-compose.dev.yaml`<br>`docker-compose.kafka.yaml`<br>`docker-compose.notification-service.yaml`<br>`.env.dev`<br>`.env.kafka`<br>`.env.notification-service` |
-| `.github/workflows/observability-cloud.yml` | Развёртывает стек наблюдаемости и нагрузочное окружение; создаёт `.env` и использует шаблон параметров нагрузки. | `docker-compose.dev.observability.yaml`<br>`docker-compose.dev.observability.load-testing.yaml`<br>`.env`<br>`.load-testing.env.default` |
-| `.load-testing.env.default` | Используется как исходный шаблон, если рабочий файл ещё не создан. | `.load-testing.env` |
-| `docker-compose.dev.observability.load-testing.yaml` | Получает параметры генератора нагрузки из рабочего файла окружения. | `.load-testing.env` |
-| `Jenkinsfile` | Запускает изолированное CI-окружение и применяет конфигурацию развёртывания. | `compose.jenkins-ci.yaml`<br>`compose.deploy.yaml` |
-| `compose.jenkins-ci.yaml` | Собирает образ приложения и запускает команды проверок и тестов. | `Dockerfile`<br>`Makefile` |
-| `compose.deploy.yaml` | Дополняет CI-конфигурацию настройками рабочего развёртывания, Nginx и OpenAPI. | `compose.jenkins-ci.yaml`<br>`nginx.deploy.conf.template`<br>`rust-api/rust-open-api-schema.yml` |
-| `jenkins-config/.github/workflows/deploy-agent.yml` | Развёртывает и обновляет Jenkins-агент. | `jenkins-config/jenkins-agent/compose.yaml` |
-| `jenkins-config/jenkins-agent/compose.yaml` | Собирает Jenkins-агент и подключает его телеметрию и параметры окружения. | `jenkins-config/jenkins-agent/Dockerfile`<br>`jenkins-config/jenkins-agent/config.alloy`<br>`.env` |
-| `jenkins-config/compose.yaml` | Собирает и настраивает Jenkins-мастер и связанные с ним сервисы наблюдаемости. | `jenkins-config/Dockerfile`<br>`jenkins-config/plugins.txt`<br>`jenkins-config/casc/jenkins.yaml`<br>`jenkins-config/.env.example`<br>`jenkins-config/observability/tempo/tempo.yml`<br>`jenkins-config/observability/grafana/provisioning/datasources/datasources.yml` |
-| `jenkins-config/casc/jenkins.yaml` | Создаёт задание, которое получает описание конвейера из репозитория Taxi-manager. | `Jenkinsfile` |
 
 </details>
 
 <details>
 <summary><strong>Локальный запуск, Kafka и сервис уведомлений</strong></summary>
 
+#### Табличное представление
+
+| Исходный файл | Смысл зависимости | Зависит от файлов |
+| --- | --- | --- |
+| `docker-compose.demo.yaml` | Собирает приложение и подключает конфигурацию Nginx для демо-запуска. | `Dockerfile`<br>`nginx.conf` |
+| `docker-compose.minimal.yaml` | Собирает минимальный стек приложения и подключает конфигурацию Nginx. | `Dockerfile`<br>`nginx.conf` |
+| `docker-compose.dev-local.yaml` | Собирает локальные образы и монтирует конфигурации приложения, API, Alloy, Varnish и Nginx. | `Dockerfile`<br>`rust-api/Dockerfile`<br>`varnish-exporter/Dockerfile`<br>`config.alloy`<br>`nginx.conf`<br>`varnish/default.vcl`<br>`rust-api/rust-open-api-schema.yml` |
+| `docker-compose.dev-local.observability.yaml` | Монтирует конфигурации локальной платформы наблюдаемости и Grafana. | `loki-config.yaml`<br>`tempo.yaml`<br>`prometheus.yml`<br>`grafana/provisioning/datasources/loki.yaml`<br>`grafana/provisioning/datasources/prometheus.yaml`<br>`grafana/provisioning/datasources/pyroscope.yaml`<br>`grafana/provisioning/datasources/tempo.yaml`<br>`grafana/dashboards/load-testing-current-source-metrics.json` |
+| `docker-compose.dev-local.load-testing.yaml` | Использует Prometheus из локального стека наблюдаемости, параметры теста и сценарий k6. | `docker-compose.dev-local.observability.yaml`<br>`.load-testing.env`<br>`performance/load_test_rps_ladder_simple.js` |
+| `docker-compose.kafka.yaml` | Подключает конфигурацию Debezium и собирает Flink job со схемами потоков. | `kafka/debezium-postgres.json`<br>`kafka/flink/Dockerfile`<br>`kafka/flink/sql/001-assignment-manager.sql`<br>`kafka/flink/sql/002-enterprises.sql`<br>`kafka/flink/sql/003-vehicles.sql`<br>`kafka/flink/sql/004-vehicle-models.sql` |
+| `docker-compose.notification-service.yaml` | Загружает переменные окружения сервиса уведомлений. | `.env.notification-service` |
+
 #### Mermaid
 
 ```mermaid
 flowchart TB
-    demo["docker-compose.demo.yaml"]
-    minimal["docker-compose.minimal.yaml"]
-    devLocal["docker-compose.dev-local.yaml"]
-    devLocalObservability["docker-compose.dev-local.observability.yaml"]
-    devLocalLoad["docker-compose.dev-local.load-testing.yaml"]
-    kafka["docker-compose.kafka.yaml"]
-    notification["docker-compose.notification-service.yaml"]
-
-    envExample[".env.example"]
-    loadEnv[".load-testing.env"]
-    dockerfile["Dockerfile"]
+    demoCompose["docker-compose.demo.yaml"]
+    appDockerfile["Dockerfile"]
+    nginxConfig["nginx.conf"]
+    minimalCompose["docker-compose.minimal.yaml"]
+    devLocalCompose["docker-compose.dev-local.yaml"]
     rustDockerfile["rust-api/Dockerfile"]
-    notificationDockerfile["notification_service/Dockerfile"]
-    flinkDockerfile["kafka/flink/Dockerfile"]
     varnishExporterDockerfile["varnish-exporter/Dockerfile"]
-    makefile["Makefile"]
-    uwsgi["uwsgi.ini"]
-    alloy["config.alloy"]
-    nginx["nginx.conf"]
-    varnish["varnish/default.vcl"]
+    alloyConfig["config.alloy"]
+    varnishConfig["varnish/default.vcl"]
     rustSchema["rust-api/rust-open-api-schema.yml"]
-    debezium["kafka/debezium-postgres.json"]
-    flinkSql["kafka/flink/sql/"]
-    performance["performance/"]
-    results["performance/results/"]
-    notificationDb["data/notification-service/db.sqlite3"]
+    localObs["docker-compose.dev-local.observability.yaml"]
+    lokiConfig["loki-config.yaml"]
+    tempoConfig["tempo.yaml"]
+    prometheusConfig["prometheus.yml"]
+    dsLoki["grafana/provisioning/datasources/loki.yaml"]
+    dsPrometheus["grafana/provisioning/datasources/prometheus.yaml"]
+    dsPyroscope["grafana/provisioning/datasources/pyroscope.yaml"]
+    dsTempo["grafana/provisioning/datasources/tempo.yaml"]
+    loadDashboard["grafana/dashboards/load-testing-current-source-metrics.json"]
+    localLoad["docker-compose.dev-local.load-testing.yaml"]
+    loadEnv[".load-testing.env"]
+    loadScript["performance/load_test_rps_ladder_simple.js"]
+    kafkaCompose["docker-compose.kafka.yaml"]
+    debeziumConfig["kafka/debezium-postgres.json"]
+    flinkDockerfile["kafka/flink/Dockerfile"]
+    sqlAssignmentManager["kafka/flink/sql/001-assignment-manager.sql"]
+    sqlEnterprises["kafka/flink/sql/002-enterprises.sql"]
+    sqlVehicles["kafka/flink/sql/003-vehicles.sql"]
+    sqlVehicleModels["kafka/flink/sql/004-vehicle-models.sql"]
+    notificationCompose["docker-compose.notification-service.yaml"]
+    notificationEnv[".env.notification-service"]
 
-    demo --> envExample
-    demo --> dockerfile
-    demo --> makefile
-    demo --> nginx
-
-    minimal --> envExample
-    minimal --> dockerfile
-    minimal --> makefile
-    minimal --> nginx
-
-    devLocal --> envExample
-    devLocal --> dockerfile
-    devLocal --> rustDockerfile
-    devLocal --> varnishExporterDockerfile
-    devLocal --> makefile
-    devLocal --> uwsgi
-    devLocal --> alloy
-    devLocal --> nginx
-    devLocal --> varnish
-    devLocal --> rustSchema
-
-    devLocalObservability --> devLocal
-    devLocalLoad --> devLocal
-    devLocalLoad --> devLocalObservability
-    devLocalLoad --> loadEnv
-    devLocalLoad --> performance
-    devLocalLoad --> results
-
-    kafka --> envKafkaLocal[".env.kafka"]
-    kafka --> debezium
-    kafka --> flinkDockerfile
-    kafka --> flinkSql
-
-    notification --> envNotificationLocal[".env.notification-service"]
-    notification --> notificationDockerfile
-    notification --> notificationDb
+    demoCompose --> appDockerfile
+    demoCompose --> nginxConfig
+    minimalCompose --> appDockerfile
+    minimalCompose --> nginxConfig
+    devLocalCompose --> appDockerfile
+    devLocalCompose --> rustDockerfile
+    devLocalCompose --> varnishExporterDockerfile
+    devLocalCompose --> alloyConfig
+    devLocalCompose --> nginxConfig
+    devLocalCompose --> varnishConfig
+    devLocalCompose --> rustSchema
+    localObs --> lokiConfig
+    localObs --> tempoConfig
+    localObs --> prometheusConfig
+    localObs --> dsLoki
+    localObs --> dsPrometheus
+    localObs --> dsPyroscope
+    localObs --> dsTempo
+    localObs --> loadDashboard
+    localLoad --> localObs
+    localLoad --> loadEnv
+    localLoad --> loadScript
+    kafkaCompose --> debeziumConfig
+    kafkaCompose --> flinkDockerfile
+    kafkaCompose --> sqlAssignmentManager
+    kafkaCompose --> sqlEnterprises
+    kafkaCompose --> sqlVehicles
+    kafkaCompose --> sqlVehicleModels
+    notificationCompose --> notificationEnv
 ```
-
-#### Табличное представление
-
-| Исходный файл | Смысл связи | Связанные файлы |
-| --- | --- | --- |
-| `docker-compose.demo.yaml` | Настраивает демонстрационный запуск приложения. | `.env.example`<br>`Dockerfile`<br>`Makefile`<br>`nginx.conf` |
-| `docker-compose.minimal.yaml` | Настраивает минимальный запуск без демонстрационных данных. | `.env.example`<br>`Dockerfile`<br>`Makefile`<br>`nginx.conf` |
-| `docker-compose.dev-local.yaml` | Собирает расширенное локальное окружение приложения и подключает конфигурации его сервисов. | `.env.example`<br>`Dockerfile`<br>`rust-api/Dockerfile`<br>`varnish-exporter/Dockerfile`<br>`Makefile`<br>`uwsgi.ini`<br>`config.alloy`<br>`nginx.conf`<br>`varnish/default.vcl`<br>`rust-api/rust-open-api-schema.yml` |
-| `docker-compose.dev-local.observability.yaml` | Дополняет локальное окружение сервисами наблюдаемости. | `docker-compose.dev-local.yaml` |
-| `docker-compose.dev-local.load-testing.yaml` | Дополняет локальное окружение генератором нагрузки, его настройками и каталогами сценариев. | `docker-compose.dev-local.yaml`<br>`docker-compose.dev-local.observability.yaml`<br>`.load-testing.env`<br>`performance/`<br>`performance/results/` |
-| `docker-compose.kafka.yaml` | Настраивает Kafka, Debezium и обработку событий во Flink. | `.env.kafka`<br>`kafka/debezium-postgres.json`<br>`kafka/flink/Dockerfile`<br>`kafka/flink/sql/` |
-| `docker-compose.notification-service.yaml` | Собирает Обработчик уведомлений и подключает его локальное хранилище и параметры окружения. | `.env.notification-service`<br>`notification_service/Dockerfile`<br>`data/notification-service/db.sqlite3` |
 
 </details>
 
 <details>
 <summary><strong>Наблюдаемость и C4-модель</strong></summary>
 
+#### Табличное представление
+
+| Исходный файл | Смысл зависимости | Зависит от файлов |
+| --- | --- | --- |
+| `docker-compose.dev.observability.yaml` | Монтирует конфигурации удалённой платформы наблюдаемости и Grafana. | `loki-config.yaml`<br>`tempo.yaml`<br>`prometheus.yml`<br>`grafana/provisioning/datasources/loki.yaml`<br>`grafana/provisioning/datasources/prometheus.yaml`<br>`grafana/provisioning/datasources/pyroscope.yaml`<br>`grafana/provisioning/datasources/tempo.yaml`<br>`grafana/dashboards/load-testing-current-source-metrics.json` |
+| `docker-compose.dev.observability.load-testing.yaml` | Использует Prometheus из удалённого стека наблюдаемости, параметры теста и сценарий k6. | `docker-compose.dev.observability.yaml`<br>`.load-testing.env`<br>`performance/load_test_rps_ladder_simple.js` |
+| `Makefile` | Составляет локальные и удалённые сценарии наблюдаемости и подключает команды C4. | `docker-compose.dev-local.observability.yaml`<br>`docker-compose.dev-local.yaml`<br>`docker-compose.dev-local.load-testing.yaml`<br>`docker-compose.dev.observability.yaml`<br>`docker-compose.dev.observability.load-testing.yaml`<br>`Makefile.structurizr` |
+| `Makefile.structurizr` | Запускает Structurizr, экспорт PNG и проверку основной DSL-модели. | `compose.c4-architecture.yaml`<br>`tools/structurizr-png-exporter/Dockerfile`<br>`docs/architecture/workspace.dsl` |
+| `compose.c4-architecture.yaml` | Монтирует каталог C4-модели, точкой входа которого является workspace.dsl. | `docs/architecture/workspace.dsl` |
+| `docs/architecture/workspace.dsl` | Подключает файлы моделей, представлений и общих стилей Structurizr. | `docs/architecture/model/taxi-manager.dsl`<br>`docs/architecture/model/notifications.dsl`<br>`docs/architecture/model/observability.dsl`<br>`docs/architecture/model/ci-cd.dsl`<br>`docs/architecture/model/deployment.dsl`<br>`docs/architecture/views/taxi-manager.dsl`<br>`docs/architecture/views/notifications.dsl`<br>`docs/architecture/views/observability.dsl`<br>`docs/architecture/views/ci-cd.dsl`<br>`docs/architecture/views/deployment.dsl`<br>`docs/architecture/views/styles.dsl` |
+
 #### Mermaid
 
 ```mermaid
 flowchart TB
-    observability["docker-compose.dev.observability.yaml"]
-    localObservability["docker-compose.dev-local.observability.yaml"]
-    observabilityLoad["docker-compose.dev.observability.load-testing.yaml"]
-    localLoad["docker-compose.dev-local.load-testing.yaml"]
-
-    prometheus["prometheus.yml"]
-    loki["loki-config.yaml"]
-    tempo["tempo.yaml"]
-    alloy["config.alloy"]
-    dashboardsConfig["grafana/provisioning/dashboards/dashboards.yaml"]
-    lokiDatasource["grafana/provisioning/datasources/loki.yaml"]
-    prometheusDatasource["grafana/provisioning/datasources/prometheus.yaml"]
-    pyroscopeDatasource["grafana/provisioning/datasources/pyroscope.yaml"]
-    tempoDatasource["grafana/provisioning/datasources/tempo.yaml"]
+    remoteObs["docker-compose.dev.observability.yaml"]
+    lokiConfig["loki-config.yaml"]
+    tempoConfig["tempo.yaml"]
+    prometheusConfig["prometheus.yml"]
+    dsLoki["grafana/provisioning/datasources/loki.yaml"]
+    dsPrometheus["grafana/provisioning/datasources/prometheus.yaml"]
+    dsPyroscope["grafana/provisioning/datasources/pyroscope.yaml"]
+    dsTempo["grafana/provisioning/datasources/tempo.yaml"]
     loadDashboard["grafana/dashboards/load-testing-current-source-metrics.json"]
-    loadEnvDefault[".load-testing.env.default"]
+    remoteLoad["docker-compose.dev.observability.load-testing.yaml"]
     loadEnv[".load-testing.env"]
-    performance["performance/"]
+    loadScript["performance/load_test_rps_ladder_simple.js"]
+    makefile["Makefile"]
+    localObs["docker-compose.dev-local.observability.yaml"]
+    devLocalCompose["docker-compose.dev-local.yaml"]
+    localLoad["docker-compose.dev-local.load-testing.yaml"]
+    structurizrMakefile["Makefile.structurizr"]
+    architectureCompose["compose.c4-architecture.yaml"]
+    exporterDockerfile["tools/structurizr-png-exporter/Dockerfile"]
+    workspace["docs/architecture/workspace.dsl"]
+    modelTaxi["docs/architecture/model/taxi-manager.dsl"]
+    modelNotifications["docs/architecture/model/notifications.dsl"]
+    modelObservability["docs/architecture/model/observability.dsl"]
+    modelCiCd["docs/architecture/model/ci-cd.dsl"]
+    modelDeployment["docs/architecture/model/deployment.dsl"]
+    viewsTaxi["docs/architecture/views/taxi-manager.dsl"]
+    viewsNotifications["docs/architecture/views/notifications.dsl"]
+    viewsObservability["docs/architecture/views/observability.dsl"]
+    viewsCiCd["docs/architecture/views/ci-cd.dsl"]
+    viewsDeployment["docs/architecture/views/deployment.dsl"]
+    viewsStyles["docs/architecture/views/styles.dsl"]
 
-    observability --> prometheus
-    observability --> loki
-    observability --> tempo
-    observability --> dashboardsConfig
-    observability --> lokiDatasource
-    observability --> prometheusDatasource
-    observability --> tempoDatasource
-
-    localObservability --> prometheus
-    localObservability --> loki
-    localObservability --> tempo
-    localObservability --> pyroscopeDatasource
-    localObservability --> dashboardsConfig
-    dashboardsConfig --> loadDashboard
-    alloy --> prometheus
-    alloy --> loki
-    alloy --> tempo
-    observabilityLoad --> observability
-    loadEnvDefault --> loadEnv
-    observabilityLoad --> loadEnv
-    observabilityLoad --> performance
-    localLoad --> localObservability
-    localLoad --> loadEnv
-    localLoad --> performance
-
-    makefile["Makefile"] --> structurizrMakefile["Makefile.structurizr"]
-    structurizrMakefile --> architectureCompose["compose.c4-architecture.yaml"]
-    structurizrMakefile --> exporterDockerfile["tools/structurizr-png-exporter/Dockerfile"]
-    architectureCompose --> workspace["docs/architecture/workspace.dsl"]
-    workspace --> modelTaxiManager["docs/architecture/model/taxi-manager.dsl"]
-    workspace --> modelNotifications["docs/architecture/model/notifications.dsl"]
-    workspace --> modelObservability["docs/architecture/model/observability.dsl"]
-    workspace --> modelCiCd["docs/architecture/model/ci-cd.dsl"]
-    workspace --> modelDeployment["docs/architecture/model/deployment.dsl"]
-    workspace --> viewTaxiManager["docs/architecture/views/taxi-manager.dsl"]
-    workspace --> viewNotifications["docs/architecture/views/notifications.dsl"]
-    workspace --> viewObservability["docs/architecture/views/observability.dsl"]
-    workspace --> viewCiCd["docs/architecture/views/ci-cd.dsl"]
-    workspace --> viewDeployment["docs/architecture/views/deployment.dsl"]
-    workspace --> viewStyles["docs/architecture/views/styles.dsl"]
+    remoteObs --> lokiConfig
+    remoteObs --> tempoConfig
+    remoteObs --> prometheusConfig
+    remoteObs --> dsLoki
+    remoteObs --> dsPrometheus
+    remoteObs --> dsPyroscope
+    remoteObs --> dsTempo
+    remoteObs --> loadDashboard
+    remoteLoad --> remoteObs
+    remoteLoad --> loadEnv
+    remoteLoad --> loadScript
+    makefile --> localObs
+    makefile --> devLocalCompose
+    makefile --> localLoad
+    makefile --> remoteObs
+    makefile --> remoteLoad
+    makefile --> structurizrMakefile
+    structurizrMakefile --> architectureCompose
+    structurizrMakefile --> exporterDockerfile
+    structurizrMakefile --> workspace
+    architectureCompose --> workspace
+    workspace --> modelTaxi
+    workspace --> modelNotifications
+    workspace --> modelObservability
+    workspace --> modelCiCd
+    workspace --> modelDeployment
+    workspace --> viewsTaxi
+    workspace --> viewsNotifications
+    workspace --> viewsObservability
+    workspace --> viewsCiCd
+    workspace --> viewsDeployment
+    workspace --> viewsStyles
 ```
-
-#### Табличное представление
-
-| Исходный файл | Смысл связи | Связанные файлы |
-| --- | --- | --- |
-| `docker-compose.dev.observability.yaml` | Настраивает отдельный стек наблюдаемости и подключает его источники данных Grafana. | `prometheus.yml`<br>`loki-config.yaml`<br>`tempo.yaml`<br>`grafana/provisioning/dashboards/dashboards.yaml`<br>`grafana/provisioning/datasources/loki.yaml`<br>`grafana/provisioning/datasources/prometheus.yaml`<br>`grafana/provisioning/datasources/tempo.yaml` |
-| `docker-compose.dev-local.observability.yaml` | Подключает наблюдаемость и профилирование к расширенному локальному окружению. | `prometheus.yml`<br>`loki-config.yaml`<br>`tempo.yaml`<br>`grafana/provisioning/datasources/pyroscope.yaml`<br>`grafana/provisioning/dashboards/dashboards.yaml` |
-| `grafana/provisioning/dashboards/dashboards.yaml` | Загружает дашборд текущих метрик нагрузочного тестирования. | `grafana/dashboards/load-testing-current-source-metrics.json` |
-| `config.alloy` | Передаёт собранные метрики, журналы и трассировки в соответствующие хранилища. | `prometheus.yml`<br>`loki-config.yaml`<br>`tempo.yaml` |
-| `.load-testing.env.default` | Служит шаблоном рабочего файла параметров нагрузки. | `.load-testing.env` |
-| `docker-compose.dev.observability.load-testing.yaml` | Добавляет генератор нагрузки к отдельному стеку наблюдаемости. | `docker-compose.dev.observability.yaml`<br>`.load-testing.env`<br>`performance/` |
-| `docker-compose.dev-local.load-testing.yaml` | Добавляет генератор нагрузки к локальному окружению с наблюдаемостью. | `docker-compose.dev-local.observability.yaml`<br>`.load-testing.env`<br>`performance/` |
-| `Makefile` | Передаёт команды работы с C4-моделью специализированному Makefile. | `Makefile.structurizr` |
-| `Makefile.structurizr` | Запускает Structurizr и собирает экспортёр PNG. | `compose.c4-architecture.yaml`<br>`tools/structurizr-png-exporter/Dockerfile` |
-| `compose.c4-architecture.yaml` | Подключает корневой файл C4-модели к Structurizr. | `docs/architecture/workspace.dsl` |
-| `docs/architecture/workspace.dsl` | Подключает модели, представления и общие стили Structurizr DSL. | `docs/architecture/model/taxi-manager.dsl`<br>`docs/architecture/model/notifications.dsl`<br>`docs/architecture/model/observability.dsl`<br>`docs/architecture/model/ci-cd.dsl`<br>`docs/architecture/model/deployment.dsl`<br>`docs/architecture/views/taxi-manager.dsl`<br>`docs/architecture/views/notifications.dsl`<br>`docs/architecture/views/observability.dsl`<br>`docs/architecture/views/ci-cd.dsl`<br>`docs/architecture/views/deployment.dsl`<br>`docs/architecture/views/styles.dsl` |
 
 </details>
 
