@@ -22,9 +22,8 @@ deployment taxiManager targetRuntimeEnvironment "TargetRuntimeDeployment" {
 }
 
 deployment * ciCdDeploymentEnvironment "CiCdDeployment" {
-    title "CI/CD и развёртывание Taxi-manager"
+    title "CI/CD"
     description "Упрощённое представление физического размещения CI/CD. GitHub Actions разворачивает и обновляет Jenkins-агент. Jenkins-мастер назначает агенту этапы конвейера CI/CD, а агент собирает и тестирует приложение, затем обновляет Compose-проект taxi-manager-deploy с сохранением постоянного тома PostgreSQL."
     include *
     autoLayout lr 300 220
 }
-
