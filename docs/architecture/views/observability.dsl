@@ -1,7 +1,7 @@
 systemLandscape "RuntimeWithObservability" {
     title "Taxi-manager и Сервис хранения и визуализации данных мониторинга"
     description "Показывает основное приложение со встроенным Коллектором наблюдаемости, внешний Сервис хранения и визуализации данных мониторинга и доставку email-оповещений Специалисту сопровождения. CI/CD и Сервис уведомлений менеджеров не показаны."
-    include telemetryClient locationIq taxiManager observability mailService supportSpecialist
+    include taxiManager observability mailService supportSpecialist
     autoLayout lr 320 230
 }
 

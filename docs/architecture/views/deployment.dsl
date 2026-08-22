@@ -2,6 +2,7 @@ deployment taxiManager demoEnvironment "DemoDeployment" {
     title "Развёртывание демонстрационной версии"
     description "Минимальная конфигурация docker-compose.demo.yaml: Входной веб-шлюз, Синхронный REST API через uWSGI и База данных PostgreSQL/PostGIS."
     include *
+    exclude "relationship.tag==SSE"
     autoLayout tb 300 220
 }
 
@@ -9,6 +10,7 @@ deployment taxiManager jenkinsDeploymentEnvironment "JenkinsDeployment" {
     title "Актуальное развёртывание через Jenkins"
     description "Фактически разворачиваемые контейнеры приложения. Контейнеры приложения обновляются образом успешно проверенной сборки, постоянный том PostgreSQL сохраняется. Синхронный REST API наследует make run-dev из compose.jenkins-ci.yaml; Асинхронный REST API и SSE и Высокопроизводительный асинхронный REST API пока не включены в это развёртывание."
     include *
+    exclude "relationship.tag==SSE"
     autoLayout tb 300 220
 }
 

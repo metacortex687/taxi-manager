@@ -2,12 +2,13 @@ systemContext notificationSystem "NotificationSystemContext" {
     title "Диаграмма контекста сервиса уведомлений менеджеров"
     description "Сервис уведомлений менеджеров получает изменения основного приложения через CDC, авторизует пользователей через REST API и отправляет сообщения во внешний Чат уведомлений."
     include notificationSystem taxiManager notificationChat fleetEmployee
+    exclude "relationship==fleetEmployee->taxiManager"
     autoLayout lr 300 220
 }
 
 container notificationSystem "NotificationContainers" {
     title "Диаграмма контейнеров сервиса уведомлений менеджеров"
-    description "База данных основного приложения является внешним источником CDC. Debezium публикует исходные события таблиц в Kafka, Flink преобразует их и возвращает в обработанные топики того же кластера. Обработчик уведомлений самостоятельно читает обработанные топики по контракту at-least-once, обновляет локальный контекст организаций и связей с чатами и отправляет сообщения в Чат уведомлений; повторная доставка события допустима."
+    description "PostgreSQL является внешним источником CDC. Debezium публикует исходные события в Kafka, Flink преобразует их и возвращает в обработанные топики. Обработчик обновляет локальный контекст и отправляет сообщения. Автоматическое управление offset сейчас не обеспечивает строгую гарантию доставки."
     include fleetEmployee notificationChat
     include taxiManager.nginx taxiManager.djangoWsgi taxiManager.database
     include notificationSystem.debezium notificationSystem.kafka notificationSystem.flink notificationSystem.notificationService notificationSystem.notificationDatabase notificationSystem.kafkaUi
@@ -16,7 +17,7 @@ container notificationSystem "NotificationContainers" {
 
 dynamic notificationSystem "NotificationFlow" {
     title "Формирование уведомления из изменения PostgreSQL"
-    description "Показывает путь одного события. Debezium публикует техническое CDC-событие в исходный топик Kafka. Flink преобразует его в интеграционное событие и возвращает в соответствующий обработанный топик того же кластера, который самостоятельно читает Обработчик уведомлений. При повторной доставке этот шаг может быть выполнен более одного раза."
+    description "Показывает путь одного изменения PostgreSQL через Debezium, Kafka и Flink к уведомлению в чате. Kafka-клиент обработчика автоматически управляет offset; их фиксация сейчас не привязана к успешной обработке."
     1: notificationSystem.debezium -> taxiManager.database "Читает изменения из журнала WAL"
     2: notificationSystem.debezium -> notificationSystem.kafka "Публикует событие в исходный топик таблицы"
     3: notificationSystem.kafka -> notificationSystem.flink "Предоставляет исходное CDC-событие"
@@ -26,4 +27,3 @@ dynamic notificationSystem "NotificationFlow" {
     7: notificationSystem.notificationService -> notificationChat "Отправляет человекочитаемое уведомление в чат"
     autoLayout lr 300 200
 }
-

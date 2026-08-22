@@ -7,6 +7,15 @@
 просматривать поездки и их маршруты на карте, а также отслеживать
 движение автомобилей по мере поступления телеметрии и формировать отчёты.
 
+## Быстрая навигация
+
+- [Ключевые возможности](#ключевые-возможности) · [пользователи и доступ](#пользователи-и-разграничение-доступа)
+- [Пользовательский интерфейс](#пользовательский-интерфейс)
+- [Архитектура, интерфейсы и технологический стек](#архитектура-интерфейсы-и-технологический-стек)
+- [Нагрузочное тестирование](#нагрузочное-тестирование)
+- [Запуск демо-версии](#быстрый-запуск-демо-версии) · [минимального приложения](#быстрый-запуск-минимально-работающего-приложения)
+- [CI/CD](#cicd) · [конфигурационные файлы](#конфигурационные-файлы)
+
 ## Ключевые возможности
 
 Доступ к данным разграничивается на уровне организаций. Сотрудник
@@ -38,9 +47,11 @@ REST API возвращает значения даты и времени в ф�
 указанием часового смещения.
 
 
-## Роли и разграничение доступа
+## Пользователи и разграничение доступа
 
 Для сотрудника автопарка область доступных данных определяется назначенными ему организациями; в текущей версии права менеджера и диспетчера не разделяются. Администратор приложения имеет полный доступ через Django Admin и не ограничен назначениями организаций. Проверка доступа к данным сотрудника выполняется на стороне REST API.
+
+### Пользователи приложения
 
 <details>
 <summary><strong>Неаутентифицированный пользователь</strong></summary>
@@ -59,37 +70,37 @@ REST API возвращает значения даты и времени в ф�
 В пределах назначенных организаций сотрудник может:
 
 - просматривать и изменять сведения об организациях;
-    
+
 - просматривать, добавлять, изменять и удалять автомобили;
-    
+
 - переносить автомобиль между доступными ему организациями;
-    
+
 - просматривать поездки и построенные по точкам местоположения маршруты;
-    
+
 - отслеживать маршрут активной поездки по мере поступления телеметрии.
-    
+
 - формировать отчёты о пробеге автомобиля и маршрутах автомобилей; отчёт о пробеге можно сохранить в формате PDF.
-    
+
 
 Сотрудник может удалить организацию только при одновременном выполнении следующих условий:
 
 - он является единственным сотрудником, которому назначена организация;
-    
+
 - в организации нет назначенных автомобилей;
-    
+
 - в организации нет назначенных водителей.
-    
+
 
 Сотрудник не может:
 
 - создавать организации;
-    
+
 - управлять пользователями;
-    
+
 - назначать организации другим пользователям;
-    
+
 - просматривать или изменять данные водителей через пользовательский веб-интерфейс.
-    
+
 
 </details>
 
@@ -99,17 +110,19 @@ REST API возвращает значения даты и времени в ф�
 Администратор имеет полный доступ ко всем данным и пользователям через Django Admin. Он может:
 
 - создавать организации;
-    
+
 - создавать пользователей и управлять их учётными записями;
-    
+
 - назначать сотрудникам одну или несколько организаций;
-    
+
 - управлять автомобилями, водителями, поездками и другими данными независимо от организации.
-    
+
 
 Ограничение по назначенным организациям на администратора не распространяется.
 
 </details>
+
+### Участники и системы вне пользовательских ролей
 
 <details>
 <summary><strong>Специалист сопровождения</strong></summary>
@@ -162,13 +175,13 @@ REST API возвращает значения даты и времени в ф�
 Для каждого предприятия доступны:
 
 - переход к карточке предприятия;
-    
+
 - просмотр списка автомобилей;
-    
+
 - экспорт поездок;
-    
+
 - импорт поездок.
-    
+
 
 Ограничение доступа к предприятиям и связанным с ними данным проверяется на стороне REST API.
 
@@ -204,21 +217,21 @@ REST API возвращает значения даты и времени в ф�
 В карточке автомобиля можно изменить:
 
 - предприятие, которому принадлежит автомобиль;
-    
+
 - марку;
-    
+
 - регистрационный номер;
-    
+
 - пробег;
-    
+
 - цену;
-    
+
 - VIN;
-    
+
 - год выпуска;
-    
+
 - дату приобретения.
-    
+
 
 Из карточки также можно перейти к истории поездок автомобиля, сохранить внесённые изменения или удалить автомобиль.
 
@@ -241,11 +254,11 @@ REST API возвращает значения даты и времени в ф�
 Для каждой поездки показываются:
 
 - время начала и окончания;
-    
+
 - адрес начала и окончания;
-    
+
 - маршрут, построенный по последовательности точек местоположения.
-    
+
 
 Адреса начала и окончания поездок определяются по географическим координатам с помощью обратного геокодирования во внешнем сервисе [LocationIQ](https://locationiq.com/).
 
@@ -287,7 +300,9 @@ REST API возвращает значения даты и времени в ф�
 
 Разработчик внешних сервисов использует опубликованную OpenAPI-документацию и REST API для создания интеграций. Точки местоположения поступают от внешнего клиента телеметрии. Для обратного геокодирования система обращается к LocationIQ.
 
-Приложение Taxi-manager передаёт данные о своей работе в Сервис хранения и визуализации данных мониторинга. Специалист сопровождения, CI/CD-контур и подключаемый Сервис уведомлений менеджеров вынесены в отдельные представления.
+Приложение Taxi-manager передаёт данные о своей работе в Сервис хранения и визуализации данных мониторинга.
+
+Специалист сопровождения, CI/CD-контур и подключаемый Сервис уведомлений менеджеров вынесены в отдельные представления. Внутренние контейнеры и варианты физического развёртывания на диаграмме контекста системы не показываются.
 
 ![Диаграмма контекста системы Taxi-manager](docs/images/c4/TaxiManagerSystemContext.png)
 
@@ -296,6 +311,9 @@ REST API возвращает значения даты и времени в ф�
 Основное представление показывает контейнеры нотации C4 и связи между ними. В текущем варианте запуска они в основном соответствуют сервисам Docker Compose, однако это не схема Docker-контейнеров: те же приложения и процессы можно развернуть непосредственно в операционной системе или распределить между узлами.
 
 ![Диаграмма контейнеров Taxi-manager](docs/images/c4/TaxiManagerLogicalContainers.png)
+
+<details>
+<summary><strong>Назначение контейнеров и обоснование выбора технологий</strong></summary>
 
 | Контейнер C4 | Назначение | Технологии и применение | Обоснование выбора |
 | --- | --- | --- | --- |
@@ -310,6 +328,11 @@ REST API возвращает значения даты и времени в ф�
 | **Документация API** | Интерактивный просмотр контрактов Django REST API и Высокопроизводительного асинхронного REST API | Swagger UI загружает сгенерированную OpenAPI-схему Django REST API по HTTP и статическую OpenAPI-схему Высокопроизводительного асинхронного REST API из read-only bind mount | Для упрощения разработки внешних интеграций. |
 | **Коллектор наблюдаемости** | Единая точка сбора и маршрутизации телеметрии приложения | Grafana Alloy получает трассировки по OTLP, собирает метрики через Prometheus scrape, читает журналы контейнеров и отправляет данные в Prometheus, Loki и Tempo | Grafana Alloy выбран как единая точка сбора телеметрии — логов, метрик и распределённых трассировок — и её последующей отправки в Сервис хранения и визуализации данных мониторинга. Это позволяет понимать, что происходит в реально работающем приложении. |
 
+</details>
+
+<details>
+<summary><strong>Технические пояснения к основному представлению</strong></summary>
+
 Nginx частично снижает нагрузку на внутренние сервисы: самостоятельно обслуживает клиентские keep-alive-соединения, раздаёт статические файлы, переиспользует настроенные upstream-соединения и буферизует обычный HTTP-трафик. Это помогает при кратковременных всплесках нагрузки и уменьшает влияние медленных клиентов на серверные приложения.
 
 Nginx не увеличивает вычислительную производительность внутренних сервисов и не устраняет продолжительную перегрузку. В таком случае требуются масштабирование серверных приложений, ограничение входной нагрузки или перенос длительных операций в фоновые задания. SSE-трафик не буферизуется, поскольку события должны передаваться браузеру сразу.
@@ -320,11 +343,13 @@ Nginx не увеличивает вычислительную производ�
 
 В текущей реализации инструментация OpenTelemetry создаёт трассировку входящего HTTP-запроса Django и отдельные дочерние `span` для выполняемых SQL-запросов. Общий `trace_id` связывает обращения к PostgreSQL с пользовательским запросом, поэтому в Tempo они отображаются внутри одной трассировки. Сформированные приложением трассировки передаются в Tempo через Grafana Alloy.
 
-### Интерфейсы системы
+</details>
+
+### Интерфейсы и документация
 
 | Интерфейс | Назначение | Реализация |
 | --- | --- | --- |
-| **REST API** | Управление организациями, автомобилями, поездками и телеметрией; синхронные и асинхронные операции | Django REST Framework через WSGI и ASGI |
+| **REST API** | Управление организациями, автомобилями, поездками и телеметрией; синхронные и асинхронные операции | Django REST Framework через WSGI и ASGI; Rust и Actix Web для высокопроизводительных REST-операций |
 | **SSE** | Однонаправленная передача координат выбранного автомобиля в браузер в режиме реального времени | Django ASGI, `text/event-stream` |
 | **OpenAPI** | Машиночитаемые контракты REST API | `drf-spectacular` формирует схему Django REST API; для Высокопроизводительного асинхронного REST API используется отдельная статическая схема |
 | **Swagger UI** | Интерактивный просмотр и ручная проверка OpenAPI-описаний | отдельный контейнер `swaggerapi/swagger-ui` |
@@ -396,7 +421,11 @@ OpenAPI описывает контракты REST API, а Swagger UI отобр
 | **Интерфейс Kafka** | Технический просмотр топиков и сообщений | Kafka UI используется для диагностики потока событий |
 | **Чат уведомлений** | Авторизация сотрудника в приложении и доставка уведомлений | Внешний чат на платформе VK взаимодействует с обработчиком через VK API |
 
-Для обработки событий принят архитектурный контракт **at-least-once**: каждое событие должно быть доставлено один или более раз, поэтому повторная доставка и повторная попытка отправки уведомления допустимы. Для фактического обеспечения этой гарантии consumer должен фиксировать offset только после успешной обработки события; если повторные пользовательские сообщения недопустимы, обработчику дополнительно требуется идемпотентность или дедупликация.
+В текущей реализации строгая гарантия доставки событий не обеспечена. Kafka-клиент автоматически сохраняет и периодически фиксирует позиции чтения, поэтому момент фиксации offset не связан с успешным завершением обработки: при сбое событие может быть обработано повторно либо пропущено.
+
+Для обеспечения гарантии **«один или более раз» (at-least-once)** на участке Kafka → Обработчик уведомлений необходимо установить `enable.auto.offset.store=false` и вызывать `store_offsets(message)` только после успешного обновления локального контекста и отправки уведомления. Альтернативный вариант — установить `enable.auto.commit=false` и явно вызывать `commit()` после успешной обработки.
+
+Сбой после отправки сообщения в Чат уведомлений, но до фиксации offset приведёт к повторной обработке события. Если повторные пользовательские сообщения недопустимы, обработчику дополнительно требуется идемпотентность или дедупликация. Гарантия exactly-once для отправки сообщений во внешний API чата не заявляется.
 
 #### Архитектурное решение: получение и преобразование событий
 
@@ -451,7 +480,7 @@ Debezium выбран для получения изменений непоср�
 
 При срабатывании правила Grafana отправляет email-оповещение через внешний Почтовый сервис Специалисту сопровождения. Это эксплуатационные оповещения о состоянии приложения; они отделены от предметных уведомлений менеджерам об изменениях автомобилей.
 
-Дополнительные метрики Grafana Alloy получает от process-exporter, cAdvisor, Nginx Prometheus Exporter и Varnish Exporter. GoAccess используется отдельно для анализа журналов доступа и не входит в основной поток телеметрии.
+Дополнительные метрики Grafana Alloy получает от следующих компонентов: встроенного в Alloy `prometheus.exporter.process`, cAdvisor, Nginx Prometheus Exporter и Varnish Exporter. GoAccess используется отдельно для анализа журналов доступа и не входит в основной поток телеметрии.
 
 Наблюдаемость может быть расширена профилированием производительности с помощью Grafana Pyroscope. Оно позволяет находить функции Django-приложений и Фонового обработчика заданий, потребляющие больше всего процессорного времени. Проведённые замеры не выявили заметного увеличения времени ответа при включённом профилировании. Профили передаются в Pyroscope через Grafana Alloy. Pyroscope намеренно не показан на основной C4-диаграмме наблюдаемости.
 
@@ -470,7 +499,7 @@ Jenkins-мастер получает из репозитория `Jenkinsfile` 
 
 После успешного завершения проверок этап CD применяет `compose.deploy.yaml` и пересоздаёт рабочие контейнеры приложения с образом текущей успешно проверенной сборки. Существующая база данных и том `deploy-db` сохраняются; перед запуском новой версии выполняются миграции. На главной странице приложения находится ссылка **«сборка»** на `/deploy-info/`, где показаны хэш и дата-время коммита, а также дата-время развёртывания.
 
-Jenkins-мастер координирует конвейер CI/CD Приложения Taxi-manager, а Jenkins-агент выполняет его этапы. GitHub Actions из репозитория `jenkins-config` развёртывает и обновляет Jenkins-агент. Сохранённый в этом репозитории workflow [`.github/workflows/main-dev.yml`](.github/workflows/main-dev.yml) использовался для прежнего сценария тестирования, сборки образов и развёртывания приложения; сейчас он запускается только вручную и не входит в Jenkins-конвейер CI/CD.
+Подробное распределение конфигурации между репозиториями приведено в разделе [CI/CD](#cicd).
 
 Конфигурация Jenkins-мастера и Jenkins-агента хранится в отдельном репозитории [`jenkins-config`](https://github.com/metacortex687/jenkins-config).
 
@@ -485,7 +514,46 @@ Jenkins-мастер координирует конвейер CI/CD Прило�
 
 </details>
 
+<details>
+<summary><strong>6. Варианты развёртывания</strong></summary>
+
+Логическая архитектура показывает состав Приложения Taxi-manager независимо от способа запуска. Deployment-представления уточняют, какие контейнеры нотации C4 фактически размещаются в каждом варианте.
+
+| Вариант | Включает | Не включает или подключает отдельно |
+| --- | --- | --- |
+| **Демонстрационный** | Веб-интерфейс, Входной веб-шлюз, Синхронный REST API, PostgreSQL/PostGIS и демонстрационные данные | Фоновый обработчик заданий, Асинхронный REST API и SSE, Высокопроизводительный асинхронный REST API, уведомления и наблюдаемость |
+| **Минимальный** | Веб-интерфейс, Входной веб-шлюз, Синхронный REST API и PostgreSQL/PostGIS без демонстрационных данных | Те же дополнительные процессы и сервисы, что и в демонстрационном варианте |
+| **Актуальный через Jenkins** | Веб-интерфейс, Входной веб-шлюз, Синхронный REST API, Фоновый обработчик заданий, Документация API и PostgreSQL/PostGIS | Асинхронный REST API и SSE, Высокопроизводительный асинхронный REST API и Сервис уведомлений менеджеров |
+| **Расширенный локальный** | Синхронный и Асинхронный REST API, SSE, Фоновый обработчик заданий, Высокопроизводительный асинхронный REST API, PgBouncer, кэши, Коллектор наблюдаемости и технические экспортёры | Сервис уведомлений и внешние хранилища наблюдаемости запускаются отдельными Compose-конфигурациями |
+| **Целевой расширенный** | Все основные серверные процессы, Сервис авторизации, прикладной и HTTP-кэши, PgBouncer, Документация API и PostgreSQL/PostGIS | Наблюдаемость и Сервис уведомлений менеджеров показаны в отдельных представлениях |
+
+<details>
+<summary>Демонстрационное развёртывание</summary>
+
+![Развёртывание демонстрационной версии Taxi-manager](docs/images/c4/DemoDeployment.png)
+
+</details>
+
+<details>
+<summary>Актуальное развёртывание через Jenkins</summary>
+
+![Актуальное развёртывание Taxi-manager через Jenkins](docs/images/c4/JenkinsDeployment.png)
+
+</details>
+
+<details>
+<summary>Целевое расширенное развёртывание</summary>
+
+![Целевое расширенное развёртывание Taxi-manager](docs/images/c4/TargetRuntimeDeployment.png)
+
+</details>
+
+</details>
+
 ### Источники и границы достоверности
+
+<details>
+<summary><strong>Исходные файлы для проверки архитектурного описания</strong></summary>
 
 Полный состав, точные версии зависимостей и фактическую конфигурацию следует проверять по исходным файлам:
 
@@ -500,7 +568,9 @@ Jenkins-мастер координирует конвейер CI/CD Прило�
 | [`config.alloy`](config.alloy), [`docker-compose.dev-local.observability.yaml`](docker-compose.dev-local.observability.yaml), [`docker-compose.dev.observability.yaml`](docker-compose.dev.observability.yaml) | Коллектор наблюдаемости и его подключения к Сервису хранения и визуализации данных мониторинга |
 | [`Jenkinsfile`](Jenkinsfile), [`compose.jenkins-ci.yaml`](compose.jenkins-ci.yaml), [`compose.deploy.yaml`](compose.deploy.yaml) | Jenkins pipeline, изолированное CI-окружение и фактическое развёртывание приложения |
 | [`Makefile`](Makefile) | Команды сборки, проверок, запуска процессов и экспорта архитектурных схем |
-| [`docs/architecture/workspace.dsl`](docs/architecture/workspace.dsl) | Корневой файл Structurizr DSL: объединяет модель, представления, стили и архитектурную документацию через директивы `!include` |
+| [`docs/architecture/workspace.dsl`](docs/architecture/workspace.dsl) | Корневой файл Structurizr DSL: подключает модели, представления и общие стили через директивы `!include` |
+
+</details>
 
 ## Нагрузочное тестирование
 
@@ -523,6 +593,9 @@ Jenkins-мастер координирует конвейер CI/CD Прило�
 | Actix Web с пакетной записью | Запись | около 1500 RPS | 4000–5000 RPS |
 | Actix Web | Чтение | около 4000 RPS | около 6500 RPS |
 | Varnish при 100% попаданий в кэш | Чтение | — | около 9500 RPS |
+
+<details>
+<summary><strong>Интерпретация результатов экспериментов</strong></summary>
 
 ### Django WSGI и ASGI
 
@@ -548,7 +621,9 @@ Jenkins-мастер координирует конвейер CI/CD Прило�
 
 Для read-heavy-сценария при высокой повторяемости запросов целесообразен HTTP-кэш. Если доля уникальных запросов велика или процент попаданий недостаточен, измеренное узкое место можно переносить в Высокопроизводительный асинхронный REST API. Решение о числе и размещении кэшей принимается по фактическому профилю нагрузки.
 
-Сценарии и конфигурация нагрузочного окружения находятся в [`performance/`](performance/), [`docker-compose.dev-local.load-testing.yaml`](docker-compose.dev-local.load-testing.yaml) и [`docker-compose.dev.observability.load-testing.yaml`](docker-compose.dev.observability.load-testing.yaml). Используемый dashboard хранится в [`grafana/dashboards/load-testing-current-source-metrics.json`](grafana/dashboards/load-testing-current-source-metrics.json).
+</details>
+
+Описание сценариев находится в [`performance/README.md`](performance/README.md). Конфигурация нагрузочного окружения хранится в [`docker-compose.dev-local.load-testing.yaml`](docker-compose.dev-local.load-testing.yaml) и [`docker-compose.dev.observability.load-testing.yaml`](docker-compose.dev.observability.load-testing.yaml). Используемый dashboard находится в [`grafana/dashboards/load-testing-current-source-metrics.json`](grafana/dashboards/load-testing-current-source-metrics.json).
 
 ## Быстрый запуск демо-версии
 
@@ -557,11 +632,11 @@ Jenkins-мастер координирует конвейер CI/CD Прило�
 Для запуска необходимы:
 
 - Git;
-    
+
 - Docker Engine или Docker Desktop;
-    
+
 - Docker Compose версии 2.
-    
+
 
 Проверить доступность Docker можно командами:
 
@@ -603,6 +678,8 @@ DJANGO_SUPERUSER_EMAIL=admin@example.com
 
 Указанные значения предназначены только для локального демонстрационного запуска. При развёртывании приложения на доступном извне сервере необходимо использовать собственные стойкие пароли и секретный ключ.
 
+Файл `.env` используется Docker Compose для подстановки переменных и исключён из контекста сборки Docker-образа правилами `.dockerignore`.
+
 ### Запуск приложения
 
 ```bash
@@ -610,6 +687,8 @@ docker compose -f docker-compose.demo.yaml up -d --build
 ```
 
 При первом запуске Docker соберёт образ приложения, создаст базу данных, применит миграции и загрузит демонстрационные данные.
+
+Демонстрационная конфигурация запускает Входной веб-шлюз, Синхронный REST API и PostgreSQL/PostGIS. Фоновый обработчик заданий, Асинхронный REST API и SSE, Высокопроизводительный асинхронный REST API, Сервис уведомлений менеджеров и наблюдаемость в этот вариант не входят.
 
 Состояние контейнеров можно проверить командой:
 
@@ -689,6 +768,8 @@ docker compose -f docker-compose.demo.yaml up -d --build
 
 Минимальная конфигурация использует те же требования и файл `.env`, что и демонстрационная версия. Она запускает Входной веб-шлюз, Синхронный REST API и Базу данных PostgreSQL/PostGIS, но не загружает демонстрационные данные.
 
+Фоновый обработчик заданий, Асинхронный REST API и SSE, Высокопроизводительный асинхронный REST API, Сервис уведомлений менеджеров и наблюдаемость в минимальный вариант также не входят.
+
 Перед запуском демонстрационную версию следует остановить, поскольку обе конфигурации публикуют приложение на порту 80:
 
 ```bash
@@ -738,28 +819,28 @@ docker compose -f docker-compose.minimal.yaml down
 В этом репозитории находятся:
 
 - исходный код приложения;
-    
+
 - файл [`Jenkinsfile`](Jenkinsfile) с описанием конвейера;
-    
+
 - конфигурация тестового окружения [`compose.jenkins-ci.yaml`](compose.jenkins-ci.yaml);
-    
+
 - конфигурация развёртывания [`compose.deploy.yaml`](compose.deploy.yaml).
-    
+
 
 Инфраструктура Jenkins находится в отдельном репозитории [metacortex687/jenkins-config](https://github.com/metacortex687/jenkins-config).
 
 Этот репозиторий содержит:
 
 - конфигурацию Jenkins-мастера;
-    
+
 - Jenkins Configuration as Code;
-    
+
 - описание заданий с помощью Job DSL;
-    
+
 - конфигурацию Jenkins-агента;
-    
+
 - GitHub Actions workflow для развёртывания и обновления Jenkins-агента.
-    
+
 
 При запуске Jenkins-мастера автоматически создаётся задание `taxi-manager-ci`, которое получает `Jenkinsfile` из этого репозитория. Jenkins-мастер подключается к Jenkins-агенту по SSH и назначает ему этапы конвейера. Jenkins-агент выполняет сборку образа приложения, запускает проверки и тесты, а после их успешного завершения обновляет контейнеры приложения. При развёртывании используется образ проверенной сборки, а существующий том базы данных сохраняется.
 
@@ -770,12 +851,210 @@ Jenkins-мастер координирует конвейер CI/CD Прило�
 </details>
 
 
-## YAML-конфигурации и сценарии развёртывания
+## Конфигурационные файлы
 
-В этом разделе перечислены сценарии развёртывания, YAML-файлы и связанные с ними конфигурации из репозиториев Taxi-manager и [`jenkins-config`](https://github.com/metacortex687/jenkins-config). Для сценариев развёртывания указаны используемые YAML-файлы, а для YAML-файлов — подключаемые конфигурации.
+В этом разделе перечислены точки входа автоматизации, Docker Compose-файлы и связанные с ними конфигурации из репозиториев Taxi-manager и [`jenkins-config`](https://github.com/metacortex687/jenkins-config). Графы показывают направления зависимостей, а расположенные ниже таблицы содержат назначение и ссылки на каждый файл.
+
+### Граф зависимостей конфигурационных файлов
 
 <details>
-<summary><strong>Сценарии развёртывания</strong></summary>
+<summary><strong>Автоматизация и удалённые развёртывания</strong></summary>
+
+```mermaid
+flowchart TB
+    mainDev[".github/workflows/main-dev.yml"]
+    observabilityWorkflow[".github/workflows/observability-cloud.yml"]
+    jenkinsfile["Jenkinsfile"]
+    deployAgentWorkflow["jenkins-config/.github/workflows/deploy-agent.yml"]
+
+    devCloud["docker-compose.dev.yaml"]
+    kafkaCompose["docker-compose.kafka.yaml"]
+    notificationCompose["docker-compose.notification-service.yaml"]
+    observabilityCompose["docker-compose.dev.observability.yaml"]
+    observabilityLoad["docker-compose.dev.observability.load-testing.yaml"]
+    jenkinsCi["compose.jenkins-ci.yaml"]
+    deployCompose["compose.deploy.yaml"]
+    agentCompose["jenkins-config/jenkins-agent/compose.yaml"]
+    jenkinsCompose["jenkins-config/compose.yaml"]
+
+    mainDev --> devCloud
+    mainDev --> kafkaCompose
+    mainDev --> notificationCompose
+    mainDev --> envDev[".env.dev из GitHub Actions Secrets"]
+    mainDev --> envKafka[".env.kafka из GitHub Actions Secrets"]
+    mainDev --> envNotification[".env.notification-service из GitHub Actions Secrets"]
+
+    observabilityWorkflow --> observabilityCompose
+    observabilityWorkflow --> observabilityLoad
+    observabilityWorkflow --> envObservability[".env из GitHub Actions Secrets"]
+    observabilityWorkflow --> loadEnvDefault[".load-testing.env.default"]
+    loadEnvDefault --> loadEnvGenerated[".load-testing.env"]
+    observabilityLoad --> loadEnvGenerated
+
+    jenkinsfile --> jenkinsCi
+    jenkinsfile --> deployCompose
+    jenkinsCi --> appDockerfile["Dockerfile"]
+    jenkinsCi --> makefile["Makefile"]
+    deployCompose --> jenkinsCi
+    deployCompose --> nginxDeploy["nginx.deploy.conf.template"]
+    deployCompose --> rustSchema["rust-api/rust-open-api-schema.yml"]
+
+    deployAgentWorkflow --> agentCompose
+    agentCompose --> agentDockerfile["jenkins-config/jenkins-agent/Dockerfile"]
+    agentCompose --> agentAlloy["jenkins-config/jenkins-agent/config.alloy"]
+    agentCompose --> agentEnv[".env из GitHub Actions Secrets"]
+
+    jenkinsCompose --> jenkinsDockerfile["jenkins-config/Dockerfile"]
+    jenkinsCompose --> plugins["jenkins-config/plugins.txt"]
+    jenkinsCompose --> casc["jenkins-config/casc/jenkins.yaml"]
+    jenkinsCompose --> jenkinsEnv["jenkins-config/.env.example"]
+    jenkinsCompose --> jenkinsTempo["jenkins-config/observability/tempo/tempo.yml"]
+    jenkinsCompose --> jenkinsGrafana["jenkins-config/observability/grafana/provisioning/datasources/datasources.yml"]
+    casc --> jenkinsfile
+```
+
+</details>
+
+<details>
+<summary><strong>Локальный запуск, Kafka и сервис уведомлений</strong></summary>
+
+```mermaid
+flowchart TB
+    demo["docker-compose.demo.yaml"]
+    minimal["docker-compose.minimal.yaml"]
+    devLocal["docker-compose.dev-local.yaml"]
+    devLocalObservability["docker-compose.dev-local.observability.yaml"]
+    devLocalLoad["docker-compose.dev-local.load-testing.yaml"]
+    kafka["docker-compose.kafka.yaml"]
+    notification["docker-compose.notification-service.yaml"]
+
+    envExample[".env.example"]
+    loadEnv[".load-testing.env"]
+    dockerfile["Dockerfile"]
+    rustDockerfile["rust-api/Dockerfile"]
+    notificationDockerfile["notification_service/Dockerfile"]
+    flinkDockerfile["kafka/flink/Dockerfile"]
+    varnishExporterDockerfile["varnish-exporter/Dockerfile"]
+    makefile["Makefile"]
+    uwsgi["uwsgi.ini"]
+    alloy["config.alloy"]
+    nginx["nginx.conf"]
+    varnish["varnish/default.vcl"]
+    rustSchema["rust-api/rust-open-api-schema.yml"]
+    debezium["kafka/debezium-postgres.json"]
+    flinkSql["kafka/flink/sql/"]
+    performance["performance/"]
+    results["performance/results/"]
+    notificationDb["data/notification-service/db.sqlite3"]
+
+    demo --> envExample
+    demo --> dockerfile
+    demo --> makefile
+    demo --> nginx
+
+    minimal --> envExample
+    minimal --> dockerfile
+    minimal --> makefile
+    minimal --> nginx
+
+    devLocal --> envExample
+    devLocal --> dockerfile
+    devLocal --> rustDockerfile
+    devLocal --> varnishExporterDockerfile
+    devLocal --> makefile
+    devLocal --> uwsgi
+    devLocal --> alloy
+    devLocal --> nginx
+    devLocal --> varnish
+    devLocal --> rustSchema
+
+    devLocalObservability --> devLocal
+    devLocalLoad --> devLocal
+    devLocalLoad --> devLocalObservability
+    devLocalLoad --> loadEnv
+    devLocalLoad --> performance
+    devLocalLoad --> results
+
+    kafka --> envKafkaLocal[".env.kafka"]
+    kafka --> debezium
+    kafka --> flinkDockerfile
+    kafka --> flinkSql
+
+    notification --> envNotificationLocal[".env.notification-service"]
+    notification --> notificationDockerfile
+    notification --> notificationDb
+```
+
+</details>
+
+<details>
+<summary><strong>Наблюдаемость и C4-модель</strong></summary>
+
+```mermaid
+flowchart TB
+    observability["docker-compose.dev.observability.yaml"]
+    localObservability["docker-compose.dev-local.observability.yaml"]
+    observabilityLoad["docker-compose.dev.observability.load-testing.yaml"]
+    localLoad["docker-compose.dev-local.load-testing.yaml"]
+
+    prometheus["prometheus.yml"]
+    loki["loki-config.yaml"]
+    tempo["tempo.yaml"]
+    alloy["config.alloy"]
+    dashboardsConfig["grafana/provisioning/dashboards/dashboards.yaml"]
+    lokiDatasource["grafana/provisioning/datasources/loki.yaml"]
+    prometheusDatasource["grafana/provisioning/datasources/prometheus.yaml"]
+    pyroscopeDatasource["grafana/provisioning/datasources/pyroscope.yaml"]
+    tempoDatasource["grafana/provisioning/datasources/tempo.yaml"]
+    loadDashboard["grafana/dashboards/load-testing-current-source-metrics.json"]
+    loadEnv[".load-testing.env.default"]
+    performance["performance/"]
+
+    observability --> prometheus
+    observability --> loki
+    observability --> tempo
+    observability --> dashboardsConfig
+    observability --> lokiDatasource
+    observability --> prometheusDatasource
+    observability --> tempoDatasource
+
+    localObservability --> prometheus
+    localObservability --> loki
+    localObservability --> tempo
+    localObservability --> pyroscopeDatasource
+    localObservability --> dashboardsConfig
+    dashboardsConfig --> loadDashboard
+    alloy --> prometheus
+    alloy --> loki
+    alloy --> tempo
+    observabilityLoad --> observability
+    observabilityLoad --> loadEnv
+    observabilityLoad --> performance
+    localLoad --> localObservability
+    localLoad --> loadEnv
+    localLoad --> performance
+
+    makefile["Makefile"] --> structurizrMakefile["Makefile.structurizr"]
+    structurizrMakefile --> architectureCompose["compose.c4-architecture.yaml"]
+    structurizrMakefile --> exporterDockerfile["tools/structurizr-png-exporter/Dockerfile"]
+    architectureCompose --> workspace["docs/architecture/workspace.dsl"]
+    workspace --> modelTaxiManager["docs/architecture/model/taxi-manager.dsl"]
+    workspace --> modelNotifications["docs/architecture/model/notifications.dsl"]
+    workspace --> modelObservability["docs/architecture/model/observability.dsl"]
+    workspace --> modelCiCd["docs/architecture/model/ci-cd.dsl"]
+    workspace --> modelDeployment["docs/architecture/model/deployment.dsl"]
+    workspace --> viewTaxiManager["docs/architecture/views/taxi-manager.dsl"]
+    workspace --> viewNotifications["docs/architecture/views/notifications.dsl"]
+    workspace --> viewObservability["docs/architecture/views/observability.dsl"]
+    workspace --> viewCiCd["docs/architecture/views/ci-cd.dsl"]
+    workspace --> viewDeployment["docs/architecture/views/deployment.dsl"]
+    workspace --> viewStyles["docs/architecture/views/styles.dsl"]
+```
+
+</details>
+
+<details>
+<summary><strong>Точки входа автоматизации</strong></summary>
 
 | Файл | Назначение | Используемые YAML-файлы |
 | --- | --- | --- |
@@ -787,7 +1066,7 @@ Jenkins-мастер координирует конвейер CI/CD Прило�
 </details>
 
 <details>
-<summary><strong>YAML-файлы Taxi-manager</strong></summary>
+<summary><strong>Docker Compose и другие YAML-файлы Taxi-manager</strong></summary>
 
 Docker Compose позволяет объединять несколько конфигурационных файлов последовательными параметрами `-f`. Дополнительный файл может добавлять сервисы или переопределять параметры базовой конфигурации.
 
@@ -818,7 +1097,7 @@ Docker Compose позволяет объединять несколько кон
 </details>
 
 <details>
-<summary><strong>YAML-файлы Jenkins</strong></summary>
+<summary><strong>Конфигурация Jenkins</strong></summary>
 
 | Файл | Назначение | Используемые конфигурационные файлы |
 | --- | --- | --- |

@@ -14,7 +14,7 @@ notificationSystem = softwareSystem "Сервис уведомлений мен�
     }
 
     kafka = container "Брокер сообщений" {
-        description "Хранит исходные CDC-события и обработанные события домена. Использует доставку at-least-once, поэтому повторная обработка событий допустима."
+        description "Хранит исходные CDC-события, обработанные события домена и позиции чтения consumer groups."
         technology "Apache Kafka 4, KRaft"
         tags "Implemented Not Deployed,Diagram Extra Tall"
     }
@@ -26,7 +26,7 @@ notificationSystem = softwareSystem "Сервис уведомлений мен�
     }
 
     notificationService = container "Обработчик уведомлений" {
-        description "Читает обработанные события Kafka, обновляет локальный контекст, определяет получателей, формирует сообщения и отправляет их в Чат уведомлений. Фиксирует позицию чтения только после успешной обработки."
+        description "Читает обработанные события, обновляет локальный контекст и отправляет уведомления в Чат уведомлений. Kafka-клиент управляет offset автоматически и фиксирует их независимо от результата обработки."
         technology "Python 3.13, Django, Kafka client, VK API"
         tags "Implemented Not Deployed,Diagram Extra Tall"
     }

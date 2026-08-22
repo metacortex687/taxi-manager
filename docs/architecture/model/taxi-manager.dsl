@@ -133,7 +133,10 @@ externalServiceDeveloper -> taxiManager.nginx "Изучает OpenAPI-докум
 telemetryClient -> taxiManager.nginx "Отправляет точки местоположения" "REST/JSON over HTTP"
 
 taxiManager.nginx -> taxiManager.webUi "Раздаёт статические файлы и передаёт ответы браузеру" "HTTP"
-taxiManager.webUi -> taxiManager.nginx "Вызывает REST API и открывает SSE-соединение" "HTTP/JSON, SSE over HTTP"
+webUiRestApi = taxiManager.webUi -> taxiManager.nginx "Вызывает REST API" "HTTP/JSON"
+webUiSse = taxiManager.webUi -> taxiManager.nginx "Открывает SSE-соединение" "SSE over HTTP" {
+    tags "SSE"
+}
 taxiManager.nginx -> taxiManager.djangoWsgi "Маршрутизирует синхронные REST-запросы и Django Admin" "uWSGI или HTTP"
 taxiManager.nginx -> taxiManager.djangoAsgi "Маршрутизирует асинхронные REST-запросы и запросы онлайн-отслеживания" "HTTP"
 taxiManager.djangoAsgi -> taxiManager.nginx "Передаёт поток событий выбранного автомобиля" "SSE over HTTP"
