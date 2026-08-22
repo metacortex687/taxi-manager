@@ -22,7 +22,7 @@ dynamic notificationSystem "NotificationFlow" {
     3: notificationSystem.kafka -> notificationSystem.flink "Предоставляет исходное CDC-событие"
     4: notificationSystem.flink -> notificationSystem.kafka "Публикует событие в соответствующий обработанный топик"
     5: notificationSystem.notificationService -> notificationSystem.kafka "Читает событие из обработанного топика"
-    6: notificationSystem.notificationService -> notificationSystem.notificationDatabase "Находит организацию, менеджеров и привязки к чатам"
+    6: notificationSystem.notificationService -> notificationSystem.notificationDatabase "Находит организацию, назначенных менеджеров и связанные с ними учётные записи чата"
     7: notificationSystem.notificationService -> notificationChat "Отправляет человекочитаемое уведомление в чат"
     autoLayout lr 300 200
 }

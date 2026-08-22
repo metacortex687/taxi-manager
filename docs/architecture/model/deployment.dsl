@@ -35,8 +35,9 @@ targetRuntimeEnvironment = deploymentEnvironment "Target runtime" {
 
     targetHost = deploymentNode "Сервер приложения" "Целевой Docker-хост" "Linux, Docker" {
         targetCompose = deploymentNode "Расширенное окружение" "Целевая конфигурация приложения без стека наблюдаемости" "Docker Compose" {
-            containerInstance taxiManager.varnish
             containerInstance taxiManager.nginx
+            containerInstance taxiManager.authorizationService
+            containerInstance taxiManager.varnish
             containerInstance taxiManager.djangoWsgi
             containerInstance taxiManager.djangoAsgi
             containerInstance taxiManager.taskWorker
@@ -51,17 +52,17 @@ targetRuntimeEnvironment = deploymentEnvironment "Target runtime" {
 
 ciCdDeploymentEnvironment = deploymentEnvironment "CI/CD deployment" {
     githubHost = deploymentNode "GitHub" "Облачная инфраструктура, в которой выполняется workflow развёртывания Jenkins-агента" "GitHub" {
-        githubActionsRunner = infrastructureNode "GitHub Actions" "Запускает workflow, который разворачивает и обновляет постоянный Jenkins-агент" "GitHub-hosted runner"
+        githubActionsRunner = infrastructureNode "GitHub Actions" "Запускает workflow, который разворачивает и обновляет Jenkins-агент" "GitHub-hosted runner"
     }
 
-    jenkinsControllerHost = deploymentNode "Хост Jenkins-контроллера" "Узел, на котором работает Jenkins-контроллер (master)" "Linux, Docker" {
-        jenkinsControllerRuntime = deploymentNode "Jenkins controller" "Контейнер управления основным pipeline приложения" "Docker Compose" {
+    jenkinsControllerHost = deploymentNode "Хост Jenkins-мастера" "Узел, на котором работает Jenkins-мастер" "Linux, Docker" {
+        jenkinsControllerRuntime = deploymentNode "Jenkins-мастер" "Координирует конвейер CI/CD приложения" "Docker Compose" {
             containerInstance jenkins.controller
         }
     }
 
-    jenkinsAgentHost = deploymentNode "Сервер Jenkins-агента и приложения" "Удалённый Docker-хост, на котором постоянный SSH-агент выполняет сборку, тесты и развёртывание" "Linux, Docker" {
-        jenkinsAgentRuntime = deploymentNode "Jenkins SSH agent" "Постоянный агент Jenkins с доступом к Docker Engine" "Docker Compose" {
+    jenkinsAgentHost = deploymentNode "Сервер Jenkins-агента и приложения" "Удалённый Docker-хост, на котором Jenkins-агент выполняет сборку, тесты и развёртывание" "Linux, Docker" {
+        jenkinsAgentRuntime = deploymentNode "Jenkins-агент" "Выполняет этапы конвейера CI/CD приложения с использованием Docker Engine" "Docker Compose" {
             jenkinsAgentInstance = containerInstance jenkins.agent
         }
 

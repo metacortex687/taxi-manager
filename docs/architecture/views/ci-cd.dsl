@@ -7,7 +7,7 @@ systemLandscape "CiCdLandscape" {
 
 container jenkins "CiCdContainers" {
     title "Диаграмма контейнеров CI/CD Taxi-manager"
-    description "Jenkins-мастер получает Jenkinsfile и координирует основной конвейер CI/CD. Jenkins-агент клонирует исходный код и выполняет сборку, тестирование и развёртывание приложения. GitHub Actions разворачивает и обновляет постоянный Jenkins-агент."
+    description "Jenkins-мастер получает Jenkinsfile и координирует основной конвейер CI/CD. Jenkins-агент клонирует исходный код и выполняет сборку, тестирование и развёртывание приложения. GitHub Actions разворачивает и обновляет Jenkins-агент."
     include sourceRepository githubActions containerRegistry taxiManager observability.tempo
     include jenkins.controller jenkins.agent
     autoLayout lr 320 220

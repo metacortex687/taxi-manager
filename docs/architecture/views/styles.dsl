@@ -76,14 +76,6 @@ styles {
         border dotted
     }
 
-    element "Experimental" {
-        background #be185d
-        color #ffffff
-        stroke #831843
-        strokeWidth 4
-        border dotted
-    }
-
     element "Wide API" {
         width 600
     }
@@ -123,9 +115,4 @@ styles {
         style dashed
     }
 
-    relationship "Experimental Flow" {
-        color #be185d
-        thickness 2
-        style dotted
-    }
 }

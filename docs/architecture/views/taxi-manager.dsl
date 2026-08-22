@@ -19,9 +19,9 @@ container taxiManager "TaxiManagerLogicalContainers" {
 
 container taxiManager "TaxiManagerExtendedRuntime" {
     title "Расширенная диаграмма контейнеров Taxi-manager"
-    description "Показывает логические контейнеры приложения и дополнительные компоненты выполнения без стека наблюдаемости и CI/CD."
+    description "Показывает целевые дополнительные компоненты выполнения без стека наблюдаемости и CI/CD: Сервис авторизации, HTTP-кэш после Входного веб-шлюза и Кэш приложения. Прямые связи Входного веб-шлюза с REST API используются для записи и остальных некэшируемых запросов."
     include telemetryClient locationIq
-    include taxiManager.webUi taxiManager.varnish taxiManager.nginx taxiManager.djangoWsgi taxiManager.djangoAsgi taxiManager.taskWorker taxiManager.rustApi taxiManager.swaggerUi taxiManager.pgbouncer taxiManager.memcached taxiManager.database
+    include taxiManager.webUi taxiManager.nginx taxiManager.authorizationService taxiManager.varnish taxiManager.djangoWsgi taxiManager.djangoAsgi taxiManager.taskWorker taxiManager.rustApi taxiManager.swaggerUi taxiManager.pgbouncer taxiManager.memcached taxiManager.database
     exclude notificationSystem
     autoLayout tb 320 220
 }

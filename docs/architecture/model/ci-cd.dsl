@@ -4,7 +4,7 @@ sourceRepository = softwareSystem "Репозиторий кода" {
 }
 
 githubActions = softwareSystem "GitHub Actions" {
-    description "Разворачивает и обновляет постоянный Jenkins-агент; не выполняет этапы основного конвейера CI/CD приложения."
+    description "Разворачивает и обновляет Jenkins-агент; не выполняет этапы Jenkins-конвейера CI/CD приложения."
     tags "External System,CI/CD"
 }
 

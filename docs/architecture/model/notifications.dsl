@@ -32,7 +32,7 @@ notificationSystem = softwareSystem "Сервис уведомлений мен�
     }
 
     notificationDatabase = container "Хранилище контекста" {
-        description "Хранит UUID и наименования организаций и моделей автомобилей, назначения менеджеров организациям и привязки пользователей приложения к учётным записям чата. Используется для выбора получателей и формирования сообщений; состояние чтения Kafka, логины и пароли не сохраняются."
+        description "Хранит UUID и наименования организаций и моделей автомобилей, назначения менеджеров организациям и связи учётных записей приложения с учётными записями чата, созданные после успешной авторизации. Используется для выбора получателей и формирования сообщений; состояние чтения Kafka, логины и пароли не сохраняются."
         technology "SQLite"
         tags "Database,Implemented Not Deployed"
     }
@@ -52,7 +52,7 @@ notificationSystem.debezium -> notificationSystem.kafka "Публикует ис
 notificationSystem.kafka -> notificationSystem.flink "Предоставляет события из исходных топиков" "Kafka protocol, JSON"
 notificationSystem.flink -> notificationSystem.kafka "Публикует события в обработанные топики" "Kafka protocol, JSON"
 notificationSystem.notificationService -> notificationSystem.kafka "Читает обработанные события для локального контекста и уведомлений" "Kafka protocol, JSON"
-notificationSystem.notificationService -> notificationSystem.notificationDatabase "Обновляет и читает локальный контекст организаций, моделей и привязок" "SQLite"
+notificationSystem.notificationService -> notificationSystem.notificationDatabase "Обновляет и читает локальный контекст организаций, моделей и связей с чатами" "SQLite"
 notificationSystem.notificationService -> taxiManager.nginx "Авторизует пользователя и получает доступные ему организации" "REST/JSON over HTTP"
 notificationSystem.notificationService -> notificationChat "Отправляет уведомления об изменениях автомобилей" "VK API"
 notificationSystem.kafkaUi -> notificationSystem.kafka "Показывает исходные и обработанные топики" "Kafka protocol"

@@ -108,14 +108,20 @@ taxiManager = softwareSystem "Taxi-manager" {
         tags "Current"
     }
 
-    memcached = container "Кеш приложения" {
-        description "Предоставляет распределённое кеширование для Django в расширенном окружении."
+    authorizationService = container "Сервис авторизации" {
+        description "Проверяет защищённые запросы и формирует доверенный контекст доступа для маршрутизации и формирования ключа HTTP-кэша."
+        technology "REST API"
+        tags "Target Optional"
+    }
+
+    memcached = container "Кэш приложения" {
+        description "Предоставляет распределённое кэширование для Django в расширенном окружении."
         technology "Memcached 1.6, PyMemcache 4"
         tags "Target Optional"
     }
 
-    varnish = container "HTTP-кеш" {
-        description "Кеширует HTTP-ответы перед Nginx в расширенном окружении."
+    varnish = container "HTTP-кэш" {
+        description "Кэширует повторяющиеся HTTP-ответы чтения после маршрутизации Входным веб-шлюзом; для защищённых ответов учитывает доверенный контекст доступа."
         technology "Varnish"
         tags "Target Optional"
     }
@@ -150,7 +156,19 @@ taxiManager.rustApi -> taxiManager.database "Выполняет одиночны
     tags "Database Access"
 }
 
-taxiManager.varnish -> taxiManager.nginx "Передаёт запросы, отсутствующие в HTTP-кеше" "HTTP" {
+taxiManager.nginx -> taxiManager.authorizationService "Проверяет доступ к защищённым запросам" "REST/JSON over HTTP" {
+    tags "Optional Path"
+}
+
+taxiManager.nginx -> taxiManager.varnish "Передаёт кэшируемые запросы чтения после маршрутизации и проверки доступа" "HTTP" {
+    tags "Optional Path"
+}
+
+taxiManager.varnish -> taxiManager.djangoWsgi "Запрашивает отсутствующие в HTTP-кэше ответы" "HTTP" {
+    tags "Optional Path"
+}
+
+taxiManager.varnish -> taxiManager.rustApi "Запрашивает отсутствующие в HTTP-кэше ресурсоёмкие ответы" "HTTP" {
     tags "Optional Path"
 }
 
@@ -170,11 +188,11 @@ taxiManager.pgbouncer -> taxiManager.database "Переиспользует со
     tags "Database Access"
 }
 
-taxiManager.djangoWsgi -> taxiManager.memcached "Читает и сохраняет кешированные данные" "Memcached protocol" {
+taxiManager.djangoWsgi -> taxiManager.memcached "Читает и сохраняет кэшированные данные" "Memcached protocol" {
     tags "Optional Path"
 }
 
-taxiManager.swaggerUi -> taxiManager.djangoWsgi "Загружает автоматически сформированную схему Django API" "OpenAPI/HTTP"
+taxiManager.swaggerUi -> taxiManager.djangoWsgi "Загружает автоматически сформированную схему Django REST API" "OpenAPI/HTTP"
 taxiManager.swaggerUi -> taxiManager.rustApi "Читает статическую OpenAPI-схему из смонтированного файла" "Docker bind mount (read-only), OpenAPI/YAML" {
     tags "File Mount"
 }
