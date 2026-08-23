@@ -892,8 +892,17 @@ p {
   background-size: 34px 34px;
 }
 
+.observability-image a {
+  display: block;
+}
+
 .observability-image img {
+  display: block;
   width: 100%;
+  height: auto;
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: contain;
   border-radius: 16px;
   background: #fff;
 }
@@ -1539,8 +1548,10 @@ p {
   }
 
   .observability-image img {
-    width: 760px;
+    width: 900px;
     max-width: none;
+    height: auto;
+    object-fit: contain;
   }
 
   .delivery-row {

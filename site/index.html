@@ -6,14 +6,14 @@
     <meta name="theme-color" content="#07182e" />
     <meta
       name="description"
-      content="Taxi-manager — учебный инженерный проект для управления автопарком, маршрутами, телеметрией и отчётами."
+      content="Taxi-manager — учебный инженерный проект для управления автопарком, координатами автомобилей, маршрутами и отчётами."
     />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ru_RU" />
     <meta property="og:title" content="Taxi-manager — управление автопарком" />
     <meta
       property="og:description"
-      content="Маршруты, телеметрия, отчёты и наблюдаемая архитектура в одном инженерном проекте."
+      content="Координаты автомобилей, маршруты, отчёты и наблюдаемая архитектура в одном инженерном проекте."
     />
     <meta
       property="og:url"
@@ -75,7 +75,7 @@
         <img
           class="hero-art"
           src="assets/fleet-routes-hero.png"
-          alt="Абстрактная карта города с маршрутами автомобилей и сигналами телеметрии"
+          alt="Абстрактная карта города с маршрутами и поступающими координатами автомобилей"
           width="1672"
           height="941"
           fetchpriority="high"
@@ -85,10 +85,10 @@
 
         <div class="shell hero-content">
           <p class="eyebrow light">Учебный инженерный проект <span>•</span> Open source</p>
-          <h1>Автопарк под контролем.<br /><em>От маршрута до телеметрии.</em></h1>
+          <h1>Автопарк под контролем.<br /><em>От координат до отчёта.</em></h1>
           <p class="hero-lead">
-            Taxi-manager объединяет учёт автомобилей и водителей, маршруты на карте,
-            потоковую телеметрию и отчётность для нескольких организаций.
+            Taxi-manager объединяет учёт автомобилей и водителей, приём координат
+            автомобилей, маршруты на карте и отчётность для нескольких организаций.
           </p>
           <div class="hero-actions">
             <a
@@ -116,7 +116,7 @@
             <li>React</li>
             <li>Rust API</li>
             <li>PostGIS</li>
-            <li>OpenTelemetry</li>
+            <li>Стек наблюдаемости</li>
           </ul>
         </div>
 
@@ -154,7 +154,7 @@
             <article class="feature-card reveal">
               <span class="feature-index">03</span>
               <h3>Маршруты и SSE</h3>
-              <p>История поездок на карте и отслеживание движения по потоковой телеметрии.</p>
+              <p>История поездок на карте и отслеживание движения по поступающим координатам.</p>
             </article>
             <article class="feature-card reveal">
               <span class="feature-index">04</span>
@@ -235,7 +235,7 @@
 
             <article class="principles-card reveal">
               <p class="eyebrow light">Данные на входе</p>
-              <blockquote>Координаты приходят через REST API в формате ISO 8601 — с учётом часового пояса организации.</blockquote>
+              <blockquote>Координаты приходят через REST API.</blockquote>
               <a
                 href="https://github.com/metacortex687/taxi-manager#readme"
                 target="_blank"
@@ -252,7 +252,7 @@
         <img
           class="architecture-art"
           src="assets/architecture-observability.png"
-          alt="Абстрактная схема движения телеметрии от автомобилей через сервисы к сигналам мониторинга"
+          alt="Абстрактная схема движения данных от автомобилей через сервисы к сигналам мониторинга"
           width="1672"
           height="941"
           loading="lazy"
@@ -265,15 +265,16 @@
             <h2>Каждый слой решает свою задачу</h2>
             <p>
               Django и DRF отвечают за предметную область, React — за рабочий интерфейс,
-              асинхронный Rust API принимает телеметрию, а PostgreSQL с PostGIS хранит
-              геоданные и маршруты.
+              высокопроизводительный асинхронный Rust API предназначен для переноса
+              потенциальных узких мест и пакетных REST-операций, а PostgreSQL с PostGIS
+              хранит геоданные и маршруты.
             </p>
           </div>
 
           <ol class="architecture-list reveal">
             <li><span>01</span><div><strong>Веб-клиент</strong><small>React</small></div></li>
             <li><span>02</span><div><strong>Бизнес-логика и API</strong><small>Django · DRF</small></div></li>
-            <li><span>03</span><div><strong>Приём телеметрии</strong><small>Rust · async REST</small></div></li>
+            <li><span>03</span><div><strong>Высоконагруженные операции</strong><small>Rust · async REST</small></div></li>
             <li><span>04</span><div><strong>Геоданные</strong><small>PostgreSQL · PostGIS · PgBouncer</small></div></li>
           </ol>
         </div>
@@ -320,8 +321,9 @@
               <h2>Система объясняет,<br />что с ней происходит</h2>
             </div>
             <p class="section-intro">
-              Метрики, логи и трассировки сходятся в едином контуре. При проблеме специалист
-              получает сигнал и может пройти от симптома до конкретного сервиса.
+              Метрики, логи и распределённые трассировки приложения собираются в отдельном
+              контуре наблюдаемости. Grafana объединяет данные Prometheus, Loki и Tempo и
+              помогает перейти от сигнала к конкретному сервису.
             </p>
           </div>
 
@@ -334,13 +336,20 @@
               <span>Grafana</span>
             </div>
             <div class="observability-image">
-              <img
-                src="assets/runtime-observability.png"
-                alt="C4-диаграмма потока мониторинга от Taxi-manager к специалисту поддержки"
-                width="3830"
-                height="800"
-                loading="lazy"
-              />
+              <a
+                href="assets/runtime-observability.png"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Открыть схему наблюдаемости в полном размере"
+              >
+                <img
+                  src="assets/runtime-observability.png"
+                  alt="C4-диаграмма потока мониторинга от Taxi-manager к специалисту поддержки"
+                  width="3830"
+                  height="800"
+                  loading="lazy"
+                />
+              </a>
             </div>
             <div class="delivery-row">
               <div>
