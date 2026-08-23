@@ -87,7 +87,7 @@
           <p class="eyebrow light">Учебный инженерный проект <span>•</span> Open source</p>
           <h1>Автопарк под контролем.<br /><em>От координат до отчёта.</em></h1>
           <p class="hero-lead">
-            Taxi-manager объединяет учёт автомобилей и водителей, приём координат
+            Приложение Taxi-manager объединяет учёт автомобилей и водителей, приём координат
             автомобилей, маршруты на карте и отчётность для нескольких организаций.
           </p>
           <div class="hero-actions">
@@ -264,21 +264,26 @@
             <p class="eyebrow light">Архитектура</p>
             <h2>Каждый слой решает свою задачу</h2>
             <p>
-              Django и DRF отвечают за предметную область, React — за рабочий интерфейс,
-              а фоновый обработчик выполняет отчёты и обратное геокодирование через очередь
-              задач. При росте нагрузки возможно горизонтальное масштабирование.
-              Высокопроизводительный асинхронный Rust API предназначен для переноса
-              потенциальных узких мест и пакетных REST-операций, а PostgreSQL с PostGIS
+              React отвечает за веб-интерфейс, Django и DRF — за основную бизнес-логику и
+              REST API. Фоновый обработчик выполняет длительные задания из очереди; при
+              росте нагрузки возможно горизонтальное масштабирование. Высокопроизводительный
+              асинхронный Rust API предназначен для переноса узких мест. PostgreSQL с PostGIS
               хранит геоданные и маршруты.
             </p>
           </div>
 
           <ol class="architecture-list reveal">
-            <li><span>01</span><div><strong>Веб-клиент</strong><small>React</small></div></li>
-            <li><span>02</span><div><strong>Бизнес-логика и REST API</strong><small>Django · DRF</small></div></li>
-            <li><span>03</span><div><strong>Фоновая обработка</strong><small>Django Tasks · PostgreSQL</small></div></li>
-            <li><span>04</span><div><strong>Высоконагруженные операции</strong><small>Rust · async REST</small></div></li>
-            <li><span>05</span><div><strong>Геоданные</strong><small>PostgreSQL · PostGIS · PgBouncer</small></div></li>
+            <li><span>01</span><div><strong>Веб-интерфейс</strong><small>React</small></div></li>
+            <li>
+              <span>02</span>
+              <div>
+                <strong>Прикладной слой</strong>
+                <small>Бизнес-логика и REST API — Django · DRF</small>
+                <small>Фоновая обработка — Django Tasks</small>
+                <small>Высоконагруженные операции — Rust · async REST</small>
+              </div>
+            </li>
+            <li><span>03</span><div><strong>Хранение данных</strong><small>PostgreSQL · PostGIS · PgBouncer</small></div></li>
           </ol>
         </div>
       </section>
@@ -321,12 +326,13 @@
           <div class="section-heading reveal">
             <div>
               <p class="eyebrow">Наблюдаемость</p>
-              <h2>Система объясняет,<br />что с ней происходит</h2>
+              <h2>Проблемы видны<br />до обращения пользователя</h2>
             </div>
             <p class="section-intro">
-              Метрики, логи и распределённые трассировки приложения собираются в отдельном
-              контуре наблюдаемости. Grafana объединяет данные Prometheus, Loki и Tempo и
-              помогает перейти от сигнала к конкретному сервису.
+              Оповещения Grafana помогают обнаружить серверную ошибку или отклонение до
+              обращения пользователя. Метрики Prometheus, логи Loki и распределённые
+              трассировки Tempo показывают состояние приложения и помогают перейти от
+              сигнала к конкретному сервису.
             </p>
           </div>
 
@@ -367,9 +373,9 @@
             <div class="grafana-proof-heading">
               <div>
                 <span class="live-dot" aria-hidden="true"></span>
-                Grafana
+                Метрики, логи и трассировки — в одном интерфейсе
               </div>
-              <p>Логи из Loki и распределённые трассировки из Tempo доступны в одном эксплуатационном контуре.</p>
+              <p>Grafana объединяет данные Prometheus, Loki и Tempo для анализа состояния сервисов и поиска причин проблем.</p>
             </div>
             <div class="grafana-grid">
               <figure class="grafana-card">
