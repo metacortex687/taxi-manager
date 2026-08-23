@@ -153,7 +153,7 @@
             </article>
             <article class="feature-card reveal">
               <span class="feature-index">03</span>
-              <h3>Маршруты и SSE</h3>
+              <h3>Маршруты и онлайн-отслеживание</h3>
               <p>История поездок на карте и отслеживание движения по поступающим координатам.</p>
             </article>
             <article class="feature-card reveal">
@@ -190,7 +190,7 @@
           <div class="section-heading compact reveal">
             <div>
               <p class="eyebrow">Рабочие сценарии</p>
-              <h2>От реестра<br />до результата</h2>
+              <h2>Реестр, маршруты<br />и отчёты</h2>
             </div>
             <p class="section-intro">
               Интерфейс не пытается быть витриной: он помогает быстро найти транспорт,
@@ -265,7 +265,9 @@
             <h2>Каждый слой решает свою задачу</h2>
             <p>
               Django и DRF отвечают за предметную область, React — за рабочий интерфейс,
-              высокопроизводительный асинхронный Rust API предназначен для переноса
+              а фоновый обработчик выполняет отчёты и обратное геокодирование через очередь
+              задач. При росте нагрузки возможно горизонтальное масштабирование.
+              Высокопроизводительный асинхронный Rust API предназначен для переноса
               потенциальных узких мест и пакетных REST-операций, а PostgreSQL с PostGIS
               хранит геоданные и маршруты.
             </p>
@@ -273,9 +275,10 @@
 
           <ol class="architecture-list reveal">
             <li><span>01</span><div><strong>Веб-клиент</strong><small>React</small></div></li>
-            <li><span>02</span><div><strong>Бизнес-логика и API</strong><small>Django · DRF</small></div></li>
-            <li><span>03</span><div><strong>Высоконагруженные операции</strong><small>Rust · async REST</small></div></li>
-            <li><span>04</span><div><strong>Геоданные</strong><small>PostgreSQL · PostGIS · PgBouncer</small></div></li>
+            <li><span>02</span><div><strong>Бизнес-логика и REST API</strong><small>Django · DRF</small></div></li>
+            <li><span>03</span><div><strong>Фоновая обработка</strong><small>Django Tasks · PostgreSQL</small></div></li>
+            <li><span>04</span><div><strong>Высоконагруженные операции</strong><small>Rust · async REST</small></div></li>
+            <li><span>05</span><div><strong>Геоданные</strong><small>PostgreSQL · PostGIS · PgBouncer</small></div></li>
           </ol>
         </div>
       </section>
@@ -364,7 +367,7 @@
             <div class="grafana-proof-heading">
               <div>
                 <span class="live-dot" aria-hidden="true"></span>
-                Grafana в работе
+                Grafana
               </div>
               <p>Логи из Loki и распределённые трассировки из Tempo доступны в одном эксплуатационном контуре.</p>
             </div>
