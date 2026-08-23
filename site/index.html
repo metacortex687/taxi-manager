@@ -350,6 +350,48 @@
               <p>Сборка, тестирование и контейнеризация встроены в жизненный цикл проекта.</p>
             </div>
           </div>
+
+          <div class="grafana-proof reveal">
+            <div class="grafana-proof-heading">
+              <div>
+                <span class="live-dot" aria-hidden="true"></span>
+                Grafana в работе
+              </div>
+              <p>Логи из Loki и распределённые трассировки из Tempo доступны в одном эксплуатационном контуре.</p>
+            </div>
+            <div class="grafana-grid">
+              <figure class="grafana-card">
+                <a href="assets/grafana-logs-drilldown.png" target="_blank" rel="noreferrer">
+                  <img
+                    src="assets/grafana-logs-drilldown.png"
+                    alt="Grafana Logs Drilldown с журналами Nginx и PostgreSQL из Loki"
+                    width="1911"
+                    height="828"
+                    loading="lazy"
+                  />
+                </a>
+                <figcaption>
+                  <strong>Logs Drilldown</strong>
+                  <span>Loki · журналы Nginx и PostgreSQL</span>
+                </figcaption>
+              </figure>
+              <figure class="grafana-card">
+                <a href="assets/grafana-traces-drilldown.png" target="_blank" rel="noreferrer">
+                  <img
+                    src="assets/grafana-traces-drilldown.png"
+                    alt="Grafana Traces Drilldown с трассировками сервисов Taxi-manager из Tempo"
+                    width="1623"
+                    height="739"
+                    loading="lazy"
+                  />
+                </a>
+                <figcaption>
+                  <strong>Traces Drilldown</strong>
+                  <span>Tempo · трассировки приложения и фонового обработчика</span>
+                </figcaption>
+              </figure>
+            </div>
+          </div>
         </div>
       </section>
 
